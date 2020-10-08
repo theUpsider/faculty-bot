@@ -1,0 +1,31 @@
+{
+  "name": "tournament-bot",
+  "version": "1.0.0",
+  "description": "bot for tournament management",
+  "main": "index.js",
+  "dependencies": {
+    "@keyv/sqlite": "^2.0.2",
+    "discord.js": "^12.3.1",
+    "dotenv": "^8.2.0",
+    "json-simple": "^0.9.6",
+    "keyv": "^4.0.3",
+    "node-fetch": "^2.6.1",
+    "random-chars": "^1.0.8",
+    "riot-lol-api": "^4.3.2",
+    "sqlite3": "^5.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "ping"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theUpsider/tournament-bot.git"
+  },
+  "author": "David Fischer",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/theUpsider/tournament-bot/issues"
+  },
+  "homepage": "https://github.com/theUpsider/tournament-bot#readme"
+}
