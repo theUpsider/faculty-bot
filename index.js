@@ -69,7 +69,7 @@ bot.on('message', async message => {
 		const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'level-up-image.png');
 
 
-		channel.send(`Welcome to the server, ${member}!`, attachment);
+		channel.send(`Welcome to the server, ${message.author}!`, attachment);
 		//---------------------------------
 
 		if (!userXP || userXP === undefined) {
