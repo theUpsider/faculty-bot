@@ -6,6 +6,7 @@ const Keyv = require('keyv');
 const sqlite3 = require('sqlite3').verbose();
 var RiotRequest = require('riot-lol-api');
 const { prefix, token, riotapikey } = require('./config.json');
+const {toLevel} =  require('./functions/extensions.js');
 const settings = require('./general-settings.json')
 const fs = require('fs');
 
@@ -55,21 +56,10 @@ bot.on('message', async message => {
 		const userXP = await dbxp.get(message.author.id);
 
 		// --------------------------------
-		const channel = message.guild.channels.cache.find(ch => ch.name === 'bot-commands');
-		if (!channel) return;
-
-		const canvas = Canvas.createCanvas(700, 250);
-		const ctx = canvas.getContext('2d');
-
-		// Since the image takes time to load, you should await it
-		const background = await Canvas.loadImage('./images/fakultät_banner_bot.png');
-		// This uses the canvas dimensions to stretch the image onto the entire canvas
-		ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-		// Use helpful Attachment class structure to process the file for you
-		const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'level-up-image.png');
+		// const channel = message.guild.channels.cache.find(ch => ch.name === 'bot-commands');
+		// if (!channel) return;
 
 
-		channel.send(`Welcome to the server, ${message.author}!`, attachment);
 		//---------------------------------
 
 		if (!userXP || userXP === undefined) {
@@ -77,11 +67,39 @@ bot.on('message', async message => {
 			return;
 		} else {
 			// if new level, post XP
-			if (Math.trunc((userXP + 1).toLevel()) > Math.trunc(userXP.toLevel()))
-				message.reply("Congrats on new level!");
-			// send level xp to xp channel
+			if (Math.trunc(toLevel(userXP + 1)) > Math.trunc(toLevel(userXP))) {
+				// send level xp to xp channel
+				const canvas = Canvas.createCanvas(700, 250);
+				const ctx = canvas.getContext('2d');
 
-			//message.guild.channels.resolve(settings.channels.xp).send("My Bot's message", { files: ["https://i.imgur.com/XxxXxXX.jpg"] });
+				// Since the image takes time to load, you should await it
+				const background = await Canvas.loadImage('./images/banner.png');
+				// This uses the canvas dimensions to stretch the image onto the entire canvas
+				ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+				// Select the color of the stroke
+				ctx.strokeStyle = '#74037b';
+				// Draw a rectangle with the dimensions of the entire canvas
+				ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+				// Select the font size and type from one of the natively available fonts
+				ctx.font = '60px sans-serif';
+
+				// Slightly smaller text placed above the member's display name
+				ctx.font = applyText(canvas, `${message.author.username} has reached`);
+				ctx.fillStyle = '#ffffff';
+				ctx.fillText(`${message.author.username} has reached`, canvas.width / 2.4, canvas.height / 3.5);
+
+				// Add an exclamation point here and below
+				ctx.font = applyText(canvas, `LEVEL ${Math.trunc(toLevel(userXP + 1))}`);
+				ctx.fillStyle = '#ffffff';
+				ctx.fillText(`LEVEL ${Math.trunc(toLevel(userXP + 1))}`, canvas.width / 2.4, canvas.height / 1.5);
+
+				// Use helpful Attachment class structure to process the file for you
+				const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'level-up-image.png');
+
+
+				message.channel.send(`Congrats, ${message.author}!`, attachment);
+			}
 
 			// New XP
 			dbxp.set(message.author.id, userXP + 1);
@@ -198,7 +216,21 @@ async function updateBadges() {
 	channel.send(file)
 }
 
-// xp calculation
-Number.prototype.toLevel = function () {
-	return 0.01 * this ^ (0.8);
-}
+
+
+// Pass the entire Canvas object because you'll need to access its width, as well its context
+const applyText = (canvas, text) => {
+	const ctx = canvas.getContext('2d');
+
+	// Declare a base size of the font
+	let fontSize = 70;
+
+	do {
+		// Assign the font to the context and decrement it so it can be measured again
+		ctx.font = `${fontSize -= 10}px sans-serif`;
+		// Compare pixel width of the text to the canvas minus the approximate avatar size
+	} while (ctx.measureText(text).width > canvas.width - 300);
+
+	// Return the result to use in the actual canvas
+	return ctx.font;
+};
