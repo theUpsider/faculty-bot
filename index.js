@@ -1,5 +1,6 @@
 require('dotenv').config();
 const Discord = require('discord.js');
+const Canvas = require('canvas');
 const fetch = require('node-fetch');
 const Keyv = require('keyv');
 const sqlite3 = require('sqlite3').verbose();
