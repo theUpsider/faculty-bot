@@ -8,7 +8,7 @@ const { prefix, token, riotapikey } = require('./config.json');
 const settings = require('./general-settings.json')
 const fs = require('fs');
 
-const globalPrefix = '..';
+
 const bot = new Discord.Client();
 
 //Riot API 
@@ -32,9 +32,9 @@ let db = new sqlite3.Database(':memory:', (err) => {
 	console.log('Connected to the in-memory SQlite database.');
 });
 //db1
-// Key: teamname, Value: Teamleader (Summonername)
-const dbteams = new Keyv('sqlite://teams.sqlite'); // const keyv = new Keyv(); // for in-memory storage //
-dbteams.on('error', err => console.error('Keyv connection error:', err));
+// Key: discord ID, Value: xp value
+const dbxp = new Keyv('sqlite://xp.sqlite'); // const keyv = new Keyv(); // for in-memory storage //
+dbxp.on('error', err => console.error('Keyv connection error:', err));
 //db2
 // const dbjob = new Keyv('sqlite://job.sqlite');
 // dbjob.on('error', err => console.error('Keyv connection error:', err));
@@ -49,7 +49,45 @@ bot.on('ready', () => {
 bot.on('message', async message => {
 	if (message.author.bot) return;
 
-	if (!message.content.startsWith(prefix)) return;
+	// no command! - simple message to track for XP
+	if (!message.content.startsWith(prefix) && message.channel.type == 'text') {
+		const userXP = await dbxp.get(message.author.id);
+
+		// --------------------------------
+		const channel = message.guild.channels.cache.find(ch => ch.name === 'bot-commands');
+		if (!channel) return;
+
+		const canvas = Canvas.createCanvas(700, 250);
+		const ctx = canvas.getContext('2d');
+
+		// Since the image takes time to load, you should await it
+		const background = await Canvas.loadImage('./images/fakultät_banner_bot.png');
+		// This uses the canvas dimensions to stretch the image onto the entire canvas
+		ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+		// Use helpful Attachment class structure to process the file for you
+		const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'level-up-image.png');
+
+
+		channel.send(`Welcome to the server, ${member}!`, attachment);
+		//---------------------------------
+
+		if (!userXP || userXP === undefined) {
+			await dbxp.set(message.author.id, 1) // set to 1 for 1 XP
+			return;
+		} else {
+			// if new level, post XP
+			if (Math.trunc((userXP + 1).toLevel()) > Math.trunc(userXP.toLevel()))
+				message.reply("Congrats on new level!");
+			// send level xp to xp channel
+
+			//message.guild.channels.resolve(settings.channels.xp).send("My Bot's message", { files: ["https://i.imgur.com/XxxXxXX.jpg"] });
+
+			// New XP
+			dbxp.set(message.author.id, userXP + 1);
+		}
+
+		return;
+	}
 
 
 	//filter args
@@ -89,7 +127,7 @@ bot.on('message', async message => {
 
 	const now = Date.now();
 	const timestamps = cooldowns.get(command.name);
-	const cooldownAmount = (command.cooldown || 3) * 1000;
+	const cooldownAmount = (command.cooldown || 1) * 1000;
 	if (timestamps.has(message.author.id)) {
 		const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
 
@@ -117,16 +155,16 @@ bot.on('message', async message => {
 // User Join
 // ----------------------------------------------------------------------------------------------------------------------------------------------
 bot.on('guildMemberAdd', member => {
-	const embeded = new Discord.MessageEmbed()
-		.setColor(settings.colors.blue)
-		.setTitle(`A new user has joined`)
-		.setDescription(`Welcome **` + member.user.username + `** to the tournament server! Before doing anything else read <#${settings.channels.information}> and <#${settings.channels.rules}>. Any further questions should be directed towards our staff. Enjoy your stay!`)
-		.setFooter(settings.footer);
-	try {
-		member.guild.channels.resolve(settings.channels.greetings).send(embeded);
-	} catch (error) {
-		console.log(error)
-	}
+	// const embeded = new Discord.MessageEmbed()
+	// 	.setColor(settings.colors.blue)
+	// 	.setTitle(`A new user has joined`)
+	// 	.setDescription(`Welcome **` + member.user.username + `** to the tournament server! Before doing anything else read <#${settings.channels.information}> and <#${settings.channels.rules}>. Any further questions should be directed towards our staff. Enjoy your stay!`)
+	// 	.setFooter(settings.footer);
+	// try {
+	// 	member.guild.channels.resolve(settings.channels.greetings).send(embeded);
+	// } catch (error) {
+	// 	console.log(error)
+	// }
 });
 
 
@@ -157,4 +195,9 @@ async function updateBadges() {
 	const channel = bot.channels.find('name', 'badge')
 	const { file } = await fetch("../exchange/users.json").then(response => response.json())
 	channel.send(file)
+}
+
+// xp calculation
+Number.prototype.toLevel = function () {
+	return 0.01 * this ^ (0.8);
 }
