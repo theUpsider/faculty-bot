@@ -12,7 +12,7 @@ const fs = require('fs');
 
 
 const bot = new Discord.Client();
-bot.user.setActivity('use ..help',{type: 'PLAYING'});
+
 
 //Riot API 
 var riotRequest = new RiotRequest(riotapikey);
@@ -46,6 +46,7 @@ bot.login(token);
 
 bot.on('ready', () => {
 	console.info(`Logged in as ${bot.user.tag}!`);
+	bot.user.setActivity('use ..help',{type: 'PLAYING'});
 	//setInterval(updateBadges, 2000);
 });
 
