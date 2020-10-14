@@ -13,7 +13,7 @@ module.exports =
         if (!message.member.roles.cache.has(settings.roles.staffrole)) return message.reply(`:x: You do not have permission to execute this command.`)
 
         if(settings.channels.rules && settings.messages.rules)
-            guild.channels.get(settings.channels.rules).fetchMessage(settings.messages.rules).edit('New Ruleset')
+            (await message.guild.channels.cache.find(channel => channel.id == settings.channels.rules).fetch()).fetchMessage(settings.messages.rules).edit(args[0])
         else
             message.reply('wrong arguments supplied')
 
