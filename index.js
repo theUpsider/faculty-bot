@@ -12,6 +12,7 @@ const fs = require('fs');
 
 
 const bot = new Discord.Client();
+bot.user.setActivity('use ..help',{type: 'PLAYING'});
 
 //Riot API 
 var riotRequest = new RiotRequest(riotapikey);
