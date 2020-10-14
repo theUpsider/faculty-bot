@@ -13,7 +13,8 @@ module.exports =
 
         if (!message.member.roles.cache.has(settings.roles.staffrole)) return message.reply(`:x: You do not have permission to execute this command.`)
 
-        message.guild.channels.get(args[0]).send(args[1])
+        (await message.guild.channels.cache.find(args[0]).fetch()).send(args[1])
+        //message.guild.channel.get(args[0]).send(args[1])
 
         return;
 
