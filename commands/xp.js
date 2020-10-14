@@ -21,7 +21,8 @@ module.exports =
         const userXP = await dbxp.get(message.author.id); // is weird but works that way
 
         if (!userXP || userXP === undefined) {
-			await dbxp.set(message.author.id, 1) // set to 1 for 1 XP
+            await dbxp.set(message.author.id, 1) // set to 1 for 1 XP
+            message.reply(`you have can now start to earn xp!`)
 			return;
 		} else {
             message.reply(`you have ${userXP} XP. This equals to ${toLevel(userXP)} Levels.`)
