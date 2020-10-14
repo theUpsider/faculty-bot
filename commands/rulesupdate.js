@@ -15,7 +15,7 @@ module.exports =
         if(settings.channels.rules && settings.messages.rules)
             (await message.guild.channels.cache.find(channel => channel.id == settings.channels.rules).fetch())
             .messages.fetch(settings.messages.rules)
-            .then(message => message.edit(...args)) // remove symbols
+            .then(message => message.edit(args.join(' '))) // remove symbols
             .catch(console.error);
         else
             message.reply('wrong arguments supplied')
