@@ -7,6 +7,9 @@
       "rules":"765975503965650965",
       "news": "497729011062013974"
    },
+   "messages":{
+      "rules":""
+   },
    "colors":{
       "blue":"#4200ff",
       "lightblue":"#FFFFF",
@@ -14,6 +17,6 @@
       "red":"#cf0a0a"
    },
    "roles":{
-      "staffrole": "758677885618749480"
+      "staffrole": "497787064906153984"
    }
 }
