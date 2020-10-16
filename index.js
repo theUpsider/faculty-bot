@@ -5,14 +5,95 @@ const fetch = require('node-fetch');
 const Keyv = require('keyv');
 const sqlite3 = require('sqlite3').verbose();
 var RiotRequest = require('riot-lol-api');
-const { prefix, token, riotapikey } = require('./config.json');
-const {toLevel} =  require('./functions/extensions.js');
+const { prefix, token, riotapikey, mailpw } = require('./config.json');
+const MailPw = mailpw; // prevent on demand loading
+const { toLevel } = require('./functions/extensions.js');
 const settings = require('./general-settings.json')
 const fs = require('fs');
+var Imap = require('imap'),
+	inspect = require('util').inspect;
 
 
 const bot = new Discord.Client();
 
+// Mail https://github.com/mscdex/node-imap
+var imap = new Imap({
+	user: 'info@akgaming.de',
+	password: MailPw,
+	host: 'imap.ionos.de',
+	port: 993,
+	tls: true
+});
+
+function openInbox(cb) {
+	imap.openBox('INBOX', true, cb);
+}
+
+// imap.once('ready', function () {
+// 	openInbox(function (err, box) {
+// 		if (err) throw err;
+// 		var f = imap.seq.fetch(box.messages.total + ':*', { bodies: ['HEADER.FIELDS (FROM SUBJECT)', 'TEXT'] });
+// 		f.on('message', function (msg, seqno) {
+// 			console.log('Message #%d', seqno);
+// 			var prefix = '(#' + seqno + ') ';
+// 			msg.on('body', function (stream, info) {
+// 				if (info.which === 'TEXT')
+// 					console.log(prefix + 'Body [%s] found, %d total bytes', inspect(info.which), info.size);
+// 				var buffer = '', count = 0;
+// 				stream.on('data', function (chunk) {
+// 					count += chunk.length;
+// 					buffer += chunk.toString('utf8');
+// 					if (info.which === 'TEXT')
+// 						console.log(prefix + 'Body [%s] (%d/%d)', inspect(info.which), count, info.size);
+// 				});
+
+// 				stream.once('end', function () {
+// 					if (info.which !== 'TEXT') {
+// 						console.log(prefix + 'Parsed header: %s', inspect(Imap.parseHeader(buffer)));
+// 						const subject = Imap.parseHeader(buffer).subject[0]
+
+// 						console.log(subject)
+// 					}
+// 					else
+// 						console.log(prefix + 'Body [%s] Finished', inspect(info.which));
+// 				});
+// 			});
+// 			msg.once('attributes', function (attrs) {
+// 				console.log(prefix + 'Attributes: %s', inspect(attrs, false, 8));
+// 			});
+// 			msg.once('end', function () {
+// 				console.log(prefix + 'Finished');
+// 			});
+// 		});
+// 		f.once('error', function (err) {
+// 			console.log('Fetch error: ' + err);
+// 		});
+// 		f.once('end', function () {
+// 			console.log('Done fetching all messages!');
+// 			imap.end();
+// 		});
+// 	});
+// 	imap.closeBox(function (err) {
+// 		console.log(err);
+// 	})
+// });
+
+// imap.subscribeBox('INBOX', function (err) {
+// 	console.log(err);
+// })
+// imap.once('mail', function (nummeSsages) {
+// 	console.log('YAAY: ', nummeSsages)
+// })
+
+// imap.once('error', function (err) {
+// 	console.log(err);
+// });
+
+// imap.once('end', function () {
+// 	console.log('Connection ended');
+// });
+
+// imap.connect();
 
 //Riot API 
 var riotRequest = new RiotRequest(riotapikey);
@@ -34,19 +115,98 @@ let db = new sqlite3.Database(':memory:', (err) => {
 	}
 	console.log('Connected to the in-memory SQlite database.');
 });
+
 //db1
 // Key: discord ID, Value: xp value
 const dbxp = new Keyv('sqlite://xp.sqlite'); // const keyv = new Keyv(); // for in-memory storage //
 dbxp.on('error', err => console.error('Keyv connection error:', err));
-//db2
-// const dbjob = new Keyv('sqlite://job.sqlite');
-// dbjob.on('error', err => console.error('Keyv connection error:', err));
+// Key: student-email, Value: verification date
+const dbverify = new Keyv('sqlite://verify.sqlite');
+dbverify.on('error', err => console.error('Keyv connection error:', err));
+// Key: student-email, Value: discord-id
+const map_emailToId = new Keyv('sqlite://map_emailToId.sqlite');
+map_emailToId.on('error', err => console.error('Keyv connection error:', err));
+
 
 bot.login(token);
 
+
+setInterval(function () {
+	imap.connect();
+
+	imap.once('error', function (err) {
+		console.log(err);
+	});
+
+	imap.once('end', function () {
+		console.log('Connection ended');
+	});
+	imap.once('ready',async function () {
+		openInbox(async function (err, box) {
+			if (err) throw err;
+			var f = imap.seq.fetch(box.messages.total + ':*', { bodies: ['HEADER.FIELDS (FROM SUBJECT)', 'TEXT'] });
+			f.on('message', function (msg, seqno) {
+				console.log('Message #%d', seqno);
+				var prefix = '(#' + seqno + ') ';
+				msg.on('body', function (stream, info) {
+					if (info.which === 'TEXT')
+						console.log(prefix + 'Body [%s] found, %d total bytes', inspect(info.which), info.size);
+					var buffer = '', count = 0;
+					stream.on('data', function (chunk) {
+						count += chunk.length;
+						buffer += chunk.toString('utf8');
+						if (info.which === 'TEXT')
+							console.log(prefix + 'Body [%s] (%d/%d)', inspect(info.which), count, info.size);
+					});
+
+					stream.once('end',async function () {
+						if (info.which !== 'TEXT'){
+							console.log(prefix + 'Parsed header: %s', inspect(Imap.parseHeader(buffer)));
+							const from = Imap.parseHeader(buffer).from[0]
+							const endmail = from.split(`@`)[1].split(`>`)[0]
+							if((endmail).toString().includes('stud.hs-kempten.de')){
+								// is student
+								// take subject to verify
+								// TODO if something failed, answer mail whats wrong!
+								console.log(endmail)
+								const displayName = Imap.parseHeader(buffer).subject[0]	.split('#')[0]	
+								const guild = bot.guilds.cache.find(id => id == settings.guildid);
+								const memberToAdd = guild.members.cache.find(member => member.displayName == displayName);
+            					memberToAdd.roles.add(settings.roles.verified);
+						 }
+
+						}
+						else
+							console.log(prefix + 'Body [%s] Finished', inspect(info.which));
+					});
+				});
+				msg.once('attributes', function (attrs) {
+					console.log(prefix + 'Attributes: %s', inspect(attrs, false, 8));
+				});
+				msg.once('end', function () {
+					console.log(prefix + 'Finished');
+				});
+			});
+			f.once('error', function (err) {
+				console.log('Fetch error: ' + err);
+			});
+			f.once('end', function () {
+				console.log('Done fetching all messages!');
+				imap.end();
+			});
+		});
+
+	})
+
+	// imap.closeBox(function (err) {
+	// 	console.log(err);
+	// });
+}, 6000);
+
+
 bot.on('ready', () => {
 	console.info(`Logged in as ${bot.user.tag}!`);
-	bot.user.setActivity('use ..help',{type: 'PLAYING'});
+	bot.user.setActivity('use ..help', { type: 'PLAYING' });
 	//setInterval(updateBadges, 2000);
 });
 
@@ -60,7 +220,7 @@ bot.on('message', async message => {
 		// --------------------------------
 		// const channel = message.guild.channels.cache.find(ch => ch.name === 'bot-commands');
 		// if (!channel) return;
-
+		console.log(inspect(message.author.username))
 
 		//---------------------------------
 
@@ -217,6 +377,10 @@ async function updateBadges() {
 	const { file } = await fetch("../exchange/users.json").then(response => response.json())
 	channel.send(file)
 }
+
+// mail
+
+// using the functions and variables already defined in the first example ...
 
 
 

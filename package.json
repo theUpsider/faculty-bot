@@ -8,6 +8,7 @@
     "canvas": "^2.6.1",
     "discord.js": "^12.3.1",
     "dotenv": "^8.2.0",
+    "imap": "^0.8.19",
     "json-simple": "^0.9.6",
     "keyv": "^4.0.3",
     "node-fetch": "^2.6.1",
