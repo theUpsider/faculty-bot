@@ -25,76 +25,6 @@ var imap = new Imap({
 	tls: true
 });
 
-function openInbox(cb) {
-	imap.openBox('INBOX', true, cb);
-}
-
-// imap.once('ready', function () {
-// 	openInbox(function (err, box) {
-// 		if (err) throw err;
-// 		var f = imap.seq.fetch(box.messages.total + ':*', { bodies: ['HEADER.FIELDS (FROM SUBJECT)', 'TEXT'] });
-// 		f.on('message', function (msg, seqno) {
-// 			console.log('Message #%d', seqno);
-// 			var prefix = '(#' + seqno + ') ';
-// 			msg.on('body', function (stream, info) {
-// 				if (info.which === 'TEXT')
-// 					console.log(prefix + 'Body [%s] found, %d total bytes', inspect(info.which), info.size);
-// 				var buffer = '', count = 0;
-// 				stream.on('data', function (chunk) {
-// 					count += chunk.length;
-// 					buffer += chunk.toString('utf8');
-// 					if (info.which === 'TEXT')
-// 						console.log(prefix + 'Body [%s] (%d/%d)', inspect(info.which), count, info.size);
-// 				});
-
-// 				stream.once('end', function () {
-// 					if (info.which !== 'TEXT') {
-// 						console.log(prefix + 'Parsed header: %s', inspect(Imap.parseHeader(buffer)));
-// 						const subject = Imap.parseHeader(buffer).subject[0]
-
-// 						console.log(subject)
-// 					}
-// 					else
-// 						console.log(prefix + 'Body [%s] Finished', inspect(info.which));
-// 				});
-// 			});
-// 			msg.once('attributes', function (attrs) {
-// 				console.log(prefix + 'Attributes: %s', inspect(attrs, false, 8));
-// 			});
-// 			msg.once('end', function () {
-// 				console.log(prefix + 'Finished');
-// 			});
-// 		});
-// 		f.once('error', function (err) {
-// 			console.log('Fetch error: ' + err);
-// 		});
-// 		f.once('end', function () {
-// 			console.log('Done fetching all messages!');
-// 			imap.end();
-// 		});
-// 	});
-// 	imap.closeBox(function (err) {
-// 		console.log(err);
-// 	})
-// });
-
-// imap.subscribeBox('INBOX', function (err) {
-// 	console.log(err);
-// })
-// imap.once('mail', function (nummeSsages) {
-// 	console.log('YAAY: ', nummeSsages)
-// })
-
-// imap.once('error', function (err) {
-// 	console.log(err);
-// });
-
-// imap.once('end', function () {
-// 	console.log('Connection ended');
-// });
-
-// imap.connect();
-
 //Riot API 
 var riotRequest = new RiotRequest(riotapikey);
 
@@ -141,8 +71,8 @@ setInterval(function () {
 	imap.once('end', function () {
 		console.log('Connection ended');
 	});
-	imap.once('ready',async function () {
-		openInbox(async function (err, box) {
+	imap.once('ready', function () {
+		openInbox(function (err, box) {
 			if (err) throw err;
 			var f = imap.seq.fetch(box.messages.total + ':*', { bodies: ['HEADER.FIELDS (FROM SUBJECT)', 'TEXT'] });
 			f.on('message', function (msg, seqno) {
@@ -150,34 +80,40 @@ setInterval(function () {
 				var prefix = '(#' + seqno + ') ';
 				msg.on('body', function (stream, info) {
 					if (info.which === 'TEXT')
-						console.log(prefix + 'Body [%s] found, %d total bytes', inspect(info.which), info.size);
-					var buffer = '', count = 0;
+						var buffer = '', count = 0;
 					stream.on('data', function (chunk) {
 						count += chunk.length;
 						buffer += chunk.toString('utf8');
-						if (info.which === 'TEXT')
-							console.log(prefix + 'Body [%s] (%d/%d)', inspect(info.which), count, info.size);
 					});
 
-					stream.once('end',async function () {
-						if (info.which !== 'TEXT'){
+					stream.once('end', function () {
+						if (info.which !== 'TEXT') {
 							console.log(prefix + 'Parsed header: %s', inspect(Imap.parseHeader(buffer)));
-							const from = Imap.parseHeader(buffer).from[0]
+							const from = Imap.parseHeader(buffer).undefinedfrom[0]
 							const endmail = from.split(`@`)[1].split(`>`)[0]
-							if((endmail).toString().includes('stud.hs-kempten.de')){
+							if ((endmail).toString().includes('stud.hs-kempten.de')) {
 								// is student
 								// take subject to verify
 								// TODO if something failed, answer mail whats wrong!
-								console.log(endmail)
-								const displayName = Imap.parseHeader(buffer).subject[0]	.split('#')[0]	
-								const guild = bot.guilds.cache.find(id => id == settings.guildid);
-								const memberToAdd = guild.members.cache.find(member => member.displayName == displayName);
-            					memberToAdd.roles.add(settings.roles.verified);
-						 }
+								try {
+									const displayName = Imap.parseHeader(buffer).subject[0].split('#')[0]
+									const guild = bot.guilds.cache.find(id => id == settings.guildid);
+									const memberToAdd = guild.members.cache.find(member => member.displayName == displayName);
+									memberToAdd.roles.add(settings.roles.verified);
+									//notify user in DM with steps
+									//TODO make channels generic
+									memberToAdd.send(`
+									**Herzlich Willkommen auf dem Discord ${settings.discordname}!**\nNachfolgend findest Du eine kurze Beschreibung, wie du dich auf unserem Server zurecht findest.\nGenerell ist jeder Studierende berechtigt alle *Kanäle* für jedes Fach, oder jeden Studiengang in der Fakultät einzusehen.\nAber um das Chaos zu minimieren, dienen *Rollen* als eine Art **Filter**, um Dich vor der Flut an Kanälen zu bewahren. Deshalb kannst Du in\n**"rollenanfrage"** sowie **"react-a-role"** dein Semester auswählen, bzw. abwählen. Danach siehst Du die Fächer, die für Dich relevant sind!\nJedes Semester enthält Kategorien, in denen Du Dich mit anderen austauschen kannst.\nEs gibt ein paar semesterübergreifende Kategorien, wie **"/ALL"** und **"WICHTIGES"**.\nDort im Kanal **"ankündigungen"** kommen regelmäßige News zu hochschulweiten Veranstaltungen oder Events, sowie Erungenschaften und nice to knows.\n\nBitte lies Dir den **"rules"** Kanal durch, damit du weißt wie wir auf Discord miteinander umgehen.\nSolltest Du noch Fragen haben, stell sie direkt im **"fragen"** channel oder kontaktiere einen **Administrator/Owner/Moderator** rechts in der Mitgliederliste.\n\nVielen Dank, dass Du dabei bist, **${displayName}!**\n`)
+
+								} catch (error) {
+									console.log(error)
+									console.log('displayname not found in server. User probably sent wrong name.')
+								}
+							} else {
+								console.log('email without verification arrived.\nSender: ', from, '\npossibly a professor.')
+							}
 
 						}
-						else
-							console.log(prefix + 'Body [%s] Finished', inspect(info.which));
 					});
 				});
 				msg.once('attributes', function (attrs) {
@@ -379,10 +315,9 @@ async function updateBadges() {
 }
 
 // mail
-
-// using the functions and variables already defined in the first example ...
-
-
+function openInbox(cb) {
+	imap.openBox('INBOX', true, cb);
+}
 
 // Pass the entire Canvas object because you'll need to access its width, as well its context
 const applyText = (canvas, text) => {
