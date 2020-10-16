@@ -86,7 +86,7 @@ setInterval(function () {
 						buffer += chunk.toString('utf8');
 					});
 
-					stream.once('end', function () {
+					stream.once('end',async function () {
 						if (info.which !== 'TEXT') {
 							console.log(prefix + 'Parsed header: %s', inspect(Imap.parseHeader(buffer)));
 							const from = Imap.parseHeader(buffer).undefinedfrom[0]
@@ -96,7 +96,7 @@ setInterval(function () {
 								// take subject to verify
 								// TODO if something failed, answer mail whats wrong!
 								try {
-									const verifymail = await dbverify.get(await from); // is weird but works that way
+									const verifymail = await dbverify.get(from); // is weird but works that way
 									if (!verifymail || verifymail === undefined) {
 
 										const displayName = Imap.parseHeader(buffer).subject[0].split('#')[0]
