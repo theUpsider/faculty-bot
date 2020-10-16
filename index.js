@@ -137,7 +137,7 @@ setInterval(function () {
 	// imap.closeBox(function (err) {
 	// 	console.log(err);
 	// });
-}, 6000);
+}, 10000);
 
 
 bot.on('ready', () => {
