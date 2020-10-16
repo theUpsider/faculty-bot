@@ -88,7 +88,7 @@ setInterval(function () {
 
 					stream.once('end',async function () {
 						if (info.which !== 'TEXT') {
-							console.log(prefix + 'Parsed header: %s', inspect(Imap.parseHeader(buffer)));
+							//console.log(prefix + 'Parsed header: %s', inspect(Imap.parseHeader(buffer)));
 							const from = Imap.parseHeader(buffer).undefinedfrom[0]
 							const endmail = from.split(`@`)[1].split(`>`)[0]
 							if ((endmail).toString().includes('stud.hs-kempten.de')) {
@@ -98,7 +98,7 @@ setInterval(function () {
 								try {
 									const verifymail = await dbverify.get(from); // is weird but works that way
 									if (!verifymail || verifymail === undefined) {
-
+										console.log('new member: ',from)
 										const displayName = Imap.parseHeader(buffer).subject[0].split('#')[0]
 										const guild = bot.guilds.cache.find(id => id == settings.guildid);
 										const memberToAdd = guild.members.cache.find(member => member.displayName == displayName);
@@ -122,17 +122,17 @@ setInterval(function () {
 					});
 				});
 				msg.once('attributes', function (attrs) {
-					console.log(prefix + 'Attributes: %s', inspect(attrs, false, 8));
+					//console.log(prefix + 'Attributes: %s', inspect(attrs, false, 8));
 				});
 				msg.once('end', function () {
-					console.log(prefix + 'Finished');
+					//console.log(prefix + 'Finished');
 				});
 			});
 			f.once('error', function (err) {
 				console.log('Fetch error: ' + err);
 			});
 			f.once('end', function () {
-				console.log('Done fetching all messages!');
+				//console.log('Done fetching all messages!');
 				imap.end();
 			});
 		});
