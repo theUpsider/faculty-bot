@@ -107,7 +107,6 @@ setInterval(function () {
 										await dbverify.set(from, Date.now())
 									}else if(!memberToAdd.roles.cache.find(roleid => roleid == settings.roles.verified)){
 										console.log('already verifed user tried to send mail again: ',from, '\npossibly a impostor.')
-
 									}									
 								} catch (error) {
 									console.log(error)
