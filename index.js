@@ -5,7 +5,7 @@ const fetch = require('node-fetch');
 const Keyv = require('keyv');
 const sqlite3 = require('sqlite3').verbose();
 var RiotRequest = require('riot-lol-api');
-const { prefix, token, riotapikey, mailpw } = require('./config.json');
+const { prefix, token, mailpw } = require('./config.json');
 const MailPw = mailpw; // prevent on demand loading
 const { toLevel } = require('./functions/extensions.js');
 const settings = require('./general-settings.json')
@@ -24,9 +24,6 @@ var imap = new Imap({
 	port: 993,
 	tls: true
 });
-
-//Riot API 
-var riotRequest = new RiotRequest(riotapikey);
 
 // cooldowns
 const cooldowns = new Discord.Collection();
