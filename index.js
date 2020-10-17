@@ -62,6 +62,9 @@ imap.once('end', function() {
 imap.on('error', function (err) {
 	console.log(err);
 });
+imap.on('ready', () => {
+	console.info(`REAAADY!`);
+});
 imap.on('mail', function(msg) {
 	console.log('new mail arrived:', msg)
 	openInbox(function (err, box) {
