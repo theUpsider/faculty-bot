@@ -138,11 +138,11 @@ setInterval(function () {
 				imap.end();
 			});
 		});
+		imap.closeBox();
+		imap.end();
 	});
-	imap.closeBox();
 
 
-	imap.end();
 
 }, 30000);
 
