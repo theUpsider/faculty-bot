@@ -156,13 +156,6 @@ bot.on('message', async message => {
 	if (!message.content.startsWith(prefix) && message.channel.type == 'text') {
 		const userXP = await dbxp.get(message.author.id);
 
-		// --------------------------------
-		// const channel = message.guild.channels.cache.find(ch => ch.name === 'bot-commands');
-		// if (!channel) return;
-		console.log(inspect(message.author.username))
-
-		//---------------------------------
-
 		if (!userXP || userXP === undefined) {
 			await dbxp.set(message.author.id, 1) // set to 1 for 1 XP
 			return;
