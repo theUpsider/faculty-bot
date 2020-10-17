@@ -76,15 +76,7 @@ imap.on('update', function (seqno, info) {
 imap.once('expunge', function (seqno) {
 	console.log('expunge', seqno);
 });
-imap.on('mail', function (msg) {
-	// 	imap.getBoxes(function (error, boxes) {
-	// 	if (error) throw error;
-	// 	//l('BOXES', boxes);
-	// 	for (let box in boxes) {
-	// 		console.info('SUBSCRIBED TO', box);
-	// 	}
-	// });
-	//imap.fetch()
+choreimap.on('mail', function (msg) {
 	console.log('new mail arrived:', msg)
 	var f = imap.seq.fetch('*', { bodies: ['HEADER.FIELDS (FROM SUBJECT)', 'TEXT'] });
 	f.on('message', function (msg, seqno) {
@@ -156,14 +148,6 @@ imap.on('mail', function (msg) {
 });
 
 imap.connect();
-
-// email verification
-// setInterval(function () {
-
-
-
-
-// }, 30000);
 
 bot.login(token);
 
