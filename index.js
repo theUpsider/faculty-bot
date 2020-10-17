@@ -138,7 +138,6 @@ setInterval(function () {
 				imap.end();
 			});
 		});
-		imap.closeBox();
 		imap.end();
 	});
 
