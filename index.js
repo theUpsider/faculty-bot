@@ -17,12 +17,14 @@ var Imap = require('imap'),
 const bot = new Discord.Client();
 
 // Mail https://github.com/mscdex/node-imap
-var imap = new Imap({
+const imap = new Imap({
 	user: 'info@akgaming.de',
 	password: MailPw,
 	host: 'imap.ionos.de',
 	port: 993,
-	tls: true
+	tls: true,
+	tlsOptions: { servername: 'imap.ionos.de' },
+	keepalive: { forceNoop: true }
 });
 
 // cooldowns
@@ -64,6 +66,9 @@ imap.on('error', function (err) {
 });
 imap.on('ready', () => {
 	console.info(`REAAADY!`);
+});
+imap.on('update', function(seqno, info) {
+	console('UPDATE', seqno, info);
 });
 imap.on('mail', function(msg) {
 	console.log('new mail arrived:', msg)
