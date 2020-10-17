@@ -56,100 +56,116 @@ const map_emailToId = new Keyv('sqlite://map_emailToId.sqlite');
 map_emailToId.on('error', err => console.error('Keyv connection error:', err));
 
 
-bot.login(token);
 
-imap.once('end', function() {
+imap.on('end', function () {
 	console.log('Connection ended');
 });
 imap.on('error', function (err) {
 	console.log(err);
 });
-imap.on('ready', () => {
-	console.info(`REAAADY!`);
+imap.once('ready', function () {
+
+	imap.openBox('INBOX', true, function (error, box) {
+
+	});
+	imap.subscribeBox('INBOX');
 });
-imap.on('update', function(seqno, info) {
-	console('UPDATE', seqno, info);
+imap.on('update', function (seqno, info) {
+	console.log('UPDATE', seqno, info);
 });
-imap.on('mail', function(msg) {
+imap.once('expunge', function (seqno) {
+	console.log('expunge', seqno);
+});
+imap.on('mail', function (msg) {
+	// 	imap.getBoxes(function (error, boxes) {
+	// 	if (error) throw error;
+	// 	//l('BOXES', boxes);
+	// 	for (let box in boxes) {
+	// 		console.info('SUBSCRIBED TO', box);
+	// 	}
+	// });
+	//imap.fetch()
 	console.log('new mail arrived:', msg)
-	openInbox(function (err, box) {
-		if (err) throw err;
-		var f = imap.seq.fetch(box.messages.total + ':*', { bodies: ['HEADER.FIELDS (FROM SUBJECT)', 'TEXT'] });
-		f.on('message', function (msg, seqno) {
-			console.log('Message #%d', seqno);
-			var prefix = '(#' + seqno + ') ';
-			msg.on('body', function (stream, info) {
-				if (info.which === 'TEXT')
+	var f = imap.seq.fetch('*', { bodies: ['HEADER.FIELDS (FROM SUBJECT)', 'TEXT'] });
+	f.on('message', function (msg, seqno) {
+		console.log('Message #%d', seqno);
+		var prefix = '(#' + seqno + ') ';
+		msg.on('body', function (stream, info) {
+			if (info.which === 'TEXT')
 				var buffer = '', count = 0;
-				stream.on('data', function (chunk) {
-					count += chunk.length;
-					buffer += chunk.toString('utf8');
-				});
-				
-				stream.once('end', async function () {
-					if (info.which !== 'TEXT') {
-						//console.log(prefix + 'Parsed header: %s', inspect(Imap.parseHeader(buffer)));
-						const from = Imap.parseHeader(buffer).undefinedfrom[0]
-						const endmail = from.split(`@`)[1].split(`>`)[0]
-						// is student
-						if ((endmail).toString().includes('stud.hs-kempten.de')) {
-							// TODO if something failed, answer mail whats wrong!
-							const verifymailDate = await dbverify.get(from); // is weird but works that way
-							try {
-								const displayName = Imap.parseHeader(buffer).subject[0].split('#')[0]
-								const guild = bot.guilds.cache.find(id => id == settings.guildid);
-								const memberToAdd = guild.members.cache.find(member => member.displayName == displayName);
-								// if mail not registered, do verification
-								if (!verifymailDate || verifymailDate === undefined) {
-									console.log('new member: ', from)
-									memberToAdd.roles.add(settings.roles.verified);
-									//notify user in DM with steps
-									//TODO make channels generic
-									memberToAdd.send(`
+			stream.on('data', function (chunk) {
+				count += chunk.length;
+				buffer += chunk.toString('utf8');
+			});
+
+			stream.once('end', async function () {
+				if (info.which !== 'TEXT') {
+					//console.log(prefix + 'Parsed header: %s', inspect(Imap.parseHeader(buffer)));
+					const from = Imap.parseHeader(buffer).undefinedfrom[0]
+					const endmail = from.split(`@`)[1].split(`>`)[0]
+					//console.log(endmail)
+					// is student
+					if ((endmail).toString().includes('stud.hs-kempten.de')) {
+						// TODO if something failed, answer mail whats wrong!
+						const verifymailDate = await dbverify.get(from); // is weird but works that way
+						try {
+							const displayName = Imap.parseHeader(buffer).subject[0].split('#')[0]
+							const guild = bot.guilds.cache.find(id => id == settings.guildid);
+							const memberToAdd = guild.members.cache.find(member => member.displayName == displayName);
+							// if mail not registered, do verification
+							if (!verifymailDate || verifymailDate === undefined) {
+								console.log('new member: ', from)
+								memberToAdd.roles.add(settings.roles.verified);
+								//notify user in DM with steps
+								//TODO make channels generic
+								memberToAdd.send(`
 									**Herzlich Willkommen auf dem Discord ${settings.discordname}!**\nNachfolgend findest Du eine kurze Beschreibung, wie du dich auf unserem Server zurecht findest.\nGenerell ist jeder Studierende berechtigt alle *Kanäle* für jedes Fach, oder jeden Studiengang in der Fakultät einzusehen.\nAber um das Chaos zu minimieren, dienen *Rollen* als eine Art **Filter**, um Dich vor der Flut an Kanälen zu bewahren. Deshalb kannst Du in\n**"rollenanfrage"** sowie **"react-a-role"** dein Semester auswählen, bzw. abwählen. Danach siehst Du die Fächer, die für Dich relevant sind!\nJedes Semester enthält Kategorien, in denen Du Dich mit anderen austauschen kannst.\nEs gibt ein paar semesterübergreifende Kategorien, wie **"/ALL"** und **"WICHTIGES"**.\nDort im Kanal **"ankündigungen"** kommen regelmäßige News zu hochschulweiten Veranstaltungen oder Events, sowie Erungenschaften und nice to knows.\n\nBitte lies Dir den **"rules"** Kanal durch, damit du weißt wie wir auf Discord miteinander umgehen.\nSolltest Du noch Fragen haben, stell sie direkt im **"fragen"** channel oder kontaktiere einen **Administrator/Owner/Moderator** rechts in der Mitgliederliste.\n\nVielen Dank, dass Du dabei bist, **${displayName}!**\n`)
-									await dbverify.set(from, Date.now())
-									
-									// if mail is registered and new discord user in mail -> impostor!
-								} else if (!memberToAdd.roles.cache.find(roleid => roleid == settings.roles.verified)) {
-									console.log('already verifed user tried to send mail again: ', from, '\npossibly a impostor.')
-								}
-							} catch (error) {
-								console.log(error)
-								console.log('displayname not found in server. User probably sent wrong name.')
-							}
-						} else {
-							console.log('email without verification arrived.\nSender: ', from, '\npossibly a professor.')
+								await dbverify.set(from, Date.now())
+
+								// if mail is registered and new discord user in mail -> impostor!
+							} else if (memberToAdd.roles.cache.find(roleid => roleid == settings.roles.verified)) {
+								console.log('already verifed user tried to send mail again: ', from, '\npossibly a impostor.')
+							}else
+							console.log(5)
+							
+						} catch (error) {
+							console.log(error)
+							console.log('displayname not found in server. User probably sent wrong name.')
 						}
-						
+					} else {
+						console.log('email without verification arrived.\nSender: ', from, '\npossibly a professor.')
 					}
-				});
-			});
-			msg.once('attributes', function (attrs) {
-				//console.log(prefix + 'Attributes: %s', inspect(attrs, false, 8));
-			});
-			msg.once('end', function () {
-				//console.log(prefix + 'Finished');
+
+				}
 			});
 		});
-		f.once('error', function (err) {
-			console.log('Fetch error: ' + err);
+		msg.once('attributes', function (attrs) {
+			//console.log(prefix + 'Attributes: %s', inspect(attrs, false, 8));
 		});
-		f.once('end', function () {
-			//console.log('Done fetching all messages!');
+		msg.once('end', function () {
+			//console.log(prefix + 'Finished');
 		});
 	});
+	f.once('error', function (err) {
+		console.log('Fetch error: ' + err);
+	});
+	f.once('end', function () {
+		//console.log('Done fetching all messages!');
+	});
+
 });
 
 imap.connect();
 
 // email verification
 // setInterval(function () {
-	
-	
-	
+
+
+
 
 // }, 30000);
 
+bot.login(token);
 
 bot.on('ready', () => {
 	console.info(`Logged in as ${bot.user.tag}!`);
