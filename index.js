@@ -11,7 +11,7 @@ const { toLevel } = require('./functions/extensions.js');
 const settings = require('./general-settings.json')
 const fs = require('fs');
 var Imap = require('imap'),
-	inspect = require('util').inspect;
+inspect = require('util').inspect;
 
 
 const bot = new Discord.Client();
@@ -43,7 +43,6 @@ let db = new sqlite3.Database(':memory:', (err) => {
 	console.log('Connected to the in-memory SQlite database.');
 });
 
-//db1
 // Key: discord ID, Value: xp value
 const dbxp = new Keyv('sqlite://xp.sqlite'); // const keyv = new Keyv(); // for in-memory storage //
 dbxp.on('error', err => console.error('Keyv connection error:', err));
@@ -57,7 +56,7 @@ map_emailToId.on('error', err => console.error('Keyv connection error:', err));
 
 bot.login(token);
 
-
+// email verification
 setInterval(function () {
 	imap.connect();
 
@@ -146,7 +145,6 @@ setInterval(function () {
 bot.on('ready', () => {
 	console.info(`Logged in as ${bot.user.tag}!`);
 	bot.user.setActivity('use ..help', { type: 'PLAYING' });
-	//setInterval(updateBadges, 2000);
 });
 
 bot.on('message', async message => {
@@ -218,10 +216,6 @@ bot.on('message', async message => {
 	if (command.guildOnly && message.channel.type !== 'text') {
 		return message.reply('I can\'t execute that command inside DMs!');
 	}
-	// 18 check
-	// if (message.channel.type != "dm")
-	// 	if (!message.channel.parent.name.includes('18+'))
-	// 		return;
 
 	//args check
 	if (command.args && !args.length) {
