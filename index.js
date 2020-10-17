@@ -62,7 +62,8 @@ imap.connect();
 		console.log(err);
 	});
 	imap.once('ready', function () {
-		imap.on('mail', () => {
+		imap.on('mail', (msg) => {
+			console.log('new mail arrived:',msg)
 			openInbox(function (err, box) {
 				if (err) throw err;
 				var f = imap.seq.fetch(box.messages.total + ':*', { bodies: ['HEADER.FIELDS (FROM SUBJECT)', 'TEXT'] });
