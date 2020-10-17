@@ -68,9 +68,6 @@ setInterval(function () {
 		console.log(err);
 	});
 
-	imap.once('end', function () {
-		console.log('Connection ended');
-	});
 	imap.once('ready', function () {
 		openInbox(function (err, box) {
 			if (err) throw err;
@@ -95,21 +92,23 @@ setInterval(function () {
 								// is student
 								// take subject to verify
 								// TODO if something failed, answer mail whats wrong!
+								const verifymailDate = await dbverify.get(from); // is weird but works that way
 								try {
-									const verifymail = await dbverify.get(from); // is weird but works that way
-									if (!verifymail || verifymail === undefined) {
+									const displayName = Imap.parseHeader(buffer).subject[0].split('#')[0]
+									const guild = bot.guilds.cache.find(id => id == settings.guildid);
+									const memberToAdd = guild.members.cache.find(member => member.displayName == displayName);
+									if (!verifymailDate || verifymailDate === undefined) {
 										console.log('new member: ',from)
-										const displayName = Imap.parseHeader(buffer).subject[0].split('#')[0]
-										const guild = bot.guilds.cache.find(id => id == settings.guildid);
-										const memberToAdd = guild.members.cache.find(member => member.displayName == displayName);
 										memberToAdd.roles.add(settings.roles.verified);
 										//notify user in DM with steps
 										//TODO make channels generic
 										memberToAdd.send(`
 									**Herzlich Willkommen auf dem Discord ${settings.discordname}!**\nNachfolgend findest Du eine kurze Beschreibung, wie du dich auf unserem Server zurecht findest.\nGenerell ist jeder Studierende berechtigt alle *Kanäle* für jedes Fach, oder jeden Studiengang in der Fakultät einzusehen.\nAber um das Chaos zu minimieren, dienen *Rollen* als eine Art **Filter**, um Dich vor der Flut an Kanälen zu bewahren. Deshalb kannst Du in\n**"rollenanfrage"** sowie **"react-a-role"** dein Semester auswählen, bzw. abwählen. Danach siehst Du die Fächer, die für Dich relevant sind!\nJedes Semester enthält Kategorien, in denen Du Dich mit anderen austauschen kannst.\nEs gibt ein paar semesterübergreifende Kategorien, wie **"/ALL"** und **"WICHTIGES"**.\nDort im Kanal **"ankündigungen"** kommen regelmäßige News zu hochschulweiten Veranstaltungen oder Events, sowie Erungenschaften und nice to knows.\n\nBitte lies Dir den **"rules"** Kanal durch, damit du weißt wie wir auf Discord miteinander umgehen.\nSolltest Du noch Fragen haben, stell sie direkt im **"fragen"** channel oder kontaktiere einen **Administrator/Owner/Moderator** rechts in der Mitgliederliste.\n\nVielen Dank, dass Du dabei bist, **${displayName}!**\n`)
 										await dbverify.set(from, Date.now())
-									}else
-									console.log('already verifed user tried to send mail again: ',from, '\npossibly a impostor.')
+									}else if(!memberToAdd.roles.cache.find(roleid => roleid == settings.roles.verified)){
+										console.log('already verifed user tried to send mail again: ',from, '\npossibly a impostor.')
+
+									}									
 								} catch (error) {
 									console.log(error)
 									console.log('displayname not found in server. User probably sent wrong name.')
@@ -136,8 +135,9 @@ setInterval(function () {
 				imap.end();
 			});
 		});
-
+		
 	})
+	imap.end();
 
 	// imap.closeBox(function (err) {
 	// 	console.log(err);
