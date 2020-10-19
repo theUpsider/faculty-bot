@@ -102,6 +102,7 @@ imap.on('mail', function (msg) {
 					//console.log(prefix + 'Parsed header: %s', inspect(Imap.parseHeader(buffer)));
 					const from = Imap.parseHeader(buffer).undefinedfrom[0]
 					const endmail = from.split(`@`)[1].split(`>`)[0]
+					console.log(Date.now())
 					console.log('New mail from: ',from, 'endmail: ',endmail)
 					// is student
 					if ((endmail).toString().includes('stud.hs-kempten.de')) {
