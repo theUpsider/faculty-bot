@@ -55,6 +55,13 @@ dbverify.on('error', err => console.error('Keyv connection error:', err));
 const map_emailToId = new Keyv('sqlite://map_emailToId.sqlite');
 map_emailToId.on('error', err => console.error('Keyv connection error:', err));
 
+bot.login(token);
+
+bot.on('ready', () => {
+	console.info(`Logged in as ${bot.user.tag}!`);
+	bot.user.setActivity('use ..help', { type: 'PLAYING' });
+});
+
 
 
 imap.on('end', function () {
@@ -152,12 +159,6 @@ imap.on('mail', function (msg) {
 
 imap.connect();
 
-bot.login(token);
-
-bot.on('ready', () => {
-	console.info(`Logged in as ${bot.user.tag}!`);
-	bot.user.setActivity('use ..help', { type: 'PLAYING' });
-});
 
 bot.on('message', async message => {
 	if (message.author.bot) return;
