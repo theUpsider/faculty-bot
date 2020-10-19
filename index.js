@@ -112,6 +112,7 @@ imap.on('mail', function (msg) {
 							console.log(`Mail subject: `,Imap.parseHeader(buffer).subject)
 							console.log(`Got displayName: `,displayName)
 							const guild = await bot.guilds.cache.find(server => server.id == settings.guildid).fetch();
+							console.log('Guild: ',guild)
 							const memberToAdd = await guild.members.cache.find(member => member.displayName == displayName).fetch();
 							console.log(`Member to add: `,memberToAdd.displayName)
 							// if mail not registered, do verification
