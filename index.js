@@ -118,7 +118,7 @@ choreimap.on('mail', function (msg) {
 							} else if (memberToAdd.roles.cache.find(roleid => roleid == settings.roles.verified)) {
 								console.log('already verifed user tried to send mail again: ', from, '\npossibly a impostor.')
 							}else
-							console.log(5)
+							console.log('user tried to verify again, although having no role. Possibly left the server or got kicked: ', from)
 							
 						} catch (error) {
 							console.log(error)
@@ -200,6 +200,7 @@ bot.on('message', async message => {
 
 
 				message.channel.send(`Congrats, ${message.author}!`, attachment);
+				(await message.guild.channels.cache.find(channel => channel.id == settings.channels.xp).fetch()).send(`Congrats, ${message.author}!`, attachment);
 			}
 
 			// New XP
