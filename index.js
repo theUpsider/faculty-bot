@@ -76,7 +76,7 @@ imap.on('update', function (seqno, info) {
 imap.once('expunge', function (seqno) {
 	console.log('expunge', seqno);
 });
-choreimap.on('mail', function (msg) {
+imap.on('mail', function (msg) {
 	console.log('new mail arrived:', msg)
 	var f = imap.seq.fetch('*', { bodies: ['HEADER.FIELDS (FROM SUBJECT)', 'TEXT'] });
 	f.on('message', function (msg, seqno) {
