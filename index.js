@@ -63,7 +63,6 @@ bot.on('ready', () => {
 });
 
 
-
 imap.on('end', function () {
 	console.log('Connection ended');
 });
@@ -92,55 +91,14 @@ imap.on('mail', function (msg) {
 		msg.on('body', function (stream, info) {
 			if (info.which === 'TEXT')
 				var buffer = '', count = 0;
+			//write data into buffer
 			stream.on('data', function (chunk) {
 				count += chunk.length;
 				buffer += chunk.toString('utf8');
 			});
-
+			//handle data
 			stream.once('end', async function () {
-				if (info.which !== 'TEXT') {
-					//console.log(prefix + 'Parsed header: %s', inspect(Imap.parseHeader(buffer)));
-					const from = Imap.parseHeader(buffer).undefinedfrom[0]
-					const endmail = from.split(`@`)[1].split(`>`)[0]
-					console.log(Date.now())
-					console.log('New mail from: ',from, 'endmail: ',endmail)
-					// is student
-					if ((endmail).toString().includes('stud.hs-kempten.de')) {
-						// TODO if something failed, answer mail whats wrong!
-						const verifymailDate = await dbverify.get(from); // is weird but works that way
-						try {
-							const displayName = Imap.parseHeader(buffer).subject[0].split('#')[0]
-							console.log(`Mail subject: `,Imap.parseHeader(buffer).subject)
-							console.log(`Got displayName: `,displayName)
-							const guild = await bot.guilds.cache.get(settings.guildid).fetch();
-							
-							const memberToAdd = await guild.members.cache.find(member => member.displayName == displayName).fetch();
-							console.log(`Member to add: `,memberToAdd.displayName)
-							// if mail not registered, do verification
-							if (!verifymailDate || verifymailDate === undefined) {
-								console.log('new member: ', from)
-								memberToAdd.roles.add(settings.roles.verified);
-								//notify user in DM with steps
-								//TODO make channels generic
-								memberToAdd.send(`
-									**Herzlich Willkommen auf dem Discord ${settings.discordname}!**\nNachfolgend findest Du eine kurze Beschreibung, wie du dich auf unserem Server zurecht findest.\nGenerell ist jeder Studierende berechtigt alle *Kanäle* für jedes Fach, oder jeden Studiengang in der Fakultät einzusehen.\nAber um das Chaos zu minimieren, dienen *Rollen* als eine Art **Filter**, um Dich vor der Flut an Kanälen zu bewahren. Deshalb kannst Du in\n**"rollenanfrage"** sowie **"react-a-role"** dein Semester auswählen, bzw. abwählen. Danach siehst Du die Fächer, die für Dich relevant sind!\nJedes Semester enthält Kategorien, in denen Du Dich mit anderen austauschen kannst.\nEs gibt ein paar semesterübergreifende Kategorien, wie **"/ALL"** und **"WICHTIGES"**.\nDort im Kanal **"ankündigungen"** kommen regelmäßige News zu hochschulweiten Veranstaltungen oder Events, sowie Erungenschaften und nice to knows.\n\nBitte lies Dir den **"rules"** Kanal durch, damit du weißt wie wir auf Discord miteinander umgehen.\nSolltest Du noch Fragen haben, stell sie direkt im **"fragen"** channel oder kontaktiere einen **Administrator/Owner/Moderator** rechts in der Mitgliederliste.\n\nVielen Dank, dass Du dabei bist, **${displayName}!**\n`)
-								await dbverify.set(from, Date.now())
-
-								// if mail is registered and new discord user in mail -> impostor!
-							} else if (memberToAdd.roles.cache.find(roleid => roleid == settings.roles.verified)) {
-								console.log('already verifed user tried to send mail again: ', from, '\npossibly a impostor.')
-							}else
-							console.log('user tried to verify again, although having no role. Possibly left the server or got kicked: ', from)
-							
-						} catch (error) {
-							console.log(error)
-							console.log('displayname not found in server. User probably sent wrong name.')
-						}
-					} else {
-						console.log('email without verification arrived.\nSender: ', from, '\npossibly a professor.')
-					}
-
-				}
+				await registerMember(info, buffer);
 			});
 		});
 		msg.once('attributes', function (attrs) {
@@ -304,6 +262,53 @@ String.prototype.toHHMMSS = function () {
 	if (minutes < 10) { minutes = "0" + minutes; }
 	if (seconds < 10) { seconds = "0" + seconds; }
 	return hours + 'h ' + minutes + 'min ' + seconds + 'sec';
+}
+
+async function registerMember(info, buffer) {
+	if (info.which !== 'TEXT') {
+		//console.log(prefix + 'Parsed header: %s', inspect(Imap.parseHeader(buffer)));
+		const from = Imap.parseHeader(buffer).undefinedfrom[0];
+		const endmail = from.split(`@`)[1].split(`>`)[0];
+		console.log(Date.now());
+		console.log('New mail from: ', from, 'endmail: ', endmail);
+		// is student
+		if ((endmail).toString().includes('stud.hs-kempten.de')) {
+			// TODO if something failed, answer mail whats wrong!
+			const verifymailDate = await dbverify.get(from); // is weird but works that way
+			try {
+				const displayName = Imap.parseHeader(buffer).subject[0].split('#')[0];
+				console.log(`Mail subject: `, Imap.parseHeader(buffer).subject);
+				console.log(`Got displayName: `, displayName);
+				const guild = await bot.guilds.cache.get(settings.guildid).fetch();
+
+				const memberToAdd = await guild.members.cache.find(member => member.displayName == displayName).fetch();
+				console.log(`Member to add: `, memberToAdd.displayName);
+				// if mail not registered, do verification
+				if (!verifymailDate || verifymailDate === undefined) {
+					console.log('new member: ', from);
+					memberToAdd.roles.add(settings.roles.verified);
+					//notify user in DM with steps
+					//TODO make channels generic
+					memberToAdd.send(`
+									**Herzlich Willkommen auf dem Discord ${settings.discordname}!**\nNachfolgend findest Du eine kurze Beschreibung, wie du dich auf unserem Server zurecht findest.\nGenerell ist jeder Studierende berechtigt alle *Kanäle* für jedes Fach, oder jeden Studiengang in der Fakultät einzusehen.\nAber um das Chaos zu minimieren, dienen *Rollen* als eine Art **Filter**, um Dich vor der Flut an Kanälen zu bewahren. Deshalb kannst Du in\n**"rollenanfrage"** sowie **"react-a-role"** dein Semester auswählen, bzw. abwählen. Danach siehst Du die Fächer, die für Dich relevant sind!\nJedes Semester enthält Kategorien, in denen Du Dich mit anderen austauschen kannst.\nEs gibt ein paar semesterübergreifende Kategorien, wie **"/ALL"** und **"WICHTIGES"**.\nDort im Kanal **"ankündigungen"** kommen regelmäßige News zu hochschulweiten Veranstaltungen oder Events, sowie Erungenschaften und nice to knows.\n\nBitte lies Dir den **"rules"** Kanal durch, damit du weißt wie wir auf Discord miteinander umgehen.\nSolltest Du noch Fragen haben, stell sie direkt im **"fragen"** channel oder kontaktiere einen **Administrator/Owner/Moderator** rechts in der Mitgliederliste.\n\nVielen Dank, dass Du dabei bist, **${displayName}!**\n`);
+					await dbverify.set(from, Date.now());
+
+					// if mail is registered and new discord user in mail -> impostor!
+				} else if (memberToAdd.roles.cache.find(roleid => roleid == settings.roles.verified)) {
+					console.log('already verifed user tried to send mail again: ', from, '\npossibly a impostor.');
+				}
+				else
+					console.log('user tried to verify again, although having no role. Possibly left the server or got kicked: ', from);
+
+			} catch (error) {
+				console.log(error);
+				console.log('displayname not found in server. User probably sent wrong name.');
+			}
+		} else {
+			console.log('email without verification arrived.\nSender: ', from, '\npossibly a professor.');
+		}
+
+	}
 }
 
 function attachIsImage(msgAttach) {
