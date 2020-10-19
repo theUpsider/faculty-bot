@@ -95,15 +95,18 @@ imap.on('mail', function (msg) {
 					//console.log(prefix + 'Parsed header: %s', inspect(Imap.parseHeader(buffer)));
 					const from = Imap.parseHeader(buffer).undefinedfrom[0]
 					const endmail = from.split(`@`)[1].split(`>`)[0]
-					//console.log(endmail)
+					console.log('New mail from: ',from, 'endmail: ',endmail)
 					// is student
 					if ((endmail).toString().includes('stud.hs-kempten.de')) {
 						// TODO if something failed, answer mail whats wrong!
 						const verifymailDate = await dbverify.get(from); // is weird but works that way
 						try {
 							const displayName = Imap.parseHeader(buffer).subject[0].split('#')[0]
+							console.log(`Mail subject: `,Imap.parseHeader(buffer).subject)
+							console.log(`Got displayName: `,displayName)
 							const guild = bot.guilds.cache.find(id => id == settings.guildid);
 							const memberToAdd = guild.members.cache.find(member => member.displayName == displayName);
+							console.log(`Member to add: `,memberToAdd.displayName)
 							// if mail not registered, do verification
 							if (!verifymailDate || verifymailDate === undefined) {
 								console.log('new member: ', from)
