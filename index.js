@@ -66,7 +66,7 @@ imap.on('error', function (err) {
 imap.once('ready', function () {
 
 	imap.openBox('INBOX', true, function (error, box) {
-
+		console.log('Error in: ',box, ' error; ', error)
 	});
 	imap.subscribeBox('INBOX');
 });
