@@ -87,6 +87,7 @@ function ValidateEmail(mail) {
 async function registerMember(info, buffer, message, mailFound) {
   //in case there are pre existing mails, skip the process
   if (mailFound) return;
+  mailFound = true;
 
   if (info.which !== "TEXT") {
     console.log(buffer);
