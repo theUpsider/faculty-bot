@@ -64,7 +64,6 @@ module.exports = {
           }
         );
       });
-      imap.subscribeBox("INBOX");
     });
     imap.connect();
 
