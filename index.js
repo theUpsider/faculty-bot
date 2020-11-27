@@ -114,7 +114,7 @@ bot.on("message", async (message) => {
         message.channel.send(`Congrats, ${message.author}!`, attachment);
         (
           await message.guild.channels.cache
-            .find((channel) => channel.id == settings.channels.xp)
+            .find((channel) => channel.name == settings.channels.xp)
             .fetch()
         ).send(`Congrats, ${message.author}!`, attachment);
       }

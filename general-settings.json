@@ -1,13 +1,8 @@
 {
-  "discordname": "Fakultät Informatik",
   "channels": {
-    "greetings": "756057631021465601",
-    "xp": "763684496767451164",
-    "rules": "765975503965650965",
-    "news": "497729011062013974"
-  },
-  "messages": {
-    "rules": "765985494784933940"
+    "xp": "bot-commands",
+    "rules": "rules",
+    "news": "ankündigungen"
   },
   "colors": {
     "blue": "#4200ff",
@@ -16,8 +11,7 @@
     "red": "#cf0a0a"
   },
   "roles": {
-    "staffrole": "497787064906153984",
+    "staffrole": "Admin",
     "verified": "Student"
-  },
-  "guildid": "497729011062013972"
+  }
 }

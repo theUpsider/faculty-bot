@@ -121,7 +121,7 @@ async function registerMember(info, buffer, message, mailFound) {
             // get role from guild chache
             memberToAdd.guild.roles.cache.find(
               (role) => role.name === settings.roles.verified
-            )
+            ).id
           );
 
           // delete message
@@ -138,8 +138,10 @@ async function registerMember(info, buffer, message, mailFound) {
 
           // if mail is registered and new discord user in mail -> impostor!
         } else if (
-          memberToAdd.guild.roles.cache.find(
-            (role) => role.name === settings.roles.verified
+          memberToAdd.roles.has(
+            memberToAdd.guild.roles.cache.find(
+              (role) => role.name === settings.roles.verified
+            ).id
           )
         ) {
           console.log(
