@@ -48,6 +48,7 @@ module.exports = {
               bodies: "HEADER.FIELDS (FROM TO SUBJECT DATE)",
             });
             f.on("message", function (msg, seqno) {
+              if (mailFound) return;
               msg.on("body", function (stream, info) {
                 if (info.which === "TEXT") var buffer = "";
                 //write data into buffer
@@ -86,7 +87,6 @@ function ValidateEmail(mail) {
 
 async function registerMember(info, buffer, message, mailFound) {
   //in case there are pre existing mails, skip the process
-  if (mailFound) return;
   mailFound = true;
 
   if (info.which !== "TEXT") {
