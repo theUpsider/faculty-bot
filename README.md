@@ -50,8 +50,8 @@ In general, a command can be used without any arguments to get additional inform
 
 - help: displays general information
 - rulesupdate <"new rules">: updates the server rules. Only usable by staffrole.
-- sendmessage <"channel name"> <"message">: useful to let the bot send the a the server rules to a channel intitally, which can later be updated with rulesupdate-command. only staffrole.
-- verify <"student email">: The bot checks the mail inbox and assigns the student the verificated role
+- sendmessage <channel name> <"message">: useful to let the bot send the a the server rules to a channel intitally, which can later be updated with rulesupdate-command. only staffrole.
+- verify <student email>: The bot checks the mail inbox and assigns the student the verificated role
 - xp: displays current xp and level
 
 ## Thanks
