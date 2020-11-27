@@ -90,10 +90,8 @@ async function registerMember(info, buffer, message, mailFound) {
   mailFound = true;
 
   if (info.which !== "TEXT") {
-    console.log(buffer);
     const from = Imap.parseHeader(buffer).undefinedfrom[0];
     const endmail = from.split(`@`)[1].split(`>`)[0];
-    console.log("New mail from: ", from, "endmail: ", endmail);
 
     // is student
     if (endmail.toString().includes("stud.hs-kempten.de")) {
