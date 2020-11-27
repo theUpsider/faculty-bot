@@ -138,7 +138,7 @@ async function registerMember(info, buffer, message, mailFound) {
 
           // if mail is registered and new discord user in mail -> impostor!
         } else if (
-          memberToAdd.roles.has(
+          memberToAdd.roles.cache.has(
             memberToAdd.guild.roles.cache.find(
               (role) => role.name === settings.roles.verified
             ).id
