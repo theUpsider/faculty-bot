@@ -1,8 +1,8 @@
-# Usability bot (Discord)
+# Faculty bot (Discord)
 
 ## Introduction
 
-This project features a Discord bot, with the intend to reduce the administration overhead for usability tasks. The bot takes care of verifying new server members.
+This project features a Discord bot, with the intend to reduce the administration overhead for faculty related tasks. The bot takes care of verifying new server members.
 
 ## Setting up the bot
 
@@ -21,6 +21,7 @@ This project features a Discord bot, with the intend to reduce the administratio
 
 - To register the bot, a developer account at [Discord](https://discord.com/developers/) needs to be created. The key can be filled in the `config.json` under `token`.
 - To finally launch the bot, use `node index.js` in Powershell to launch the bot. Press CTRL + c to end the execution. The console will give useful log.
+- For quick updates, stop the bot and use `git pull`. Start the bot again.
 
 ## Bot Settings
 
@@ -47,9 +48,10 @@ In the config.js, the mail server and aithentication in verify.js needs to be fi
 
 In general, a command can be used without any arguments to get additional information about it.
 
-- help : displays general information
-- rulesupdate: updates the server rules
-- sendmessage: useful to let the bot send the server rules, which can later be updated with rulesupdate-command
+- help: displays general information
+- rulesupdate <"new rules">: updates the server rules. Only usable by staffrole.
+- sendmessage <"channel name"> <"message">: useful to let the bot send the a the server rules to a channel intitally, which can later be updated with rulesupdate-command. only staffrole.
+- verify <"student email">: The bot checks the mail inbox and assigns the student the verificated role
 - xp: displays current xp and level
 
 ## Thanks
