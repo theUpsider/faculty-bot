@@ -1,23 +1,23 @@
 {
-   "discordname":"Fakultät Informatik",
-   "channels":{
-      "greetings":"756057631021465601",
-      "xp":"763684496767451164",
-      "rules":"765975503965650965",
-      "news": "497729011062013974"
-   },
-   "messages":{
-      "rules":"765985494784933940"
-   },
-   "colors":{
-      "blue":"#4200ff",
-      "lightblue":"#FFFFF",
-      "green": "#28823d",
-      "red":"#cf0a0a"
-   },
-   "roles":{
-      "staffrole": "497787064906153984",
-      "verified": "710860408147148820"
-   },
-   "guildid":"497729011062013972"
+  "discordname": "Fakultät Informatik",
+  "channels": {
+    "greetings": "756057631021465601",
+    "xp": "763684496767451164",
+    "rules": "765975503965650965",
+    "news": "497729011062013974"
+  },
+  "messages": {
+    "rules": "765985494784933940"
+  },
+  "colors": {
+    "blue": "#4200ff",
+    "lightblue": "#FFFFF",
+    "green": "#28823d",
+    "red": "#cf0a0a"
+  },
+  "roles": {
+    "staffrole": "497787064906153984",
+    "verified": "Student"
+  },
+  "guildid": "497729011062013972"
 }
