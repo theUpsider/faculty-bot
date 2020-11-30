@@ -135,7 +135,7 @@ async function registerMember(info, buffer, message, mailFound) {
             "\npossibly a impostor."
           );
           message.reply("You are already verified.");
-        } else {
+        } else if (verifymailDate || verifymailDate !== undefined) {
           console.log(
             "user tried to verify again, although having no role. Possibly was on other faculty before: ",
             from
@@ -195,7 +195,7 @@ async function registerMember(info, buffer, message, mailFound) {
       console.log("Missing access to role management.");
       return;
     } finally {
-      await timeout(2000);
+      //await timeout(2000);
     }
   }
 }
