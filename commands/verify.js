@@ -112,27 +112,7 @@ async function registerMember(info, buffer, message, mailFound) {
 
         // if mail not registered, do verification
         if (!verifymailDate || verifymailDate === undefined) {
-          console.log("\n****************\nNew Member: ", from);
-
-          // add role
-          memberToAdd.roles.add(
-            // get role from guild chache
-            memberToAdd.guild.roles.cache.find(
-              (role) => role.name === settings.roles.verified
-            ).id
-          );
-
-          // delete message
-          message.reply(
-            "You should be verified instantly. If you dont see any channels within 5 seconds, something went wrong. Someone will dig into this."
-          );
-          message.delete();
-
-          //notify user in DM with steps
-          //TODO make channels generic
-          memberToAdd.send(`
-									**Herzlich Willkommen auf dem Discord ${settings.discordname}!**\nNachfolgend findest Du eine kurze Beschreibung, wie du dich auf unserem Server zurecht findest.\nGenerell ist jeder Studierende berechtigt alle *Kanäle* für jedes Fach, oder jeden Studiengang in der Fakultät einzusehen.\nAber um das Chaos zu minimieren, dienen *Rollen* als eine Art **Filter**, um Dich vor der Flut an Kanälen zu bewahren. Deshalb kannst Du in\n**"rollenanfrage"** sowie **"react-a-role"** dein Semester auswählen, bzw. abwählen. Danach siehst Du die Fächer, die für Dich relevant sind!\nJedes Semester enthält Kategorien, in denen Du Dich mit anderen austauschen kannst.\nEs gibt ein paar semesterübergreifende Kategorien, wie **"/ALL"** und **"WICHTIGES"**.\nDort im Kanal **"ankündigungen"** kommen regelmäßige News zu hochschulweiten Veranstaltungen oder Events, sowie Erungenschaften und nice to knows.\n\nBitte lies Dir den **"rules"** Kanal durch, damit du weißt wie wir auf Discord miteinander umgehen.\nSolltest Du noch Fragen haben, stell sie direkt im **"fragen"** channel oder kontaktiere einen **Administrator/Owner/Moderator** rechts in der Mitgliederliste.\n\nVielen Dank, dass Du dabei bist, **${displayName}!**\n`);
-          await dbverify.set(from, Date.now());
+          await addMember(from, memberToAdd, displayName, dbverify);
 
           // if mail is registered and new discord user in mail -> impostor!
         } else if (
@@ -147,11 +127,13 @@ async function registerMember(info, buffer, message, mailFound) {
             from,
             "\npossibly a impostor."
           );
-        } else
+        } else {
           console.log(
-            "user tried to verify again, although having no role. Possibly left the server or got kicked: ",
+            "user tried to verify again, although having no role. Possibly was on other faculty before: ",
             from
           );
+          await addMember(from, memberToAdd, displayName, dbverify);
+        }
       } catch (error) {
         console.log(error);
         console.log(
@@ -165,5 +147,29 @@ async function registerMember(info, buffer, message, mailFound) {
         "\npossibly a professor."
       );
     }
+  }
+
+  async function addMember(from, memberToAdd, displayName, dbverify) {
+    console.log("\n****************\nNew Member: ", from);
+
+    // add role
+    memberToAdd.roles.add(
+      // get role from guild chache
+      memberToAdd.guild.roles.cache.find(
+        (role) => role.name === settings.roles.verified
+      ).id
+    );
+
+    // delete message
+    message.reply(
+      "You should be verified instantly. If you dont see any channels within 5 seconds, something went wrong. Someone will dig into this."
+    );
+    message.delete();
+
+    //notify user in DM with steps
+    //TODO make channels generic
+    memberToAdd.send(`
+									**Herzlich Willkommen auf dem Discord ${settings.discordname}!**\nNachfolgend findest Du eine kurze Beschreibung, wie du dich auf unserem Server zurecht findest.\nGenerell ist jeder Studierende berechtigt alle *Kanäle* für jedes Fach, oder jeden Studiengang in der Fakultät einzusehen.\nAber um das Chaos zu minimieren, dienen *Rollen* als eine Art **Filter**, um Dich vor der Flut an Kanälen zu bewahren. Deshalb kannst Du in\n**"rollenanfrage"** sowie **"react-a-role"** dein Semester auswählen, bzw. abwählen. Danach siehst Du die Fächer, die für Dich relevant sind!\nJedes Semester enthält Kategorien, in denen Du Dich mit anderen austauschen kannst.\nEs gibt ein paar semesterübergreifende Kategorien, wie **"/ALL"** und **"WICHTIGES"**.\nDort im Kanal **"ankündigungen"** kommen regelmäßige News zu hochschulweiten Veranstaltungen oder Events, sowie Erungenschaften und nice to knows.\n\nBitte lies Dir den **"rules"** Kanal durch, damit du weißt wie wir auf Discord miteinander umgehen.\nSolltest Du noch Fragen haben, stell sie direkt im **"fragen"** channel oder kontaktiere einen **Administrator/Owner/Moderator** rechts in der Mitgliederliste.\n\nVielen Dank, dass Du dabei bist, **${displayName}!**\n`);
+    await dbverify.set(from, Date.now());
   }
 }
