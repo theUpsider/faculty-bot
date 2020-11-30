@@ -152,6 +152,8 @@ async function registerMember(info, buffer, message, mailFound) {
   }
 
   async function addMember(from, memberToAdd, displayName, dbverify) {
+    if (mailFound) return;
+    mailFound = true;
     console.log("\n****************\nNew Member: ", from);
 
     try {
@@ -164,6 +166,7 @@ async function registerMember(info, buffer, message, mailFound) {
       );
     } catch (UnhandledPromiseRejectionWarning) {
       console.log("Missing access to role management.");
+      return;
     }
 
     // delete message
