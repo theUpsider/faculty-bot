@@ -95,8 +95,6 @@ function ValidateEmail(mail, message) {
 
 async function registerMember(info, buffer, message, mailFound) {
   //in case there are pre existing mails, skip the process
-  if (mailFound) return;
-  mailFound = true;
 
   if (info.which !== "TEXT") {
     const from = Imap.parseHeader(buffer).undefinedfrom[0];
@@ -160,9 +158,6 @@ async function registerMember(info, buffer, message, mailFound) {
   }
 
   async function addMember(from, memberToAdd, displayName, dbverify) {
-    if (mailFound) return;
-    mailFound = true;
-
     // if(memberToAdd.guild.members.cache.find((member) => member.id ===))
     console.log("\n****************\nNew Member: ", from);
 
