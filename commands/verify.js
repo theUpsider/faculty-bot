@@ -107,8 +107,8 @@ async function registerMember(info, buffer, message, mailFound) {
       dbverify.on("error", (err) =>
         console.error("Keyv connection error:", err)
       );
-      const verifymailDate = await dbverify.get(from);
       try {
+        const verifymailDate = await dbverify.get(from);
         const displayName = Imap.parseHeader(buffer).subject[0].split("#")[0];
         console.log(`Mail subject: `, Imap.parseHeader(buffer).subject);
 
@@ -117,11 +117,12 @@ async function registerMember(info, buffer, message, mailFound) {
           message.author.id
         );
 
-        // if mail not registered, do verification
-        if (!verifymailDate || verifymailDate === undefined) {
+        // if mail matches the username do verification
+        if (displayName === message.author.username)
           await addMember(from, memberToAdd, displayName, dbverify);
-
+        if (!verifymailDate || verifymailDate === undefined) {
           // if mail is registered and new discord user in mail -> impostor!
+          console.log("Newbie. First Server!");
         } else if (
           memberToAdd.roles.cache.has(
             memberToAdd.guild.roles.cache.find(
@@ -140,7 +141,6 @@ async function registerMember(info, buffer, message, mailFound) {
             "user tried to verify again, although having no role. Possibly was on other faculty before: ",
             from
           );
-          await addMember(from, memberToAdd, displayName, dbverify);
         }
       } catch (error) {
         console.log(error);
@@ -154,6 +154,7 @@ async function registerMember(info, buffer, message, mailFound) {
         from,
         "\npossibly a professor."
       );
+      message.reply("You sent the verification mail from a non-student email.");
     }
   }
 
