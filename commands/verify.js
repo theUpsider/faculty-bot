@@ -134,6 +134,7 @@ async function registerMember(info, buffer, message, mailFound) {
             from,
             "\npossibly a impostor."
           );
+          message.reply("You are already verified.");
         } else {
           console.log(
             "user tried to verify again, although having no role. Possibly was on other faculty before: ",
