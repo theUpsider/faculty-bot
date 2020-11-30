@@ -26,7 +26,10 @@ module.exports = {
     var mailFound = false;
 
     // check mail validity
-    if (!ValidateEmail(mailArg, message)) return;
+    if (!ValidateEmail(mailArg, message)) {
+      message.delete(1000);
+      return;
+    }
 
     // first log in to mail
     imap.once("ready", async function () {
@@ -66,7 +69,7 @@ module.exports = {
           }
         );
         try {
-          message.delete();
+          message.delete(3000);
         } catch (error) {
           console.log(error);
         }
