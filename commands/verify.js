@@ -158,6 +158,9 @@ async function registerMember(info, buffer, message, mailFound) {
   }
 
   async function addMember(from, memberToAdd, displayName, dbverify) {
+    function timeout(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
     // if(memberToAdd.guild.members.cache.find((member) => member.id ===))
     console.log("\n****************\nNew Member: ", from);
 
