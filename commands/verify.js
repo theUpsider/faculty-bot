@@ -65,11 +65,14 @@ module.exports = {
             });
           }
         );
+        try {
+          message.delete();
+        } catch (error) {
+          console.log(error);
+        }
       });
-      message.delete();
     });
     imap.connect();
-
     // reply
     return;
   },
