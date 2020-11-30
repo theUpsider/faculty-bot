@@ -64,6 +64,7 @@ module.exports = {
           }
         );
       });
+      message.delete();
     });
     imap.connect();
 
@@ -148,7 +149,6 @@ async function registerMember(info, buffer, message, mailFound) {
         "\npossibly a professor."
       );
     }
-    message.delete();
   }
 
   async function addMember(from, memberToAdd, displayName, dbverify) {
