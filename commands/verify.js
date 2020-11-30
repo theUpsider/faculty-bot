@@ -61,8 +61,8 @@ module.exports = {
                 //handle data
                 stream.once("end", async function () {
                   if (mailFound) return;
-                  mailFound = true;
                   await registerMember(info, buffer, message, mailFound);
+                  mailFound = true;
                 });
               });
             });
