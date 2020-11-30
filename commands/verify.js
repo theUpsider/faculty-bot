@@ -59,8 +59,8 @@ module.exports = {
                 });
                 //handle data
                 stream.once("end", async function () {
-                  if (mailFound) continue;
-                  await registerMember(info, buffer, message, mailFound);
+                  if (!mailFound)
+                    await registerMember(info, buffer, message, mailFound);
                   mailFound = true;
                 });
               });
