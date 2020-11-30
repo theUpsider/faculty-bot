@@ -27,7 +27,7 @@ module.exports = {
 
     // check mail validity
     if (!ValidateEmail(mailArg, message)) {
-      message.delete(1000);
+      message.delete({ timeout: 5000 });
       return;
     }
 
@@ -69,7 +69,7 @@ module.exports = {
           }
         );
         try {
-          message.delete(3000);
+          message.delete({ timeout: 5000 });
         } catch (error) {
           console.log(error);
         }
