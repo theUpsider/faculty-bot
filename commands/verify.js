@@ -154,13 +154,17 @@ async function registerMember(info, buffer, message, mailFound) {
   async function addMember(from, memberToAdd, displayName, dbverify) {
     console.log("\n****************\nNew Member: ", from);
 
-    // add role
-    memberToAdd.roles.add(
-      // get role from guild chache
-      memberToAdd.guild.roles.cache.find(
-        (role) => role.name === settings.roles.verified
-      ).id
-    );
+    try {
+      // add role
+      memberToAdd.roles.add(
+        // get role from guild chache
+        memberToAdd.guild.roles.cache.find(
+          (role) => role.name === settings.roles.verified
+        ).id
+      );
+    } catch (UnhandledPromiseRejectionWarning) {
+      console.log("Missing access to role management.");
+    }
 
     // delete message
     message.reply(
