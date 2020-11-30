@@ -26,7 +26,7 @@ module.exports = {
     var mailFound = false;
 
     // check mail validity
-    if (!ValidateEmail(mailArg)) return;
+    if (!ValidateEmail(mailArg, message)) return;
 
     // first log in to mail
     imap.once("ready", async function () {
@@ -75,7 +75,7 @@ module.exports = {
   },
 };
 
-function ValidateEmail(mail) {
+function ValidateEmail(mail, message) {
   if (
     /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(
       mail
@@ -83,7 +83,7 @@ function ValidateEmail(mail) {
   ) {
     return true;
   }
-  alert("You have entered an invalid email address!");
+  message.reply("You have entered an invalid email address!");
   return false;
 }
 
@@ -156,6 +156,8 @@ async function registerMember(info, buffer, message, mailFound) {
   async function addMember(from, memberToAdd, displayName, dbverify) {
     if (mailFound) return;
     mailFound = true;
+
+    // if(memberToAdd.guild.members.cache.find((member) => member.id ===))
     console.log("\n****************\nNew Member: ", from);
 
     try {
