@@ -183,7 +183,7 @@ async function registerMember(info, buffer, message, mailFound) {
     // if(memberToAdd.guild.members.cache.find((member) => member.id ===))
     console.log("\n****************\nNew Member: ", from);
     (
-      await message.guild.channels.cache
+      await memberToAdd.guild.channels.cache
         .find((channel) => channel.name == settings.channels.logs)
         .fetch()
     ).send(`A new member arrived: ${memberToAdd}`);
