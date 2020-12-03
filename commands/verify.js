@@ -141,11 +141,25 @@ async function registerMember(info, buffer, message, mailFound) {
             "user tried to verify again, although having no role. Possibly was on other faculty before: ",
             from
           );
+          (
+            await message.guild.channels.cache
+              .find((channel) => channel.name == settings.channels.logs)
+              .fetch()
+          ).send(
+            `${message.author.username} user tried to verify again, although having no role. Possibly was on other faculty before.`
+          );
         }
       } catch (error) {
         console.log(error);
         console.log(
           "displayname not found in server. User probably sent wrong name."
+        );
+        (
+          await message.guild.channels.cache
+            .find((channel) => channel.name == settings.channels.logs)
+            .fetch()
+        ).send(
+          `displayname not found in server. User probably sent wrong name.`
         );
       }
     } else {
@@ -154,6 +168,13 @@ async function registerMember(info, buffer, message, mailFound) {
         from,
         "\npossibly a professor."
       );
+      (
+        await message.guild.channels.cache
+          .find((channel) => channel.name == settings.channels.logs)
+          .fetch()
+      ).send(
+        `${message.author.username} send an email from a non-student adress. Maybe dig into this @${settings.roles.staffrole}.`
+      );
       message.reply("You sent the verification mail from a non-student email.");
     }
   }
@@ -161,6 +182,11 @@ async function registerMember(info, buffer, message, mailFound) {
   async function addMember(from, memberToAdd, displayName, dbverify) {
     // if(memberToAdd.guild.members.cache.find((member) => member.id ===))
     console.log("\n****************\nNew Member: ", from);
+    (
+      await message.guild.channels.cache
+        .find((channel) => channel.name == settings.channels.logs)
+        .fetch()
+    ).send(`A new member arrived: ${memberToAdd}`);
 
     if (
       !memberToAdd.roles.cache.has(

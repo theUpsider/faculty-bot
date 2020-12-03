@@ -2,7 +2,8 @@
   "channels": {
     "xp": "bot-commands",
     "rules": "rules",
-    "news": "ankündigungen"
+    "news": "ankündigungen",
+    "logs": "logs"
   },
   "colors": {
     "blue": "#4200ff",
