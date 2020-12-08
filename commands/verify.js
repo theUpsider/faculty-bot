@@ -60,7 +60,7 @@ module.exports = {
                   //handle data
                   stream.once("end", async function () {
                     //in case there are pre existing mails, skip the process
-                    if (!mailFound)
+                    if (!mailFound && buffer)
                       await registerMember(info, buffer, message, mailFound);
                     mailFound = true;
                   });
@@ -104,6 +104,14 @@ function ValidateEmail(mail, message) {
 
 async function registerMember(info, buffer, message, mailFound) {
   if (info.which !== "TEXT") {
+    await logMessage(message, `Message arrived: ${message}`);
+    if (!Imap.parseHeader(buffer).undefinedfrom[0]) {
+      await logMessage(
+        message,
+        `Wrong header ${Imap.parseHeader(buffer).undefinedfrom[0]}`
+      );
+    }
+
     const from = Imap.parseHeader(buffer).undefinedfrom[0];
     const endmail = from.split(`@`)[1].split(`>`)[0];
 
@@ -227,4 +235,11 @@ async function registerMember(info, buffer, message, mailFound) {
       return;
     }
   }
+}
+async function logMessage(message, msg) {
+  (
+    await message.guild.channels.cache
+      .find((channel) => channel.name == settings.channels.logs)
+      .fetch()
+  ).send(msg);
 }
