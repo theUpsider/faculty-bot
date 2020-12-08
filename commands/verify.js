@@ -70,7 +70,7 @@ module.exports = {
           );
         } catch (error) {
           (
-            await memberToAdd.guild.channels.cache
+            await message.guild.channels.cache
               .find((channel) => channel.name == settings.channels.logs)
               .fetch()
           ).send(`Error occured: ${error}`);
