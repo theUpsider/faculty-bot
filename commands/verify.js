@@ -61,7 +61,7 @@ module.exports = {
                   stream.once("end", async function () {
                     //in case there are pre existing mails, skip the process
                     if (!mailFound && buffer)
-                      await registerMember(info, buffer, message, mailFound);
+                      await registerMember(info, buffer, message);
                     mailFound = true;
                   });
                 });
@@ -69,17 +69,14 @@ module.exports = {
             }
           );
         } catch (error) {
-          (
-            await message.guild.channels.cache
-              .find((channel) => channel.name == settings.channels.logs)
-              .fetch()
-          ).send(`Error occured: ${error}`);
+          await logMessage(message, `Error occured: ${error}`);
           console.log(error);
         }
 
         try {
           message.delete({ timeout: 5000 });
         } catch (error) {
+          await logMessage(message, error);
           console.log(error);
         }
       });
@@ -99,10 +96,11 @@ function ValidateEmail(mail, message) {
     return true;
   }
   message.reply("You have entered an invalid email address!");
+  await logMessage(message, `${message.author.username} entered a wrong email.`);
   return false;
 }
 
-async function registerMember(info, buffer, message, mailFound) {
+async function registerMember(info, buffer, message) {
   if (info.which !== "TEXT") {
     await logMessage(message, `Message arrived: ${message}`);
     if (!Imap.parseHeader(buffer).undefinedfrom[0]) {
@@ -158,11 +156,8 @@ async function registerMember(info, buffer, message, mailFound) {
             "user tried to verify again, although having no role. Possibly was on other faculty before: ",
             from
           );
-          (
-            await message.guild.channels.cache
-              .find((channel) => channel.name == settings.channels.logs)
-              .fetch()
-          ).send(
+          await logMessage(
+        message,
             `${message.author.username} user tried to verify again, although having no role. Possibly was on other faculty before.`
           );
         }
@@ -171,11 +166,8 @@ async function registerMember(info, buffer, message, mailFound) {
         console.log(
           "displayname not found in server. User probably sent wrong name."
         );
-        (
-          await message.guild.channels.cache
-            .find((channel) => channel.name == settings.channels.logs)
-            .fetch()
-        ).send(
+        await logMessage(
+        message,
           `displayname not found in server. User probably sent wrong name.`
         );
       }
@@ -185,11 +177,8 @@ async function registerMember(info, buffer, message, mailFound) {
         from,
         "\npossibly a professor."
       );
-      (
-        await message.guild.channels.cache
-          .find((channel) => channel.name == settings.channels.logs)
-          .fetch()
-      ).send(
+      await logMessage(
+        message,
         `${message.author.username} send an email from a non-student adress. Maybe dig into this @${settings.roles.staffrole}.`
       );
       message.reply("You sent the verification mail from a non-student email.");
@@ -199,11 +188,8 @@ async function registerMember(info, buffer, message, mailFound) {
   async function addMember(from, memberToAdd, displayName, dbverify) {
     // if(memberToAdd.guild.members.cache.find((member) => member.id ===))
     console.log("\n****************\nNew Member: ", from);
-    (
-      await memberToAdd.guild.channels.cache
-        .find((channel) => channel.name == settings.channels.logs)
-        .fetch()
-    ).send(`A new member arrived: ${memberToAdd}`);
+    await logMessage(
+        message,`A new member arrived: ${memberToAdd}`);
 
     if (
       !memberToAdd.roles.cache.has(
