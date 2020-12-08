@@ -41,33 +41,42 @@ module.exports = {
         dbverify.on("error", (err) =>
           console.error("Keyv connection error:", err)
         );
-
-        // search for discord name in INBOX
-        imap.search(
-          [["HEADER", "SUBJECT", message.author.username]],
-          function (err, results) {
-            if (err) throw err;
-            var f = imap.fetch(results, {
-              bodies: "HEADER.FIELDS (FROM TO SUBJECT DATE)",
-            });
-            f.on("message", function (msg, seqno) {
-              msg.on("body", function (stream, info) {
-                if (info.which === "TEXT") var buffer = "";
-                //write data into buffer
-                stream.on("data", function (chunk) {
-                  buffer += chunk.toString("utf8");
-                });
-                //handle data
-                stream.once("end", async function () {
-                  //in case there are pre existing mails, skip the process
-                  if (!mailFound)
-                    await registerMember(info, buffer, message, mailFound);
-                  mailFound = true;
+        try {
+          // search for discord name in INBOX
+          imap.search(
+            [["HEADER", "SUBJECT", message.author.username]],
+            function (err, results) {
+              if (err) throw err;
+              var f = imap.fetch(results, {
+                bodies: "HEADER.FIELDS (FROM TO SUBJECT DATE)",
+              });
+              f.on("message", function (msg, seqno) {
+                msg.on("body", function (stream, info) {
+                  if (info.which === "TEXT") var buffer = "";
+                  //write data into buffer
+                  stream.on("data", function (chunk) {
+                    buffer += chunk.toString("utf8");
+                  });
+                  //handle data
+                  stream.once("end", async function () {
+                    //in case there are pre existing mails, skip the process
+                    if (!mailFound)
+                      await registerMember(info, buffer, message, mailFound);
+                    mailFound = true;
+                  });
                 });
               });
-            });
-          }
-        );
+            }
+          );
+        } catch (error) {
+          (
+            await memberToAdd.guild.channels.cache
+              .find((channel) => channel.name == settings.channels.logs)
+              .fetch()
+          ).send(`Error occured: ${error}`);
+          console.log(error);
+        }
+
         try {
           message.delete({ timeout: 5000 });
         } catch (error) {
