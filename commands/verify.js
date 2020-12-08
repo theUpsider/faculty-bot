@@ -27,7 +27,7 @@ module.exports = {
 
     // check mail validity
     if (!ValidateEmail(mailArg, message)) {
-      message.delete({ timeout: 5000 });
+      message.delete({ timeout: 1000 });
       return;
     }
 
@@ -69,14 +69,14 @@ module.exports = {
             }
           );
         } catch (error) {
-          await logMessage(message, `Error occured: ${error}`);
+          logMessage(message, `Error occured: ${error}`);
           console.log(error);
         }
-
+        // remove message so others dont see it
         try {
-          message.delete({ timeout: 5000 });
+          message.delete({ timeout: 4000 });
         } catch (error) {
-          await logMessage(message, error);
+          logMessage(message, error);
           console.log(error);
         }
       });
@@ -96,15 +96,15 @@ function ValidateEmail(mail, message) {
     return true;
   }
   message.reply("You have entered an invalid email address!");
-  await logMessage(message, `${message.author.username} entered a wrong email.`);
+  logMessage(message, `${message.author.username} entered a wrong email.`);
   return false;
 }
 
 async function registerMember(info, buffer, message) {
   if (info.which !== "TEXT") {
-    await logMessage(message, `Message arrived: ${message}`);
+    logMessage(message, `Message arrived: ${message}`);
     if (!Imap.parseHeader(buffer).undefinedfrom[0]) {
-      await logMessage(
+      logMessage(
         message,
         `Wrong header ${Imap.parseHeader(buffer).undefinedfrom[0]}`
       );
@@ -156,8 +156,8 @@ async function registerMember(info, buffer, message) {
             "user tried to verify again, although having no role. Possibly was on other faculty before: ",
             from
           );
-          await logMessage(
-        message,
+          logMessage(
+            message,
             `${message.author.username} user tried to verify again, although having no role. Possibly was on other faculty before.`
           );
         }
@@ -166,8 +166,8 @@ async function registerMember(info, buffer, message) {
         console.log(
           "displayname not found in server. User probably sent wrong name."
         );
-        await logMessage(
-        message,
+        logMessage(
+          message,
           `displayname not found in server. User probably sent wrong name.`
         );
       }
@@ -177,7 +177,7 @@ async function registerMember(info, buffer, message) {
         from,
         "\npossibly a professor."
       );
-      await logMessage(
+      logMessage(
         message,
         `${message.author.username} send an email from a non-student adress. Maybe dig into this @${settings.roles.staffrole}.`
       );
@@ -188,8 +188,7 @@ async function registerMember(info, buffer, message) {
   async function addMember(from, memberToAdd, displayName, dbverify) {
     // if(memberToAdd.guild.members.cache.find((member) => member.id ===))
     console.log("\n****************\nNew Member: ", from);
-    await logMessage(
-        message,`A new member arrived: ${memberToAdd}`);
+    logMessage(message, `A new member arrived: ${memberToAdd}`);
 
     if (
       !memberToAdd.roles.cache.has(
@@ -222,6 +221,7 @@ async function registerMember(info, buffer, message) {
     }
   }
 }
+// logs a message in the logs channel of the guild it was sent in
 async function logMessage(message, msg) {
   (
     await message.guild.channels.cache
