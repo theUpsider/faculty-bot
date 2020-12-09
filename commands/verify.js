@@ -46,7 +46,7 @@ module.exports = {
           imap.search(
             [["HEADER", "SUBJECT", message.author.username]],
             function (err, results) {
-              if (err) throw err;
+              if (err) throw return;
               var f = imap.fetch(results, {
                 bodies: "HEADER.FIELDS (FROM TO SUBJECT DATE)",
               });
