@@ -5,15 +5,7 @@ const { mailpw } = require("../config.json");
 const MailPw = mailpw; // prevent on demand loading
 var Imap = require("imap");
 // Mail https://github.com/mscdex/node-imap
-const imap = new Imap({
-  user: "info@akgaming.de",
-  password: MailPw,
-  host: "imap.ionos.de",
-  port: 993,
-  tls: true,
-  tlsOptions: { servername: "imap.ionos.de" },
-  keepalive: { forceNoop: true },
-});
+
 
 module.exports = {
   name: "verify",
@@ -22,6 +14,16 @@ module.exports = {
   guildOnly: true,
   usage: "<student mail>",
   async execute(message, args) {
+
+    const imap = new Imap({
+      user: "info@akgaming.de",
+      password: MailPw,
+      host: "imap.ionos.de",
+      port: 993,
+      tls: true,
+      tlsOptions: { servername: "imap.ionos.de" },
+      keepalive: { forceNoop: true },
+    });
     const mailArg = args[0];
     var mailFound = false;
 
