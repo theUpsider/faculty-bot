@@ -5,7 +5,7 @@ const { mailpw } = require("../config.json");
 const MailPw = mailpw; // prevent on demand loading
 var Imap = require("imap");
 // Mail https://github.com/mscdex/node-imap
-    var imap;
+var imap;
 
 module.exports = {
   name: "verify",
@@ -15,13 +15,13 @@ module.exports = {
   usage: "<student mail>",
   async execute(message, args) {
     try {
-      imap= new Imap({
-      user: "info@akgaming.de",
-      password: MailPw,
-      host: "imap.ionos.de",
-      port: 993,
-      tls: true,
-    });
+      imap = new Imap({
+        user: "info@akgaming.de",
+        password: MailPw,
+        host: "imap.ionos.de",
+        port: 993,
+        tls: true,
+      });
     } catch (error) {
       console.log(error)
     }
@@ -37,64 +37,58 @@ module.exports = {
     }
 
     // first log in to mail
-      imap.once("ready", async function () {
-        imap.openBox("INBOX", true, async function (error, box) {
-          if(error)
-            console.log("Error in: ", box, " error; ", error);
-  
-          // Key: student-email, Value: verification date
-          const dbverify = new Keyv("sqlite://verify.sqlite");
-          dbverify.on("error", (err) =>
-            console.error("Keyv connection error:", err)
-          );
-            // search for discord name in INBOX
-            imap.search(
-              [["HEADER", "SUBJECT", message.author.username]],
-              function (err, results) {
-                logMessage(message, `Searching for: ${message.author.username}`);
-                console.log(results);
-                if (err) throw err;
-                if(results=== undefined
-                  || results === null || (Array.isArray(results) && results.length === 0)){  
-                    logMessage(message, "Nothing to found.");
-                    message.reply(`No mail with ${message.author.username} arrived.`)
-                    return;
-                  }
-                var f = imap.fetch(results, {
-                  bodies: "HEADER.FIELDS (FROM TO SUBJECT DATE)",
-                });
-                f.on("message", function (msg, seqno) {
-                  msg.on("body", function (stream, info) {
-                    if (info.which === "TEXT") var buffer = "";
-                    //write data into buffer
-                    stream.on("data", function (chunk) {
-                      buffer += chunk.toString("utf8");
-                    });
-                    //handle data
-                    stream.once("end", async function () {
-                      //in case there are pre existing mails, skip the process
-                      if (!mailFound)
-                        await registerMember(info, buffer, message);
-                      mailFound = true;
-                    });
-                  });
-                });
-              }
-            );
+    imap.once("ready", async function () {
+      imap.openBox("INBOX", true, async function (error, box) {
+        if (error)
+          console.log("Error in: ", box, " error; ", error);
 
-          // remove message so others dont see it
-          try {
-            message.delete({ timeout: 4000 });
-          } catch (error) {
-            logMessage(message, error);
-            console.log(error);
+        // search for discord name in INBOX
+        imap.search(
+          [["HEADER", "SUBJECT", message.author.username]],
+          function (err, results) {
+            logMessage(message, `Searching for: ${message.author.username}`);
+            console.log(results);
+            if (err) throw err;
+            if (results === undefined
+              || results === null || (Array.isArray(results) && results.length === 0)) {
+              logMessage(message, "Nothing to found.");
+              message.reply(`No mail with ${message.author.username} arrived.`)
+              return;
+            }
+            var f = imap.fetch(results, {
+              bodies: "HEADER.FIELDS (FROM TO SUBJECT DATE)",
+            });
+            f.on("message", function (msg, seqno) {
+              msg.on("body", function (stream, info) {
+                if (info.which === "TEXT") var buffer = "";
+                //write data into buffer
+                stream.on("data", function (chunk) {
+                  buffer += chunk.toString("utf8");
+                });
+                //handle data
+                stream.once("end", async function () {
+                  //in case there are pre existing mails, skip the process
+                  if (!mailFound)
+                    await registerMember(info, buffer, message);
+                  mailFound = true;
+                });
+              });
+            });
           }
-        });
+        );
+
+        // remove message so others dont see it
+        try {
+          message.delete({ timeout: 4000 });
+        } catch (error) {
+          logMessage(message, error);
+        }
       });
-      
+    });
+
 
     try {
-      
+
       imap.connect();
       console.log("connected")
     } catch (error) {
@@ -139,10 +133,16 @@ async function registerMember(info, buffer, message) {
       dbverify.on("error", (err) =>
         console.error("Keyv connection error:", err)
       );
+      // Key: student-email, Value: discord-id
+      const db_map_emailToId = new Keyv("sqlite://map_emailToId.sqlite");
+      db_map_emailToId.on("error", (err) =>
+        console.error("Keyv connection error:", err)
+      );
       // parse mail
       try {
+        const fromMailDiscordId = await db_map_emailToId.get(from);
         const verifymailDate = await dbverify.get(from);
-        const displayName = Imap.parseHeader(buffer).subject[0].split("#")[0];
+        const MailUsername = Imap.parseHeader(buffer).subject[0].split("#")[0];
         console.log(`Mail subject: `, Imap.parseHeader(buffer).subject);
 
         // get member from guild the message was sent in
@@ -150,9 +150,17 @@ async function registerMember(info, buffer, message) {
           message.author.id
         );
 
-        // if mail matches the username do verification
-        if (displayName === message.author.username)
-          await addMember(from, memberToAdd, displayName, dbverify);
+        // if mail matches the username and ID not present do verification
+        if (MailUsername === message.author.username)
+            await addMember(from, memberToAdd, MailUsername, dbverify, db_map_emailToId);
+        else{
+          logMessage(
+            message,
+            `${message.author.username} send another username via mail: ${MailUsername}. Mistake or trying to let someone else in?`
+          );
+          message.reply(`You tried to verify a wrong username: ${MailUsername}. Yours is: ${message.author.username}`)
+        }
+          
         if (!verifymailDate || verifymailDate === undefined) {
           // if mail is registered and new discord user in mail -> impostor!
           console.log("Newbie. First Server!");
@@ -165,15 +173,10 @@ async function registerMember(info, buffer, message) {
         ) {
           console.log(
             "already verifed user tried to send mail again: ",
-            from,
-            "\npossibly a impostor."
+            from
           );
           message.reply("You are already verified.");
         } else if (verifymailDate || verifymailDate !== undefined) {
-          console.log(
-            "user tried to verify again, although having no role. Possibly was on other faculty before: ",
-            from
-          );
           logMessage(
             message,
             `${message.author.username} user tried to verify again, although having no role. Possibly was on other faculty before.`
@@ -181,20 +184,12 @@ async function registerMember(info, buffer, message) {
         }
       } catch (error) {
         console.log(error);
-        console.log(
-          "displayname not found in server. User probably sent wrong name."
-        );
         logMessage(
           message,
           `displayname not found in server. User probably sent wrong name.`
         );
       }
     } else {
-      console.log(
-        "email without verification arrived.\nSender: ",
-        from,
-        "\npossibly a professor."
-      );
       logMessage(
         message,
         `${message.author.username} send an email from a non-student adress. Maybe dig into this @${settings.roles.staffrole}.`
@@ -203,9 +198,8 @@ async function registerMember(info, buffer, message) {
     }
   }
 
-  async function addMember(from, memberToAdd, displayName, dbverify) {
-    // if(memberToAdd.guild.members.cache.find((member) => member.id ===))
-    console.log("\n****************\nNew Member: ", from);
+  async function addMember(from, memberToAdd, displayName, dbverify, db_map_emailToId) {
+
     logMessage(message, `A new member arrived: ${memberToAdd}`);
 
     if (
@@ -223,6 +217,7 @@ async function registerMember(info, buffer, message) {
       memberToAdd.send(`
 									**Herzlich Willkommen auf dem Discord ${memberToAdd.guild.name}!**\nNachfolgend findest Du eine kurze Beschreibung, wie du dich auf unserem Server zurecht findest.\nGenerell ist jeder Studierende berechtigt alle *Kanäle* für jedes Fach, oder jeden Studiengang in der Fakultät einzusehen.\nAber um das Chaos zu minimieren, dienen *Rollen* als eine Art **Filter**, um Dich vor der Flut an Kanälen zu bewahren. Deshalb kannst Du in\n**"rollenanfrage"** sowie **"react-a-role"** dein Semester auswählen, bzw. abwählen. Danach siehst Du die Fächer, die für Dich relevant sind!\nJedes Semester enthält Kategorien, in denen Du Dich mit anderen austauschen kannst.\nEs gibt ein paar semesterübergreifende Kategorien, wie **"/ALL"** und **"WICHTIGES"**.\nDort im Kanal **"ankündigungen"** kommen regelmäßige News zu hochschulweiten Veranstaltungen oder Events, sowie Erungenschaften und nice to knows.\n\nBitte lies Dir den **"rules"** Kanal durch, damit du weißt wie wir auf Discord miteinander umgehen.\nSolltest Du noch Fragen haben, stell sie direkt im **"fragen"** channel oder kontaktiere einen **Administrator/Owner/Moderator** rechts in der Mitgliederliste.\n\nVielen Dank, dass Du dabei bist, **${displayName}!**\n`);
       await dbverify.set(from, Date.now());
+      await db_map_emailToId.set(from, memberToAdd.user.id)
     }
 
     try {
@@ -246,4 +241,5 @@ async function logMessage(message, msg) {
       .find((channel) => channel.name == settings.channels.logs)
       .fetch()
   ).send(msg);
+  console.log(msg)
 }
