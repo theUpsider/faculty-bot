@@ -21,8 +21,6 @@ module.exports = {
       host: "imap.ionos.de",
       port: 993,
       tls: true,
-      tlsOptions: { servername: "imap.ionos.de" },
-      keepalive: { forceNoop: true },
     });
     const mailArg = args[0];
     var mailFound = false;
