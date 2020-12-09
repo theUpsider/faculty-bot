@@ -32,55 +32,62 @@ module.exports = {
     }
 
     // first log in to mail
-    imap.once("ready", async function () {
-      imap.openBox("INBOX", true, async function (error, box) {
-        console.log("Error in: ", box, " error; ", error);
-
-        // Key: student-email, Value: verification date
-        const dbverify = new Keyv("sqlite://verify.sqlite");
-        dbverify.on("error", (err) =>
-          console.error("Keyv connection error:", err)
-        );
-        try {
-          // search for discord name in INBOX
-          imap.search(
-            [["HEADER", "SUBJECT", message.author.username]],
-            function (err, results) {
-              if (err) return;
-              var f = imap.fetch(results, {
-                bodies: "HEADER.FIELDS (FROM TO SUBJECT DATE)",
-              });
-              f.on("message", function (msg, seqno) {
-                msg.on("body", function (stream, info) {
-                  if (info.which === "TEXT") var buffer = "";
-                  //write data into buffer
-                  stream.on("data", function (chunk) {
-                    buffer += chunk.toString("utf8");
-                  });
-                  //handle data
-                  stream.once("end", async function () {
-                    //in case there are pre existing mails, skip the process
-                    if (!mailFound && buffer)
-                      await registerMember(info, buffer, message);
-                    mailFound = true;
+    try {
+      imap.once("ready", async function () {
+        imap.openBox("INBOX", true, async function (error, box) {
+          if(error)
+            console.log("Error in: ", box, " error; ", error);
+  
+          // Key: student-email, Value: verification date
+          const dbverify = new Keyv("sqlite://verify.sqlite");
+          dbverify.on("error", (err) =>
+            console.error("Keyv connection error:", err)
+          );
+          try {
+            // search for discord name in INBOX
+            imap.search(
+              [["HEADER", "SUBJECT", message.author.username]],
+              function (err, results) {
+                if (err) return;
+                var f = imap.fetch(results, {
+                  bodies: "HEADER.FIELDS (FROM TO SUBJECT DATE)",
+                });
+                f.on("message", function (msg, seqno) {
+                  msg.on("body", function (stream, info) {
+                    if (info.which === "TEXT") var buffer = "";
+                    //write data into buffer
+                    stream.on("data", function (chunk) {
+                      buffer += chunk.toString("utf8");
+                    });
+                    //handle data
+                    stream.once("end", async function () {
+                      //in case there are pre existing mails, skip the process
+                      if (!mailFound && buffer)
+                        await registerMember(info, buffer, message);
+                      mailFound = true;
+                    });
                   });
                 });
-              });
-            }
-          );
-        } catch (error) {
-          logMessage(message, `Error occured: ${error}`);
-          console.log(error);
-        }
-        // remove message so others dont see it
-        try {
-          message.delete({ timeout: 4000 });
-        } catch (error) {
-          logMessage(message, error);
-          console.log(error);
-        }
+              }
+            );
+          } catch (error) {
+            logMessage(message, `Error occured: ${error}`);
+            console.log(error);
+          }
+          // remove message so others dont see it
+          try {
+            message.delete({ timeout: 4000 });
+          } catch (error) {
+            logMessage(message, error);
+            console.log(error);
+          }
+        });
       });
-    });
+      
+    } catch (error) {
+      logMessage(message, `Error occured: ${error}`);
+            console.log(error);
+    }
     imap.connect();
 
     return;
