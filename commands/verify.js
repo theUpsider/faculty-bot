@@ -88,7 +88,12 @@ module.exports = {
       logMessage(message, `Error occured: ${error}`);
             console.log(error);
     }
-    imap.connect();
+    try {
+      
+      imap.connect();
+    } catch (error) {
+      console.log(error)
+    }
 
     return;
   },
