@@ -205,7 +205,7 @@ async function registerMember(info, buffer, message) {
 
   async function addMember(from, memberToAdd, displayName, dbverify, db_map_emailToId) {
 
-    logMessage(message, `A new member arrived: ${memberToAdd}`);
+    logMessage(message, `Granted rank student: ${memberToAdd}`);
 
     if (
       !memberToAdd.roles.cache.has(
