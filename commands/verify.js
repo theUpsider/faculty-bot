@@ -5,7 +5,7 @@ const { mailpw } = require("../config.json");
 const MailPw = mailpw; // prevent on demand loading
 var Imap = require("imap");
 // Mail https://github.com/mscdex/node-imap
-    const imap;
+    var imap;
 
 module.exports = {
   name: "verify",
