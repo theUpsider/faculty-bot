@@ -32,7 +32,6 @@ module.exports = {
     }
 
     // first log in to mail
-    try {
       imap.once("ready", async function () {
         imap.openBox("INBOX", true, async function (error, box) {
           if(error)
@@ -48,8 +47,8 @@ module.exports = {
             imap.search(
               [["HEADER", "SUBJECT", message.author.username]],
               function (err, results) {
-                if (err) return;
-                var f = imap.fetch(results, {
+                if (err) throw err;
+                var f = imap.seq.fetch(results, {
                   bodies: "HEADER.FIELDS (FROM TO SUBJECT DATE)",
                 });
                 f.on("message", function (msg, seqno) {
@@ -84,13 +83,11 @@ module.exports = {
         });
       });
       
-    } catch (error) {
-      logMessage(message, `Error occured: ${error}`);
-            console.log(error);
-    }
+
     try {
       
       imap.connect();
+      console.log("connected")
     } catch (error) {
       console.log(error)
     }
