@@ -14,6 +14,13 @@ module.exports = {
   guildOnly: true,
   usage: "<student mail>",
   async execute(message, args) {
+    // get member from guild the message was sent in
+    const memberToAdd = await message.guild.members.fetch(
+      message.author.id
+    );
+
+    logMessage(message, `${memberToAdd} tries to verify...`);
+
     try {
       imap = new Imap({
         user: "info@akgaming.de",
@@ -46,7 +53,6 @@ module.exports = {
         imap.search(
           [["HEADER", "SUBJECT", message.author.username]],
           function (err, results) {
-            logMessage(message, `Searching for: ${message.author.username}`);
             console.log(results);
             if (err) throw err;
             if (results === undefined
@@ -114,7 +120,6 @@ function ValidateEmail(mail, message) {
 
 async function registerMember(info, buffer, message) {
   if (info.which !== "TEXT") {
-    logMessage(message, `Message arrived: ${message}`);
     if (!Imap.parseHeader(buffer).undefinedfrom[0]) {
       logMessage(
         message,
@@ -149,18 +154,18 @@ async function registerMember(info, buffer, message) {
         const memberToAdd = await message.guild.members.fetch(
           message.author.id
         );
-
+        // TODO check if id not present! could log in as another user and use verification of real student mail
         // if mail matches the username and ID not present do verification
         if (MailUsername === message.author.username)
-            await addMember(from, memberToAdd, MailUsername, dbverify, db_map_emailToId);
-        else{
+          await addMember(from, memberToAdd, MailUsername, dbverify, db_map_emailToId);
+        else {
           logMessage(
             message,
             `${message.author.username} send another username via mail: ${MailUsername}. Mistake or trying to let someone else in?`
           );
           message.reply(`You tried to verify a wrong username: ${MailUsername}. Yours is: ${message.author.username}`)
         }
-          
+
         if (!verifymailDate || verifymailDate === undefined) {
           // if mail is registered and new discord user in mail -> impostor!
           console.log("Newbie. First Server!");
