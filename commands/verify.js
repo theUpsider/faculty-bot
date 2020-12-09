@@ -51,10 +51,14 @@ module.exports = {
             imap.search(
               [["HEADER", "SUBJECT", message.author.username]],
               function (err, results) {
+                logMessage(message, `Searching for: ${message.author.username}`);
                 console.log(results);
                 if (err) throw err;
                 if(results=== undefined
-                  || results === null || (Array.isArray(results) && results.length === 0)) return;
+                  || results === null || (Array.isArray(results) && results.length === 0)){  
+                    logMessage(message, "Nothing to found.");
+                    return;
+                  }
                 var f = imap.seq.fetch(results, {
                   bodies: "HEADER.FIELDS (FROM TO SUBJECT DATE)",
                 });
