@@ -42,7 +42,6 @@ module.exports = {
           dbverify.on("error", (err) =>
             console.error("Keyv connection error:", err)
           );
-          try {
             // search for discord name in INBOX
             imap.search(
               [["HEADER", "SUBJECT", message.author.username]],
@@ -69,10 +68,7 @@ module.exports = {
                 });
               }
             );
-          } catch (error) {
-            logMessage(message, `Error occured: ${error}`);
-            console.log(error);
-          }
+
           // remove message so others dont see it
           try {
             message.delete({ timeout: 4000 });
