@@ -57,6 +57,7 @@ module.exports = {
                 if(results=== undefined
                   || results === null || (Array.isArray(results) && results.length === 0)){  
                     logMessage(message, "Nothing to found.");
+                    message.reply(`No mail with ${message.author.username} arrived.`)
                     return;
                   }
                 var f = imap.seq.fetch(results, {
