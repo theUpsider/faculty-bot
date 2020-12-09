@@ -73,7 +73,7 @@ module.exports = {
                     //handle data
                     stream.once("end", async function () {
                       //in case there are pre existing mails, skip the process
-                      if (!mailFound && buffer)
+                      if (!mailFound)
                         await registerMember(info, buffer, message);
                       mailFound = true;
                     });
