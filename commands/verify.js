@@ -15,7 +15,7 @@ module.exports = {
   usage: "<student mail>",
   async execute(message, args) {
     try {
-          imap= new Imap({
+      imap= new Imap({
       user: "info@akgaming.de",
       password: MailPw,
       host: "imap.ionos.de",
@@ -60,7 +60,7 @@ module.exports = {
                     message.reply(`No mail with ${message.author.username} arrived.`)
                     return;
                   }
-                var f = imap.seq.fetch(results, {
+                var f = imap.fetch(results, {
                   bodies: "HEADER.FIELDS (FROM TO SUBJECT DATE)",
                 });
                 f.on("message", function (msg, seqno) {
