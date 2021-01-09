@@ -2,6 +2,7 @@ const Keyv = require("keyv");
 const settings = require("../general-settings.json");
 const discord = require("discord.js");
 const { mailpw } = require("../config.json");
+const { ValidateEmail, logMessage } = require("./functions/extensions.js");
 const MailPw = mailpw; // prevent on demand loading
 var Imap = require("imap");
 // Mail https://github.com/mscdex/node-imap
@@ -9,15 +10,14 @@ var imap;
 
 module.exports = {
   name: "verify",
+  admin: false,
   description: "verifies your email adress",
   args: true,
   guildOnly: true,
   usage: "<student mail>",
   async execute(message, args) {
     // get member from guild the message was sent in
-    const memberToAdd = await message.guild.members.fetch(
-      message.author.id
-    );
+    const memberToAdd = await message.guild.members.fetch(message.author.id);
 
     logMessage(message, `${memberToAdd} tries to verify...`);
 
@@ -30,9 +30,8 @@ module.exports = {
         tls: true,
       });
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-
 
     const mailArg = args[0];
     var mailFound = false;
@@ -46,8 +45,7 @@ module.exports = {
     // first log in to mail
     imap.once("ready", async function () {
       imap.openBox("INBOX", true, async function (error, box) {
-        if (error)
-          console.log("Error in: ", box, " error; ", error);
+        if (error) console.log("Error in: ", box, " error; ", error);
 
         // search for discord name in INBOX
         imap.search(
@@ -55,10 +53,13 @@ module.exports = {
           function (err, results) {
             console.log(results);
             if (err) throw err;
-            if (results === undefined
-              || results === null || (Array.isArray(results) && results.length === 0)) {
+            if (
+              results === undefined ||
+              results === null ||
+              (Array.isArray(results) && results.length === 0)
+            ) {
               logMessage(message, "Nothing to found.");
-              message.reply(`No mail with ${message.author.username} arrived.`)
+              message.reply(`No mail with ${message.author.username} arrived.`);
               return;
             }
             var f = imap.fetch(results, {
@@ -74,8 +75,7 @@ module.exports = {
                 //handle data
                 stream.once("end", async function () {
                   //in case there are pre existing mails, skip the process
-                  if (!mailFound)
-                    await registerMember(info, buffer, message);
+                  if (!mailFound) await registerMember(info, buffer, message);
                   mailFound = true;
                 });
               });
@@ -92,31 +92,15 @@ module.exports = {
       });
     });
 
-
     try {
-
       imap.connect();
-      console.log("connected")
+      console.log("connected");
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-
     return;
   },
 };
-
-function ValidateEmail(mail, message) {
-  if (
-    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(
-      mail
-    )
-  ) {
-    return true;
-  }
-  message.reply("You have entered an invalid email address!");
-  logMessage(message, `${message.author.username} entered a wrong email.`);
-  return false;
-}
 
 async function registerMember(info, buffer, message) {
   if (info.which !== "TEXT") {
@@ -157,13 +141,21 @@ async function registerMember(info, buffer, message) {
         // TODO check if id not present! could log in as another user and use verification of real student mail
         // if mail matches the username and ID not present do verification
         if (MailUsername === message.author.username)
-          await addMember(from, memberToAdd, MailUsername, dbverify, db_map_emailToId);
+          await addMember(
+            from,
+            memberToAdd,
+            MailUsername,
+            dbverify,
+            db_map_emailToId
+          );
         else {
           logMessage(
             message,
             `${message.author.username} send another username via mail: ${MailUsername}. Mistake or trying to let someone else in?`
           );
-          message.reply(`You tried to verify a wrong username: ${MailUsername}. Yours is: ${message.author.username}`)
+          message.reply(
+            `You tried to verify a wrong username: ${MailUsername}. Yours is: ${message.author.username}`
+          );
         }
 
         if (!verifymailDate || verifymailDate === undefined) {
@@ -176,10 +168,7 @@ async function registerMember(info, buffer, message) {
             ).id
           )
         ) {
-          console.log(
-            "already verifed user tried to send mail again: ",
-            from
-          );
+          console.log("already verifed user tried to send mail again: ", from);
           message.reply("You are already verified.");
         } else if (verifymailDate || verifymailDate !== undefined) {
           logMessage(
@@ -203,8 +192,13 @@ async function registerMember(info, buffer, message) {
     }
   }
 
-  async function addMember(from, memberToAdd, displayName, dbverify, db_map_emailToId) {
-
+  async function addMember(
+    from,
+    memberToAdd,
+    displayName,
+    dbverify,
+    db_map_emailToId
+  ) {
     logMessage(message, `Granted rank student: ${memberToAdd}`);
 
     if (
@@ -222,7 +216,7 @@ async function registerMember(info, buffer, message) {
       memberToAdd.send(`
 									**Herzlich Willkommen auf dem Discord ${memberToAdd.guild.name}!**\nNachfolgend findest Du eine kurze Beschreibung, wie du dich auf unserem Server zurecht findest.\nGenerell ist jeder Studierende berechtigt alle *Kanäle* für jedes Fach, oder jeden Studiengang in der Fakultät einzusehen.\nAber um das Chaos zu minimieren, dienen *Rollen* als eine Art **Filter**, um Dich vor der Flut an Kanälen zu bewahren. Deshalb kannst Du in\n**"rollenanfrage"** sowie **"react-a-role"** dein Semester auswählen, bzw. abwählen. Danach siehst Du die Fächer, die für Dich relevant sind!\nJedes Semester enthält Kategorien, in denen Du Dich mit anderen austauschen kannst.\nEs gibt ein paar semesterübergreifende Kategorien, wie **"/ALL"** und **"WICHTIGES"**.\nDort im Kanal **"ankündigungen"** kommen regelmäßige News zu hochschulweiten Veranstaltungen oder Events, sowie Erungenschaften und nice to knows.\n\nBitte lies Dir den **"rules"** Kanal durch, damit du weißt wie wir auf Discord miteinander umgehen.\nSolltest Du noch Fragen haben, stell sie direkt im **"fragen"** channel oder kontaktiere einen **Administrator/Owner/Moderator** rechts in der Mitgliederliste.\n\nVielen Dank, dass Du dabei bist, **${displayName}!**\n`);
       await dbverify.set(from, Date.now());
-      await db_map_emailToId.set(from, memberToAdd.user.id)
+      await db_map_emailToId.set(from, memberToAdd.user.id);
     }
 
     try {
@@ -238,13 +232,4 @@ async function registerMember(info, buffer, message) {
       return;
     }
   }
-}
-// logs a message in the logs channel of the guild it was sent in
-async function logMessage(message, msg) {
-  (
-    await message.guild.channels.cache
-      .find((channel) => channel.name == settings.channels.logs)
-      .fetch()
-  ).send(msg);
-  console.log(msg)
 }

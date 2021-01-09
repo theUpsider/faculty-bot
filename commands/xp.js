@@ -5,6 +5,7 @@ const { toLevel } = require("../functions/extensions.js");
 
 module.exports = {
   name: "xp",
+  admin: false,
   description: "displays your XP and Level",
   args: false,
   guildOnly: true,

@@ -3,6 +3,7 @@ const discord = require("discord.js");
 
 module.exports = {
   name: "sendmessage",
+  admin: true,
   description: "send a message as the bot",
   args: true,
   usage: "<channel name> <message>",

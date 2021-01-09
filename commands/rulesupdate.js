@@ -3,6 +3,7 @@ const discord = require("discord.js");
 
 module.exports = {
   name: "rupdate",
+  admin: true,
   description: "updates the ruleset",
   args: true,
   usage: '<"new ruleset">',
