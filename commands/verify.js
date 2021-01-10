@@ -46,7 +46,10 @@ module.exports = {
     imap.once("ready", async function () {
       imap.openBox("INBOX", true, async function (error, box) {
         if (error) console.log("Error in: ", box, " error; ", error);
-
+        logMessage(
+          message,
+          `Username: ${message.author.username} tries to verify`
+        );
         // search for discord name in INBOX
         imap.search(
           [["HEADER", "SUBJECT", message.author.username]],
