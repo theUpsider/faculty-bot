@@ -59,8 +59,8 @@ bot.on("message", async (message) => {
   if (message.author.bot) return;
 
   // no command! - simple message to track for XP
-  if(message.content.startsWith(`verify`))
-    message.reply('You need to use ..verify')
+  if (message.content.startsWith(`verify`))
+    message.reply("You need to use ..verify");
   if (!message.content.startsWith(prefix) && message.channel.type == "text") {
     const userXP = await dbxp.get(message.author.id);
 
@@ -112,8 +112,6 @@ bot.on("message", async (message) => {
           canvas.toBuffer(),
           "level-up-image.png"
         );
-
-        message.channel.send(`Congrats, ${message.author}!`, attachment);
         (
           await message.guild.channels.cache
             .find((channel) => channel.name == settings.channels.xp)
