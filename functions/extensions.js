@@ -1,3 +1,4 @@
+const settings = require("../general-settings.json");
 // xp calculation
 module.exports = {
   toLevel(number) {
