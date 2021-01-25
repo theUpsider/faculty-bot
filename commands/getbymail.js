@@ -1,5 +1,5 @@
 const settings = require("../general-settings.json");
-const { ValidateEmail } = require("./functions/extensions.js");
+const { ValidateEmail } = require("../functions/extensions.js");
 
 module.exports = {
   name: "getbymail",
