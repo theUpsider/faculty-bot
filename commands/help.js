@@ -15,7 +15,7 @@ module.exports = {
       data.push(
         commands
           .map((command) => command.name)
-          .filter((cmd) => cmd?.admin === false)
+          .filter((cmd) => cmd.admin === false)
           .join(", ")
       );
       data.push(
