@@ -2,7 +2,7 @@ const Keyv = require("keyv");
 const settings = require("../general-settings.json");
 const discord = require("discord.js");
 const { mailpw } = require("../config.json");
-const { ValidateEmail, logMessage } = require("./functions/extensions.js");
+const { ValidateEmail, logMessage } = require("../functions/extensions.js");
 const MailPw = mailpw; // prevent on demand loading
 var Imap = require("imap");
 // Mail https://github.com/mscdex/node-imap
