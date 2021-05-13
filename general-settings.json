@@ -3,7 +3,8 @@
     "xp": "bot-commands",
     "rules": "rules",
     "news": "ankündigungen",
-    "logs": "logs"
+    "logs": "logs",
+    "ads": "stellenausschreibungen"
   },
   "colors": {
     "blue": "#4200ff",
@@ -14,5 +15,8 @@
   "roles": {
     "staffrole": "Admin",
     "verified": "Student"
+  },
+  "settings": {
+    "adstimeout": 2419200000
   }
 }

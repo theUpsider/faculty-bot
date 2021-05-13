@@ -62,8 +62,15 @@ bot.on("message", async (message) => {
   if (message.content.startsWith(`verify`))
     message.reply("You need to use ..verify");
   if (!message.content.startsWith(prefix) && message.channel.type == "text") {
+    // handle ads
+    if (message.channel?.name == settings.channels.ads) {
+      // TODO extend to database + calculation for the case the bot crashes
+      message.delete({ timeout: settings.settings.adstimeout }); // 4 weeks
+    }
+
     const userXP = await dbxp.get(message.author.id);
 
+    // user xp
     if (!userXP || userXP === undefined) {
       await dbxp.set(message.author.id, 1); // set to 1 for 1 XP
       return;
