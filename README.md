@@ -39,6 +39,16 @@ verified: after a playeer verified with his account. Use this role as you please
 - news : where useful information for everyone gets posted by the bot
 - xp : where level ups get posted
 - rules : where your server rules are located
+- ads: where external members may post ads which automatically get deleted after a specified amout of time in the settings
+
+### Colors
+
+Speficy the color codes which gets used by the bot when sending embedded mssages etc.
+
+### Settings
+
+Here you may speficy other adjustable settings of the bot.
+- adstimeout: the time in milliseconds before an ad in the ads-channel gets deleted
 
 ### Other
 
@@ -56,4 +66,4 @@ In general, a command can be used without any arguments to get additional inform
 
 ## Thanks
 
-The bot is in a early state. Feedback is appreciated.
+Feedback is appreciated.
