@@ -224,18 +224,21 @@ bot.on('voiceStateUpdate', (oldState, newState) => {
     let newUserChannelName = newState.name;
     let oldUserChannelName = oldState.name;
 
+    console.log("Channel updated");
+    console.log("Channel name; " + newUserChannelName);
     if(newUserChannelName === "===+===") //don't remove ""
     { 
         newChannel = newState.guild.channels.create('<== '+newState.member.nickname+'\'s channel ==>', {
           type: 'voice',
           parent: newState,
-        })
+        }).then(console.log("Created"))
         // Move creator in his new channel
         newState.member.voice.setChannel(newChannel)
 
     // If creator leaves channel, delete it
     }else if(oldUserChannelName=== '<== '+oldState.member.nickname+'\'s channel ==>'){
       oldState.channel.delete()
+      console.log("deleted")
     }
 });
 
