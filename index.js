@@ -221,8 +221,8 @@ bot.on("guildMemberAdd", (member) => {
 // User Voice channel interaction
 // ----------------------------------------------------------------------------------------------------------------------------------------------
 bot.on('voiceStateUpdate', (oldState, newState) => {
-    let newUserChannelName = newState.name;
-    let oldUserChannelName = oldState.name;
+    let newUserChannelName = newState.channel.name;
+    let oldUserChannelName = oldState.channel.name;
 
     console.log("Channel updated");
     console.log("Channel name; " + newUserChannelName);
