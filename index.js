@@ -221,24 +221,30 @@ bot.on("guildMemberAdd", (member) => {
 // User Voice channel interaction
 // ----------------------------------------------------------------------------------------------------------------------------------------------
 bot.on('voiceStateUpdate', (oldState, newState) => {
-    let newUserChannelName = newState.channel.name;
-    let oldUserChannelName = oldState.channel.name;
+    let newUserChannelName = null;
+    if(newState.channel !== null){
+        newUserChannelName = newState.channel.name
+    }
+    let oldUserChannelName = null
+    if(oldState.channel !== null){
+        oldUserChannelName = oldState.channel.name
+    }
 
-    console.log("Channel updated");
-    console.log("Channel name; " + newUserChannelName);
-    if(newUserChannelName === "===+===") //don't remove ""
+    // When a create Channel has been clicked
+    if(newUserChannelName === settings.channels.createChannel)
     { 
-        newChannel = newState.guild.channels.create('<== '+newState.member.nickname+'\'s channel ==>', {
+        newChannel = newState.guild.channels.create('🔊 '+newState.member.displayName, {
           type: 'voice',
-          parent: newState,
-        }).then(console.log("Created"))
+          parent: newState.channel.parent,
+        }).then(function(result){
+          newState.member.voice.setChannel(result)
+        })
         // Move creator in his new channel
-        newState.member.voice.setChannel(newChannel)
+        //newState.member.voice.setChannel(newChannel)
 
     // If creator leaves channel, delete it
-    }else if(oldUserChannelName=== '<== '+oldState.member.nickname+'\'s channel ==>'){
+    }else if(oldUserChannelName=== '🔊 '+oldState.member.displayName){
       oldState.channel.delete()
-      console.log("deleted")
     }
 });
 

@@ -4,7 +4,8 @@
     "rules": "rules",
     "news": "ankündigungen",
     "logs": "logs",
-    "ads": "stellenausschreibungen"
+    "ads": "stellenausschreibungen",
+    "createChannel": "🔊 Neuer Voicechannel"
   },
   "colors": {
     "blue": "#4200ff",
