@@ -65,6 +65,11 @@ bot.on("message", async (message) => {
     // handle ads
     if (message.channel.name == settings.channels.ads) {
       // TODO extend to database + calculation for the case the bot crashes
+      var deletionDate = Date.now();
+      deletionDate.setMilliseconds(
+        deletionDate.getMilliseconds() + settings.settings.adstimeout
+      );
+      console.info(`ad posted. Will be deleted on ${deletionDate}`);
       message.delete({ timeout: settings.settings.adstimeout }); // 4 weeks
     }
 
