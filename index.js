@@ -236,9 +236,10 @@ bot.on('voiceStateUpdate', (oldState, newState) => {
 
     // When a create Channel has been clicked
     if(newUserChannelName === settings.channels.createChannel)
-    { 
+    {
       if(oldUserChannelName=== '🔊 '+oldState.member.displayName)
-        return;
+      oldState.channel.delete()
+
       newChannel = newState.guild.channels.create('🔊 '+newState.member.displayName, {
         type: 'voice',
         parent: newState.channel.parent,
