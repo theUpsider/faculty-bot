@@ -47,14 +47,18 @@ const map_emailToId = new Keyv("sqlite://map_emailToId.sqlite");
 map_emailToId.on("error", (err) =>
   console.error("Keyv connection error:", err)
 );
-
+//--------------------------------------------------
+//                    BOT   LOGIN 
+//--------------------------------------------------
 bot.login(token);
 
 bot.on("ready", () => {
   console.info(`Logged in as ${bot.user.tag}!`);
   bot.user.setActivity("use ..help", { type: "PLAYING" });
 });
-
+//--------------------------------------------------
+//                  MESSAGE
+//--------------------------------------------------
 bot.on("message", async (message) => {
   if (message.author.bot) return;
 
@@ -131,8 +135,8 @@ bot.on("message", async (message) => {
         ).send(`Congrats, ${message.author}!`, attachment);
       }
 
-      // New XP
-      dbxp.set(message.author.id, userXP + 1);
+      // New 1 XP for 200 chars. That means 200 chars equals to one XP Point
+      dbxp.set(message.author.id, userXP + (message.content.length / (parseFloat(settings.settings.CharsForLevel))));
     }
 
     return;
@@ -233,14 +237,16 @@ bot.on('voiceStateUpdate', (oldState, newState) => {
     // When a create Channel has been clicked
     if(newUserChannelName === settings.channels.createChannel)
     { 
-        newChannel = newState.guild.channels.create('🔊 '+newState.member.displayName, {
-          type: 'voice',
-          parent: newState.channel.parent,
-        }).then(function(result){
-          newState.member.voice.setChannel(result)
-        })
-        // Move creator in his new channel
-        //newState.member.voice.setChannel(newChannel)
+      if(oldUserChannelName=== '🔊 '+oldState.member.displayName)
+        return;
+      newChannel = newState.guild.channels.create('🔊 '+newState.member.displayName, {
+        type: 'voice',
+        parent: newState.channel.parent,
+      }).then(function(result){
+        newState.member.voice.setChannel(result)
+      })
+      // Move creator in his new channel
+      //newState.member.voice.setChannel(newChannel)
 
     // If creator leaves channel, delete it
     }else if(oldUserChannelName=== '🔊 '+oldState.member.displayName){

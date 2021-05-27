@@ -18,6 +18,7 @@
     "verified": "Student"
   },
   "settings": {
-    "adstimeout": 2147483647
+    "adstimeout": 2147483647,
+    "CharsForLevel": 200
   }
 }

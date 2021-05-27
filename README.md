@@ -49,6 +49,7 @@ Speficy the color codes which gets used by the bot when sending embedded mssages
 
 Here you may speficy other adjustable settings of the bot.
 - adstimeout: the time in milliseconds before an ad in the ads-channel gets deleted
+- CharsForLevel: how many characters in a message should equal to 1 Point of Experience
 
 ### Other
 
