@@ -225,19 +225,23 @@ bot.on("guildMemberAdd", (member) => {
 // User Voice channel interaction
 // ----------------------------------------------------------------------------------------------------------------------------------------------
 bot.on('voiceStateUpdate', (oldState, newState) => {
-    let newUserChannelName = null;
-    if(newState.channel !== null){
-        newUserChannelName = newState.channel.name
-    }
-    let oldUserChannelName = null
-    if(oldState.channel !== null){
-        oldUserChannelName = oldState.channel.name
-    }
+  
+  try {
+      let newUserChannelName = null;
+      if(newState.channel !== null){
+          newUserChannelName = newState.channel.name
+      }
+      let oldUserChannelName = null
+      if(oldState.channel !== null){
+          oldUserChannelName = oldState.channel.name
+      }
+      if(oldUserChannelName === newUserChannelName)
+        return
 
     // When a create Channel has been clicked
     if(newUserChannelName === settings.channels.createChannel)
     {
-      if(oldUserChannelName=== '🔊 '+oldState.member.displayName)
+      if(oldUserChannelName=== '🔊 '+ oldState.member.displayName)
       oldState.channel.delete()
 
       newChannel = newState.guild.channels.create('🔊 '+newState.member.displayName, {
@@ -253,6 +257,10 @@ bot.on('voiceStateUpdate', (oldState, newState) => {
     }else if(oldUserChannelName=== '🔊 '+oldState.member.displayName){
       oldState.channel.delete()
     }
+    } catch (error) {
+      console.error(error);
+    }
+
 });
 
 // extended functionality

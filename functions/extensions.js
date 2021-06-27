@@ -13,7 +13,7 @@ module.exports = {
     ) {
       return true;
     }
-    message.reply("You have entered an invalid email address!");
+    message.reply("You have entered an invalid email address! try using the scheme: ..verify max.mustermann@stud.hs-kempten.de");
     logMessage(message, `${message.author.username} entered a wrong email.`);
     return false;
   },
