@@ -24,7 +24,7 @@ module.exports = {
       return;
     } else {
       message.reply(
-        `you have ${userXP} XP. This equals to ${toLevel(userXP)} Levels.`
+        `you have ${Math.trunc(userXP)} XP. This equals to ${toLevel(Math.trunc(userXP))} Levels.`
       );
     }
     return;

@@ -85,7 +85,7 @@ bot.on("message", async (message) => {
       return;
     } else {
       // if new level, post XP
-      if (Math.trunc(toLevel(userXP + 1)) > Math.trunc(toLevel(userXP))) {
+      if (toLevel(Math.trunc(userXP) + 1) > toLevel(Math.trunc(userXP))) {
         // send level xp to xp channel
         const canvas = Canvas.createCanvas(700, 250);
         const ctx = canvas.getContext("2d");
