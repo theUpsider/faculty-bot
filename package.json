@@ -11,9 +11,9 @@
     "imap": "^0.8.19",
     "json-simple": "^0.9.6",
     "keyv": "^4.0.3",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.5",
     "random-chars": "^1.0.8",
-    "riot-lol-api": "^4.3.3",
+    "riot-lol-api": "^4.3.4",
     "sqlite3": "^5.0.2",
     "unirest": "^0.6.0"
   },
