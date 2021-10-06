@@ -62,7 +62,7 @@ bot.on("message", async (message) => {
   if (message.author.bot) return;
 
   // no command! - simple message to track for XP
-  if (message.content.startsWith(`verify`)) {
+  if (message.content.toLocaleLowerCase().startsWith(`verify`)) {
     message.reply("You need to use ..verify");
     // remove message so others dont see it
     try {
