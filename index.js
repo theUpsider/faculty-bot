@@ -4,7 +4,6 @@ const Canvas = require("canvas");
 const fetch = require("node-fetch");
 const Keyv = require("keyv");
 const sqlite3 = require("sqlite3").verbose();
-var RiotRequest = require("riot-lol-api");
 const { prefix, token, mailpw } = require("./config.json");
 const MailPw = mailpw; // prevent on demand loading
 const { toLevel, logMessage } = require("./functions/extensions.js");
