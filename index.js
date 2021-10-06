@@ -48,7 +48,7 @@ map_emailToId.on("error", (err) =>
   console.error("Keyv connection error:", err)
 );
 //--------------------------------------------------
-//                    BOT   LOGIN 
+//                    BOT   LOGIN
 //--------------------------------------------------
 bot.login(token);
 
@@ -63,8 +63,15 @@ bot.on("message", async (message) => {
   if (message.author.bot) return;
 
   // no command! - simple message to track for XP
-  if (message.content.startsWith(`verify`))
+  if (message.content.startsWith(`verify`)) {
     message.reply("You need to use ..verify");
+    // remove message so others dont see it
+    try {
+      message.delete({ timeout: 4000 });
+    } catch (error) {
+      logMessage(message, error);
+    }
+  }
   if (!message.content.startsWith(prefix) && message.channel.type == "text") {
     // handle ads
     if (message.channel.name == settings.channels.ads) {
@@ -136,7 +143,11 @@ bot.on("message", async (message) => {
       }
 
       // New 1 XP for 200 chars. That means 200 chars equals to one XP Point
-      dbxp.set(message.author.id, userXP + (message.content.length / (parseFloat(settings.settings.CharsForLevel))));
+      dbxp.set(
+        message.author.id,
+        userXP +
+          message.content.length / parseFloat(settings.settings.CharsForLevel)
+      );
     }
 
     return;
@@ -224,43 +235,41 @@ bot.on("guildMemberAdd", (member) => {
 // ----------------------------------------------------------------------------------------------------------------------------------------------
 // User Voice channel interaction
 // ----------------------------------------------------------------------------------------------------------------------------------------------
-bot.on('voiceStateUpdate', (oldState, newState) => {
-  
+bot.on("voiceStateUpdate", (oldState, newState) => {
   try {
-      let newUserChannelName = null;
-      if(newState.channel !== null){
-          newUserChannelName = newState.channel.name
-      }
-      let oldUserChannelName = null
-      if(oldState.channel !== null){
-          oldUserChannelName = oldState.channel.name
-      }
-      if(oldUserChannelName === newUserChannelName)
-        return
+    let newUserChannelName = null;
+    if (newState.channel !== null) {
+      newUserChannelName = newState.channel.name;
+    }
+    let oldUserChannelName = null;
+    if (oldState.channel !== null) {
+      oldUserChannelName = oldState.channel.name;
+    }
+    if (oldUserChannelName === newUserChannelName) return;
 
     // When a create Channel has been clicked
-    if(newUserChannelName === settings.channels.createChannel)
-    {
-      if(oldUserChannelName=== '🔊 '+ oldState.member.displayName)
-      oldState.channel.delete()
+    if (newUserChannelName === settings.channels.createChannel) {
+      if (oldUserChannelName === "🔊 " + oldState.member.displayName)
+        oldState.channel.delete();
 
-      newChannel = newState.guild.channels.create('🔊 '+newState.member.displayName, {
-        type: 'voice',
-        parent: newState.channel.parent,
-      }).then(function(result){
-        newState.member.voice.setChannel(result)
-      })
+      newChannel = newState.guild.channels
+        .create("🔊 " + newState.member.displayName, {
+          type: "voice",
+          parent: newState.channel.parent,
+        })
+        .then(function (result) {
+          newState.member.voice.setChannel(result);
+        });
       // Move creator in his new channel
       //newState.member.voice.setChannel(newChannel)
 
-    // If creator leaves channel, delete it
-    }else if(oldUserChannelName=== '🔊 '+oldState.member.displayName){
-      oldState.channel.delete()
+      // If creator leaves channel, delete it
+    } else if (oldUserChannelName === "🔊 " + oldState.member.displayName) {
+      oldState.channel.delete();
     }
-    } catch (error) {
-      console.error(error);
-    }
-
+  } catch (error) {
+    console.error(error);
+  }
 });
 
 // extended functionality
