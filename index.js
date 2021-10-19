@@ -6,10 +6,13 @@ const Keyv = require("keyv");
 const sqlite3 = require("sqlite3").verbose();
 const { prefix, token, mailpw } = require("./config.json");
 const MailPw = mailpw; // prevent on demand loading
-const { toLevel, logMessage } = require("./functions/extensions.js");
+const { toLevel, logMessage, downloadURI, download } = require("./functions/extensions.js");
 const settings = require("./general-settings.json");
 const fs = require("fs");
+
 inspect = require("util").inspect;
+const pdf2image = require('pdf2image')
+const { fromPath } = require("pdf2pic");
 
 const bot = new Discord.Client();
 
@@ -54,6 +57,52 @@ bot.login(token);
 bot.on("ready", () => {
   console.info(`Logged in as ${bot.user.tag}!`);
   bot.user.setActivity("use ..help", { type: "PLAYING" });
+
+  // const options = {
+  //   density: 400,
+  //   quality: 100,
+  //   saveFilename: "mensaplan",
+  //   savePath: "./",
+  //   format: "png",
+  //   width: 768,
+  //   height: 512
+  // };
+
+  // mealplan check
+  var minutes = settings.settings["mealplan-check"], meal_check_interval = minutes * 60 * 1000;
+  // if feature is activated
+  if (settings.settings.postMealplan)
+    setInterval(async function () {
+      isWeekdayNow = new Date().getDay() == settings.settings.mealplandaycheck ? 1 : 0
+      if (isWeekdayNow) {
+        // if after x hours on the new day
+        if (new Date().getHours() >= settings.settings.mealplanhourscheck) {
+          let channel = bot.channels.cache.get(settings.channels.mealPlan)
+          // check if already posted today
+          // if not been posted today
+          channel.messages.fetch({ limit: 1 }).then(messages => async function () {
+            let lastMessage = messages.first();
+            if (new Date(lastMessage.createdTimestamp).getDate() != new Date().getDate()) {
+              if (channel != undefined) {
+                await download(settings.settings.mealplan, settings.settings.mealplanpdfpath)
+                console.log("Mensaplan downloaded");
+                // ConvertedFile
+                const storeAsImage = fromPath(settings.settings.mealplanpdfpath, settings.settings.mealplansettings);
+                const pageToConvertAsImage = 1;
+
+                storeAsImage(pageToConvertAsImage).then((resolve) => {
+                  console.log("Mensaplan converted");
+
+                  channel.send(`<@&${settings.roles.mealplannotify}>`, { files: [resolve.path] });
+                  return resolve;
+                });
+
+              }
+            }
+          }).catch(console.error);
+        }
+      }
+    }, meal_check_interval);
 });
 //--------------------------------------------------
 //                  MESSAGE
@@ -71,6 +120,8 @@ bot.on("message", async (message) => {
       logMessage(message, error);
     }
   }
+
+
   if (!message.content.startsWith(prefix) && message.channel.type == "text") {
     // handle ads
     if (message.channel.name == settings.channels.ads) {
@@ -82,6 +133,7 @@ bot.on("message", async (message) => {
       console.info(`ad posted. Will be deleted on ${deletionDate}`);
       message.delete({ timeout: settings.settings.adstimeout }); // 4 weeks
     }
+
 
     const userXP = await dbxp.get(message.author.id);
 
@@ -145,7 +197,7 @@ bot.on("message", async (message) => {
       dbxp.set(
         message.author.id,
         userXP +
-          message.content.length / parseFloat(settings.settings.CharsForLevel)
+        message.content.length / parseFloat(settings.settings.CharsForLevel)
       );
     }
 
@@ -195,8 +247,7 @@ bot.on("message", async (message) => {
     if (now < expirationTime) {
       const timeLeft = (expirationTime - now) / 1000;
       return message.reply(
-        `please wait ${timeLeft.toFixed(1).toHHMMSS()} before reusing the \`${
-          command.name
+        `please wait ${timeLeft.toFixed(1).toHHMMSS()} before reusing the \`${command.name
         }\` command.`
       );
     }

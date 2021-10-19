@@ -63,3 +63,8 @@ typings/
 # next.js build output
 .next
 *.sqlite
+mealplan.pdf
+.gitignore
+.vscode/launch.json
+untitled.1.png
+mensaplan.1.png

@@ -8,17 +8,23 @@
     "canvas": "^2.8.0",
     "discord.js": "^12.5.3",
     "dotenv": "^8.6.0",
+    "file-saver": "^2.0.5",
     "imap": "^0.8.19",
     "json-simple": "^0.9.6",
     "keyv": "^4.0.3",
     "node-fetch": "^2.6.5",
+    "pdf2image": "^1.2.3",
+    "pdf2pic": "^2.1.4",
+    "pdfjs-dist": "^2.10.377",
     "random-chars": "^1.0.8",
     "riot-lol-api": "^4.3.4",
     "sqlite3": "^5.0.2",
     "unirest": "^0.6.0"
   },
   "devDependencies": {
-    "lodash": ">=4.17.21"
+    "lodash": ">=4.17.21",
+    "webpack": "^4.46.0",
+    "worker-loader": "^3.0.8"
   },
   "scripts": {
     "test": "ping"

@@ -29,8 +29,9 @@ In order for the bot to communicate with channels, you need to edit the `general
 
 ### Roles
 
-staffrole: this is the management role, which may edit the bot via commands.  
-verified: after a playeer verified with his account. Use this role as you please, maybe to show and hide some channels.
+- staffrole: this is the management role, which may edit the bot via commands.  
+- verified: after a playeer verified with his account. Use this role as you please, maybe to show and hide some channels.
+- mealplannotify: role id which will get pinged if new mealplan has been posted
 
 ### Channels
 
@@ -40,6 +41,8 @@ verified: after a playeer verified with his account. Use this role as you please
 - xp : where level ups get posted
 - rules : where your server rules are located
 - ads: where external members may post ads which automatically get deleted after a specified amout of time in the settings
+- createChannel: when creating a voice channel with this name, it will be a dynamic voice channel to prevent unnecessary voice channels
+- mealPlan: channel to which the mealplan updates get posted
 
 ### Colors
 
@@ -50,6 +53,21 @@ Speficy the color codes which gets used by the bot when sending embedded mssages
 Here you may speficy other adjustable settings of the bot.
 - adstimeout: the time in milliseconds before an ad in the ads-channel gets deleted
 - CharsForLevel: how many characters in a message should equal to 1 Point of Experience
+- postMealplan: (bool) activates the mealplan posting functionality
+	- mealplan : (url) place to download mealplan i.e. http://www.meal/one.pdf
+    - mealplanpdfpath": (path) local path to save and load mealplan
+    - mealplan-check": (int) minutes between the mealplan update check
+    - mealplandaycheck": (int) weekday on which the check and post occurs (0 - 6) (Sun - Sat)
+	- mealplanhourscheck: (int) time at what the check occurs. i.e. 8 for 8am
+    - mealplansettings": (list) default settings for the converter. change if applicable
+      - density": 400,
+      - quality": 100,
+      - saveFilename": "mensaplan",
+      - savePath": "./",
+      - format": "png",
+      - width": 768,
+      - height": 512
+    }
 
 ### Other
 
