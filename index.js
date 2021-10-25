@@ -69,9 +69,10 @@ bot.on("ready", () => {
   // };
 
   // mealplan check
-  var minutes = settings.settings["mealplan-check"], meal_check_interval = minutes * 60 * 1000;
+  var minutes = settings.settings.mealplancheck, meal_check_interval = minutes * 60 * 1000;
   // if feature is activated
-  if (settings.settings.postMealplan)
+  if (settings.settings.postMealplan) {
+    console.log("Mensaplan activated")
     setInterval(async function () {
       isWeekdayNow = new Date().getDay() == settings.settings.mealplandaycheck ? 1 : 0
       if (isWeekdayNow) {
@@ -80,29 +81,33 @@ bot.on("ready", () => {
           let channel = bot.channels.cache.get(settings.channels.mealPlan)
           // check if already posted today
           // if not been posted today
-          channel.messages.fetch({ limit: 1 }).then(messages => async function () {
+          channel.messages.fetch({ limit: 1 }).then(messages => {
             let lastMessage = messages.first();
             if (new Date(lastMessage.createdTimestamp).getDate() != new Date().getDate()) {
               if (channel != undefined) {
-                await download(settings.settings.mealplan, settings.settings.mealplanpdfpath)
-                console.log("Mensaplan downloaded");
-                // ConvertedFile
-                const storeAsImage = fromPath(settings.settings.mealplanpdfpath, settings.settings.mealplansettings);
-                const pageToConvertAsImage = 1;
+                download(settings.settings.mealplan, settings.settings.mealplanpdfpath).then(download => {
 
-                storeAsImage(pageToConvertAsImage).then((resolve) => {
-                  console.log("Mensaplan converted");
+                  console.log("Mensaplan downloaded");
+                  // ConvertedFile
+                  const storeAsImage = fromPath(settings.settings.mealplanpdfpath, settings.settings.mealplansettings);
+                  const pageToConvertAsImage = 1;
 
-                  channel.send(`<@&${settings.roles.mealplannotify}>`, { files: [resolve.path] });
-                  return resolve;
-                });
+                  storeAsImage(pageToConvertAsImage).then((resolve) => {
+                    console.log("Mensaplan converted");
 
+                    channel.send(`<@&${settings.roles.mealplannotify}>`, { files: [resolve.path] });
+                    channel.send("En Guada")
+                    return resolve;
+                  });
+
+                })
               }
             }
           }).catch(console.error);
         }
       }
     }, meal_check_interval);
+  }
 });
 //--------------------------------------------------
 //                  MESSAGE
@@ -124,15 +129,15 @@ bot.on("message", async (message) => {
 
   if (!message.content.startsWith(prefix) && message.channel.type == "text") {
     // handle ads
-    if (message.channel.name == settings.channels.ads) {
-      // TODO extend to database + calculation for the case the bot crashes
-      var deletionDate = Date.now();
-      deletionDate.setMilliseconds(
-        deletionDate.getMilliseconds() + settings.settings.adstimeout
-      );
-      console.info(`ad posted. Will be deleted on ${deletionDate}`);
-      message.delete({ timeout: settings.settings.adstimeout }); // 4 weeks
-    }
+    // if (message.channel.name == settings.channels.ads) {
+    //   // TODO extend to database + calculation for the case the bot crashes
+    //   var deletionDate = Date.now();
+    //   deletionDate.setMilliseconds(
+    //     deletionDate.getMilliseconds() + settings.settings.adstimeout
+    //   );
+    //   console.info(`ad posted. Will be deleted on ${deletionDate}`);
+    //   message.delete({ timeout: settings.settings.adstimeout }); // 4 weeks
+    // }
 
 
     const userXP = await dbxp.get(message.author.id);

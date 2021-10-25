@@ -22,10 +22,10 @@
   "settings": {
     "adstimeout": 2147483647,
     "CharsForLevel": 200,
-    "postMealplan": true,
+    "postMealplan": 1,
     "mealplan": "http://www.max-manager.de/daten-extern/augsburg/pdf/wochenplaene/hs-kempten/aktuell.pdf",
     "mealplanpdfpath": "/home/akgaming/discord/faculty/usability-bot/mealplan.pdf",
-    "mealplan-check": 1,
+    "mealplancheck": 1,
     "mealplandaycheck": 1,
     "mealplanhourscheck": 8,
     "mealplansettings":{
