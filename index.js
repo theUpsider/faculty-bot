@@ -49,6 +49,9 @@ const map_emailToId = new Keyv("sqlite://map_emailToId.sqlite");
 map_emailToId.on("error", (err) =>
   console.error("Keyv connection error:", err)
 );
+// Key: channelId, Value: channelId //TODO: No key value pair needed
+const dbvoicechannels = new Keyv("sqlite://voicechannels.sqlite"); // const keyv = new Keyv(); // for in-memory storage //
+dbvoicechannels.on("error", (err) => console.error("Keyv connection error:", err));
 //--------------------------------------------------
 //                    BOT   LOGIN
 //--------------------------------------------------
@@ -108,6 +111,9 @@ bot.on("ready", () => {
       }
     }, meal_check_interval);
   }
+
+  // after startup, check if any voice channel are left over in the db (after a crash for example)
+  // TODO:
 });
 //--------------------------------------------------
 //                  MESSAGE
@@ -304,27 +310,65 @@ bot.on("voiceStateUpdate", (oldState, newState) => {
 
     // When a create Channel has been clicked
     if (newUserChannelName === settings.channels.createChannel) {
-      if (oldUserChannelName === "🔊 " + oldState.member.displayName)
-        oldState.channel.delete();
-
       newChannel = newState.guild.channels
         .create("🔊 " + newState.member.displayName, {
           type: "voice",
           parent: newState.channel.parent,
+          permissionOverwrites: [ // Allow creator to modify this specific channel
+            {
+              id: newState.member.id,
+              allow: [Discord.Permissions.FLAGS.MANAGE_CHANNELS],
+           },
+         ],
         })
         .then(function (result) {
+          // Move creator in his new channel
           newState.member.voice.setChannel(result);
+          // Store newly created channel id for deletion
+          dbvoicechannels.set(result.id, result.id);
         });
-      // Move creator in his new channel
-      //newState.member.voice.setChannel(newChannel)
-
-      // If creator leaves channel, delete it
-    } else if (oldUserChannelName === "🔊 " + oldState.member.displayName) {
-      oldState.channel.delete();
     }
+
+    // Check if old channel was a temporary voice channel
+    if (oldState.channel !== null) {
+      let oldChannelId = oldState.channel.id;
+      let trackedVoiceChannelId = dbvoicechannels.get(oldChannelId);
+      trackedVoiceChannelId.then(function(channelId)
+      {
+        // If channel is tracked as temporary voice channel
+        if (channelId != undefined) {
+          // If user was the last one in temporary channel, delete it
+          if(oldState.channel.members.size == 0) {
+            // delete channel
+            oldState.channel.delete();
+            // remove entry in tracker db
+            dbvoicechannels.delete(oldChannelId);
+          }
+        }
+      });
+    }
+    
   } catch (error) {
     console.error(error);
   }
+});
+
+// make sure voice channels are tagged with 🔊
+bot.on("channelUpdate", (oldChannel, newChannel) => {
+  if(newChannel == null)
+    return;
+
+  // Is a user created channel
+  let isTracked = dbvoicechannels.get(newChannel.id);
+  isTracked.then(function(channelId)
+  {
+    // If channel is tracked as temporary voice channel
+    if (channelId != undefined) {
+      if(!newChannel.name.startsWith("🔊")) {
+        newChannel.setName("🔊 " + newChannel.name);
+      }
+    }
+  });
 });
 
 // extended functionality
