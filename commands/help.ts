@@ -1,3 +1,5 @@
+import { MessageEmbed } from "discord.js";
+
 const { prefix } = require("../config.json");
 module.exports = {
   name: "help",
@@ -6,24 +8,30 @@ module.exports = {
   aliases: ["commands"],
   usage: "<command name>",
   cooldown: 5,
-  execute(message, args) {
-    const data = [];
+  execute(message: any, args: any) {
+    const data: string[] = [];
     const { commands } = message.client;
 
     if (!args.length) {
       data.push("Here's a list of all my commands:");
-      data.push(commands.map((command) => command.name).join(", "));
+      data.push(commands.map((command: any) => command.name).join(", "));
       data.push(
         `\nYou can send \`${prefix}help [command name]\` to get info on a specific command!`
       );
 
       return message.author
-        .send(data, { split: true })
+        .send({
+			embeds: [
+				new MessageEmbed()
+				.setTitle("Command Help")
+				.setDescription(data.toString())
+			]
+		})
         .then(() => {
           if (message.channel.type === "dm") return;
           message.reply("I've sent you a DM with all my commands!");
         })
-        .catch((error) => {
+        .catch((error: any) => {
           console.warn(
             `Could not send help DM to ${message.author.tag}.\n`,
             error
@@ -37,7 +45,7 @@ module.exports = {
     const name = args[0].toLowerCase();
     const command =
       commands.get(name) ||
-      commands.find((c) => c.aliases && c.aliases.includes(name));
+      commands.find((c: any) => c.aliases && c.aliases.includes(name));
 
     if (!command) {
       return message.reply("that's not a valid command!");
@@ -54,7 +62,13 @@ module.exports = {
 
     data.push(`**Cooldown:** ${command.cooldown || 3} second(s)`);
 
-    message.channel.send(data, { split: true });
+    message.channel.send({
+		embeds: [
+			new MessageEmbed()
+			.setTitle("Command Help")
+			.setDescription(data.toString())
+		]
+	});
     return;
   },
 };

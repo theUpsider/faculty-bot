@@ -59,7 +59,7 @@ typings/
 
 # dotenv environment variables file
 .env
-
+general-settings.json
 # next.js build output
 .next
 *.sqlite

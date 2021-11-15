@@ -1,5 +1,7 @@
-const settings = require("../general-settings.json");
-const { ValidateEmail } = require("../functions/extensions.js");
+import settings from "../general-settings.json"
+import { validateEmail } from "../functions/extensions"
+import { Message, TextChannel } from "discord.js";
+import Keyv from "keyv";
 
 module.exports = {
   name: "getbymail",
@@ -9,13 +11,11 @@ module.exports = {
   usage: "<user ID> or <E-Mail>",
   guildOnly: false,
   aliases: ["getbyemail"],
-  async execute(message, args) {
+  async execute(message: Message, args: string[]) {
     // only for staff
     if (
-      !message.member.roles.cache.has(
-        message.member.guild.roles.cache.find(
-          (role) => role.name === settings.roles.staffrole
-        ).id
+      !message.member!.roles.cache.find(
+        role => role.name === settings.roles.staffrole
       )
     )
       return message.reply(
@@ -23,13 +23,13 @@ module.exports = {
       );
 
     // get member from guild the message was sent in
-    let memerSearched;
+    let memberSearched;
     try {
-      memerSearched = await message.guild.members.fetch(args[0]).id;
+      memberSearched = await (await message.guild?.members.fetch(args[0]))?.id; //message.guild?.members.fetch(args[0])?.id;
     } catch (error) {
       return message.reply(`No member found.`);
     }
-    if (!ValidateEmail(args[0]) && !memerSearched)
+    if (!validateEmail(args[0], message) && !memberSearched)
       return message.reply(`No member found or email invalid.`);
 
     //DOING: check databased for email or member, depending on what args have been given
@@ -43,9 +43,8 @@ module.exports = {
       console.error("Keyv connection error:", err)
     );
 
-    const channel = await message.guild.channels.cache
-      .find((channel) => channel.name == args[0])
-      .fetch();
+    const channel = await message.guild?.channels.cache
+      .find((channel) => channel.name == args[0])?.fetch() as TextChannel;
     channel.send(args.join(" "));
 
     return;

@@ -1,12 +1,15 @@
-const Keyv = require("keyv");
-const settings = require("../general-settings.json");
-const discord = require("discord.js");
-const { mailpw } = require("../config.json");
-const { ValidateEmail, logMessage } = require("../functions/extensions.js");
-const MailPw = mailpw; // prevent on demand loading
-var Imap = require("imap");
+import { Message, Role } from "discord.js";
+
+//const Keyv = require("keyv");
+import Keyv from "keyv";
+import settings from "../general-settings.json";
+import { validateEmail, logMessage } from "../functions/extensions"
+//const { ValidateEmail, logMessage } = require("../functions/extensions.js");
+const MailPw = process.env.MAILPW as string; // prevent on demand loading
+import Imap from "imap"
+//var Imap = require("imap");
 // Mail https://github.com/mscdex/node-imap
-var imap;
+var imap: Imap;
 
 module.exports = {
   name: "verify",
@@ -15,9 +18,9 @@ module.exports = {
   args: true,
   guildOnly: true,
   usage: "<student mail>",
-  async execute(message, args) {
+  async execute(message: Message, args: string[]) {
     // get member from guild the message was sent in
-    const memberToAdd = await message.guild.members.fetch(message.author.id);
+    const memberToAdd = await message.guild?.members.fetch(message.author.id);
 
     logMessage(message, `${memberToAdd} tries to verify...`);
 
@@ -37,8 +40,8 @@ module.exports = {
     var mailFound = false;
 
     // check mail validity
-    if (!ValidateEmail(mailArg, message)) {
-      message.delete({ timeout: 1000 });
+    if (!validateEmail(mailArg, message)) {
+      message.delete();
       return;
     }
 
@@ -88,9 +91,9 @@ module.exports = {
 
         // remove message so others dont see it
         try {
-          message.delete({ timeout: 4000 });
-        } catch (error) {
-          logMessage(message, error);
+          message.delete();
+        } catch (error: any) {
+          logMessage(message, error.toString());
         }
       });
     });
@@ -105,7 +108,7 @@ module.exports = {
   },
 };
 
-async function registerMember(info, buffer, message) {
+async function registerMember(info: any, buffer: any, message: any) {
   if (info.which !== "TEXT") {
     if (!Imap.parseHeader(buffer).undefinedfrom[0]) {
       logMessage(
@@ -167,7 +170,7 @@ async function registerMember(info, buffer, message) {
         } else if (
           memberToAdd.roles.cache.has(
             memberToAdd.guild.roles.cache.find(
-              (role) => role.name === settings.roles.verified
+              (role: Role) => role.name === settings.roles.verified
             ).id
           )
         ) {
@@ -196,18 +199,18 @@ async function registerMember(info, buffer, message) {
   }
 
   async function addMember(
-    from,
-    memberToAdd,
-    displayName,
-    dbverify,
-    db_map_emailToId
+    from: any,
+    memberToAdd: any,
+    displayName: any,
+    dbverify: Keyv,
+    db_map_emailToId: Keyv
   ) {
     logMessage(message, `Granted rank student: ${memberToAdd}`);
 
     if (
       !memberToAdd.roles.cache.has(
         memberToAdd.guild.roles.cache.find(
-          (role) => role.name === settings.roles.verified
+          (role: Role) => role.name === settings.roles.verified
         ).id
       )
     ) {
@@ -227,7 +230,7 @@ async function registerMember(info, buffer, message) {
       memberToAdd.roles.add(
         // get role from guild chache
         memberToAdd.guild.roles.cache.find(
-          (role) => role.name === settings.roles.verified
+          (role: Role) => role.name === settings.roles.verified
         ).id
       );
     } catch (UnhandledPromiseRejectionWarning) {
