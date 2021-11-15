@@ -51,7 +51,18 @@ module.exports = {
       
       
       // if new level, post XP
-      if (toLevel(Math.trunc(userXP)) + 1 > toLevel(Math.trunc(userXP)) ) {
+      let newXP = userXP + message.content.length / parseFloat(settings.settings.CharsForLevel.toString())
+
+      // check if newXP is +100 of prev XP
+
+      console.log(newXP, userXP);
+      console.log(newXP >= (userXP + 100 ));
+      
+      
+
+      
+      
+      if (newXP >= (userXP + 100 )) {
         
         // send level xp to xp channel
         const canvas = Canvas.createCanvas(700, 250);
