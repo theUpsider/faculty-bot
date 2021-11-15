@@ -1,0 +1,41 @@
+{
+    "channels": {
+        "xp": "ticket-5690",
+        "rules": "rules",
+        "news": "news",
+        "logs": "errors",
+        "ads": "news",
+        "createChannel": "🔊 Neuer Voicechannel",
+        "mealPlan": "909841198779338825"
+    },
+    "colors": {
+        "blue": "#4200ff",
+        "lightblue": "#FFFFF",
+        "green": "#28823d",
+        "red": "#cf0a0a"
+    },
+    "roles": {
+        "staffrole": "devloper",
+        "verified": "devloper",
+        "mealplannotify": "741364533263597610"
+    },
+    "settings": {
+        "adstimeout": 2147483647,
+        "CharsForLevel": 1,
+        "postMealplan": 1,
+        "mealplan": "http://www.max-manager.de/daten-extern/augsburg/pdf/wochenplaene/hs-kempten/aktuell.pdf",
+        "mealplanpdfpath": "/home/user/github-pulls/faculty-bot/mealplan.pdf",
+        "mealplancheck": 1,
+        "mealplandaycheck": 1,
+        "mealplanhourscheck": 8,
+        "mealplansettings": {
+            "density": 400,
+            "quality": 100,
+            "saveFilename": "mensaplan",
+            "savePath": "./",
+            "format": "png",
+            "width": 768,
+            "height": 512
+        }
+    }
+}

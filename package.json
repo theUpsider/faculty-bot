@@ -2,7 +2,7 @@
   "name": "tournament-bot",
   "version": "1.0.0",
   "description": "bot for tournament management",
-  "main": "index.ts",
+  "main": "src/index.ts",
   "dependencies": {
     "@keyv/sqlite": "^2.0.2",
     "canvas": "^2.8.0",

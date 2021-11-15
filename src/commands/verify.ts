@@ -7,6 +7,7 @@ import { validateEmail, logMessage } from "../functions/extensions"
 //const { ValidateEmail, logMessage } = require("../functions/extensions.js");
 const MailPw = process.env.MAILPW as string; // prevent on demand loading
 import Imap from "imap"
+const wait = require('util').promisify(setTimeout);
 //var Imap = require("imap");
 // Mail https://github.com/mscdex/node-imap
 var imap: Imap;
@@ -22,7 +23,7 @@ module.exports = {
     // get member from guild the message was sent in
     const memberToAdd = await message.guild?.members.fetch(message.author.id);
 
-    logMessage(message, `${memberToAdd} tries to verify...`);
+    logMessage(message, `${memberToAdd?.user.tag} tries to verify...`);
 
     try {
       imap = new Imap({
@@ -51,7 +52,7 @@ module.exports = {
         if (error) console.log("Error in: ", box, " error; ", error);
         logMessage(
           message,
-          `Username: ${message.author.username} tries to verify`
+          `Username: ${message.author.tag} tries to verify`
         );
         // search for discord name in INBOX
         imap.search(
@@ -65,7 +66,14 @@ module.exports = {
               (Array.isArray(results) && results.length === 0)
             ) {
               logMessage(message, "Nothing to found.");
-              message.reply(`No mail with ${message.author.username} arrived.`);
+              message.reply({
+                content: `No mail with ${message.author.username} arrived.`
+              }).then(async msg => {
+                // wait 5s
+                await wait(5000)
+                msg.delete()
+                message.delete()
+              });
               return;
             }
             var f = imap.fetch(results, {
@@ -91,7 +99,7 @@ module.exports = {
 
         // remove message so others dont see it
         try {
-          message.delete();
+          // message.delete();
         } catch (error: any) {
           logMessage(message, error.toString());
         }
