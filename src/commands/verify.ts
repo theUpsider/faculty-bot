@@ -2,7 +2,7 @@ import { Message, Role } from "discord.js";
 
 //const Keyv = require("keyv");
 import Keyv from "keyv";
-import settings from "../general-settings.json";
+const settings = require("../../general-settings.json")
 import { validateEmail, logMessage } from "../functions/extensions"
 //const { ValidateEmail, logMessage } = require("../functions/extensions.js");
 const MailPw = process.env.MAILPW as string; // prevent on demand loading

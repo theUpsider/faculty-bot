@@ -1,6 +1,6 @@
 import { DMChannel, Guild, GuildChannel } from "discord.js";
 import Keyv from "keyv";
-import { LooseObject } from "..";
+import { LooseObject } from "../index";
 
 module.exports = {
     event: "channelUpdate",

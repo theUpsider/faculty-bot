@@ -1,5 +1,5 @@
 import { Message, TextChannel } from "discord.js";
-import settings from "../general-settings.json"
+const settings = require("../../general-settings.json");
 const discord = require("discord.js");
 
 module.exports = {

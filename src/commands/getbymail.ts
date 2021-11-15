@@ -1,4 +1,4 @@
-import settings from "../general-settings.json"
+const settings = require("../../general-settings.json")
 import { validateEmail } from "../functions/extensions"
 import { Message, TextChannel } from "discord.js";
 import Keyv from "keyv";

@@ -1,5 +1,5 @@
 //const settings = require("../general-settings.json");
-import settings from "../general-settings.json";
+import settings from "../../general-settings.json";
 import fs from "fs";
 //const fs = require('fs');
 import http from "http";

@@ -6,8 +6,6 @@ import Keyv from "keyv"
 import sqlite from "sqlite3";
 //const { prefix, token, mailpw } = require("./config.json");
 const MailPw = process.env.MAILPW; // prevent on demand loading
-import { toLevel, logMessage, download }  from "./functions/extensions"
-import settings from "./general-settings.json";
 //const fs = require("fs");
 import fs from "fs";
 import { join } from "path";
@@ -61,7 +59,7 @@ let db = new sqlite.Database(":memory:", (err: any) => {
 });
 
 const commandFiles = fs
-  .readdirSync("./commands")
+  .readdirSync("./src/commands" || "./dist/commands")
   .filter((file: any) => file); // read file with commands
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);

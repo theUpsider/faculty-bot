@@ -2,8 +2,8 @@ import { Client, Collection, Message, MessageAttachment, TextChannel } from "dis
 import { logMessage, toLevel, applyText, toHHMMSS } from '../functions/extensions'
 import Canvas from "canvas"
 import Keyv from "keyv";
-import settings from "../general-settings.json";
-import config from "../config.json";
+import settings from "../../general-settings.json";
+import config from "../../config.json";
 
 
 import { LooseObject } from "../index";
@@ -44,34 +44,21 @@ module.exports = {
     const userXP = await dbxp.get(message.author.id);
 
     // user xp
-    if (!userXP || userXP === undefined) {
-      console.log("no xp lmao");
-      
+    if (!userXP || userXP === undefined) {      
       await dbxp.set(message.author.id, 1); // set to 1 for 1 XP
       return;
     } else {
-      console.log("mans got xp");
       
       
       // if new level, post XP
-
-      console.log(
-        toLevel(Math.trunc(userXP)) + 1 , toLevel(Math.trunc(userXP))
-      );
-
-      console.log(
-        toLevel(Math.trunc(userXP)) + 1 > toLevel(Math.trunc(userXP))
-      );
-      
       if (toLevel(Math.trunc(userXP)) + 1 > toLevel(Math.trunc(userXP)) ) {
-        console.log("new lvl reached");
         
         // send level xp to xp channel
         const canvas = Canvas.createCanvas(700, 250);
         const ctx = canvas.getContext("2d");
 
         // Since the image takes time to load, you should await it
-        const background = await Canvas.loadImage("/home/user/github-pulls/faculty-bot/images/banner.png");
+        const background = await Canvas.loadImage("/home/user/github-pulls/faculty-bot/src/images/banner.png");
         // This uses the canvas dimensions to stretch the image onto the entire canvas
         ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
         // Select the color of the stroke
@@ -111,13 +98,6 @@ module.exports = {
         console.log(
           
         );
-        
-
-        console.log(
-          `${message.author} has leveled up!`
-        );
-        
-
         let lvlmsg = await message.guild?.channels.cache.find(
             chn => chn.name == settings.channels.xp
         )?.fetch() as TextChannel;

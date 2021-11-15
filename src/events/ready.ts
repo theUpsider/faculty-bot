@@ -1,5 +1,5 @@
 import { Client, ClientEvents, Message, MessageAttachment, TextChannel } from "discord.js";
-import settings from '../general-settings.json';
+import settings from '../../general-settings.json';
 import { download } from '../functions/extensions';
 import { fromPath } from "pdf2pic"; 
 module.exports = {
@@ -37,10 +37,12 @@ module.exports = {
               if (new Date().getHours() >= settings.settings.mealplanhourscheck) {
                 let channel = client.channels.cache.get(settings.channels.mealPlan) as TextChannel;
                 // check if already posted today
+                // get last message from channel
+                
                 // if not been posted today
                 channel.messages.fetch({ limit: 1 }).then(messages => {
-                  let lastMessage = messages?.first()?.createdTimestamp?.toString();
-                  if (new Date(lastMessage as string).getDate() != new Date().getDate()) {
+                  let lastMessage = channel.lastMessage?.createdTimestamp;
+                  if (new Date(lastMessage!).getDate() != new Date().getDate()) {
                     if (channel != undefined) {
                       download(settings.settings.mealplan, settings.settings.mealplanpdfpath).then(download => {
       
@@ -64,6 +66,9 @@ module.exports = {
       
                       })
                     }
+                  } else {
+                    //console.log("Mensaplan wurde heute schon pfostiert!");
+                    
                   }
                 }).catch(console.error);
               }

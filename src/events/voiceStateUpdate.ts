@@ -1,7 +1,7 @@
 import { VoiceState, Permissions, VoiceChannel, PermissionOverwriteManager, Snowflake } from "discord.js";
 import Keyv from "keyv";
-import { LooseObject } from "..";
-import settings from '../general-settings.json';
+import { LooseObject } from "../index";
+import settings from '../../general-settings.json';
 
 module.exports = {
     event: "voiceStateUpdate",
