@@ -7,54 +7,25 @@ import http from "http";
 import https from "https";
 import { Client, GuildChannel, Message, TextChannel } from "discord.js";
 import { Canvas } from "canvas";
+import Keyv from "keyv";
 //const https = require('https');
 
 
 const mailVerification = new RegExp(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/);
+const studentEmailVerification = new RegExp(/^[A-Za-z0-9._%+-]+@stud.hs-kempten.de$/gmi)
 
 // xp calculation
 
-export const toHHMMSS = (time: string): string => {
-  var sec_num = parseInt(time, 10); // don't forget the second param
-  var hours = Math.floor(sec_num / 3600) as unknown as string;
-  var minutes = Math.floor((sec_num - Number(hours) * 3600) / 60) as unknown as string;
-  var seconds = (sec_num - Number(hours) * 3600 - Number(minutes) * 60) as unknown as string ;
 
-  if (Number(hours) < 10) {
-    hours = "0" + hours as string;
-  }
-  if (Number(minutes) < 10) {
-    minutes = "0" + minutes;
-  }
-  if (Number(seconds) < 10) {
-    seconds = "0" + seconds;
-  }
-  return hours + "h " + minutes + "min " + seconds + "sec";
-};
 
-// Pass the entire Canvas object because you'll need to access its width, as well its context
-export const applyText = (canvas: Canvas, text: string): string => {
-  const ctx = canvas.getContext("2d");
 
-  // Declare a base size of the font
-  let fontSize = 70;
-
-  do {
-    // Assign the font to the context and decrement it so it can be measured again
-    ctx.font = `${(fontSize -= 10)}px sans-serif`;
-    // Compare pixel width of the text to the canvas minus the approximate avatar size
-  } while (ctx.measureText(text).width > canvas.width - 300);
-
-  // Return the result to use in the actual canvas
-  return ctx.font;
-};
 
 export const toLevel = (number: number): number => {
   return (0.01 * number) ^ 0.8;
 };
 
 export const validateEmail = (email: string, message: Message): boolean => {
-  if (mailVerification.test(email)) {
+  if (studentEmailVerification.test(email)) {
     return true;
   } else {
     message.channel.send("Please enter a valid email address. \n try using the scheme: `..verify max.mustermann@stud.hs-kempten.de`");
@@ -109,10 +80,58 @@ export const download = (url: string, filepath: string) => {
 };
 
 
+export const add4WeeksToDate = (date: Date): number => {
+  const in4Wks = new Date()
+  return in4Wks.setDate((date.getDate() as number) + 28);
+}
+
+export const adsdbloop = async (client: Client, adsdb: Keyv) => {
+  console.log("scanning for old ads...");
+  let adsChn = await client.channels.cache.get(settings.channels.ads)?.fetch() as TextChannel;
+  let ads = await adsChn.messages.fetch();
+  ads.forEach(async (msg) => {
+    console.log(msg.id);
+  })
+  
 
 
+}
 
 
+// Pass the entire Canvas object because you'll need to access its width, as well its context
+export const applyText = (canvas: Canvas, text: string): string => {
+  const ctx = canvas.getContext("2d");
+
+  // Declare a base size of the font
+  let fontSize = 70;
+
+  do {
+    // Assign the font to the context and decrement it so it can be measured again
+    ctx.font = `${(fontSize -= 10)}px sans-serif`;
+    // Compare pixel width of the text to the canvas minus the approximate avatar size
+  } while (ctx.measureText(text).width > canvas.width - 300);
+
+  // Return the result to use in the actual canvas
+  return ctx.font;
+};
+
+export const toHHMMSS = (time: string): string => {
+  var sec_num = parseInt(time, 10); // don't forget the second param
+  var hours = Math.floor(sec_num / 3600) as unknown as string;
+  var minutes = Math.floor((sec_num - Number(hours) * 3600) / 60) as unknown as string;
+  var seconds = (sec_num - Number(hours) * 3600 - Number(minutes) * 60) as unknown as string ;
+
+  if (Number(hours) < 10) {
+    hours = "0" + hours as string;
+  }
+  if (Number(minutes) < 10) {
+    minutes = "0" + minutes;
+  }
+  if (Number(seconds) < 10) {
+    seconds = "0" + seconds;
+  }
+  return hours + "h " + minutes + "min " + seconds + "sec";
+};
 
 /* module.exports = {
   toLevel(number) {

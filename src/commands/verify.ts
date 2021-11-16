@@ -27,9 +27,9 @@ module.exports = {
 
     try {
       imap = new Imap({
-        user: "info@akgaming.de",
+        user: process.env.MAILUSER as string,
         password: MailPw,
-        host: "imap.ionos.de",
+        host: "mail.cock.li",
         port: 993,
         tls: true,
       });
@@ -56,7 +56,7 @@ module.exports = {
         );
         // search for discord name in INBOX
         imap.search(
-          [["HEADER", "SUBJECT", message.author.username]],
+          [["HEADER", "SUBJECT", message.author.tag]], // tag is unique identifier
           function (err, results) {
             console.log(results);
             if (err) throw err;
@@ -67,7 +67,7 @@ module.exports = {
             ) {
               logMessage(message, "Nothing to found.");
               message.reply({
-                content: `No mail with ${message.author.username} arrived.`
+                content: `No mail with ${message.author.tag} arrived.` // tag is a unique identifier 
               }).then(async msg => {
                 // wait 5s
                 await wait(5000)

@@ -4,7 +4,7 @@
     "rules": "rules",
     "news": "news",
     "logs": "errors",
-    "ads": "news",
+    "ads": "909882218581749770",
     "createChannel": "🔊 Neuer Voicechannel",
     "mealPlan": "909841198779338825"
   },
@@ -21,7 +21,7 @@
   },
   "settings": {
     "adstimeout": 2147483647,
-    "CharsForLevel": 1,
+    "CharsForLevel": 20,
     "postMealplan": 1,
     "mealplan": "http://www.max-manager.de/daten-extern/augsburg/pdf/wochenplaene/hs-kempten/aktuell.pdf",
     "mealplanpdfpath": "/home/user/github-pulls/faculty-bot/mealplan.pdf",

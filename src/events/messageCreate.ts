@@ -13,9 +13,9 @@ module.exports = {
     async execute (client: LooseObject, [message] : [Message], { dbxp } : { dbxp: Keyv }) {
       
         if (message.author.bot) return; // bye bye robots 
-		    const regex = new RegExp(`^(<@!?${client.user.id}>|${config.prefix.toLowerCase()})\\s*`);
+		    const regex = new RegExp(`^(<@!?${client.user?.id}>|${config.prefix.toLowerCase()})\\s*\\w*`);
         // prefix should also be mention
-
+      
   // no command! - simple message to track for XP
   if (message.content.toLocaleLowerCase().startsWith(`verify`)) {
     message.reply("You need to use ..verify");
@@ -27,18 +27,22 @@ module.exports = {
     }
   }
 
-  if (!message.content.toLowerCase().startsWith(config.prefix)) {
+  if (!regex.test(message.content)) {
     
     // handle ads
-    // if (message.channel.name == settings.channels.ads) {
-    //   // TODO extend to database + calculation for the case the bot crashes
-    //   var deletionDate = Date.now();
-    //   deletionDate.setMilliseconds(
-    //     deletionDate.getMilliseconds() + settings.settings.adstimeout
-    //   );
-    //   console.info(`ad posted. Will be deleted on ${deletionDate}`);
-    //   message.delete({ timeout: settings.settings.adstimeout }); // 4 weeks
-    // }
+     if ((message.channel as TextChannel ).id == settings.channels.ads) {
+       // TODO extend to database + calculation for the case the bot crashes
+       var deletionDate = new Date();
+       deletionDate.setMilliseconds(
+         (deletionDate.getMilliseconds() as number) + settings.settings.adstimeout
+       );
+       console.info(`ad posted. Will be deleted on ${deletionDate}`);
+       // put into db
+       const adsdb = new Keyv("sqlite://ads.sqlite");
+        adsdb.on("error", (err: any) => console.error("Keyv connection error:", err));
+       adsdb.set(message.id, deletionDate);
+       //message.delete(); // 4 weeks
+     }
 
 
     const userXP = await dbxp.get(message.author.id);
@@ -135,7 +139,7 @@ module.exports = {
   
 
   //filter args
-  const args = message.content.slice(process.env.PREFIX?.length).split(/ +/); //filter args
+  const args = message.content.slice(config.prefix.length).split(/ +/); //filter args
   const commandName = args.shift()?.toLowerCase();
 
   //command checking aliases
@@ -190,6 +194,8 @@ module.exports = {
   // Execute command
   // ----------------------------------------------------------------------------------------------------------------------------------------------
   try {
+    console.log("tryna execute ");
+    
     command.execute(message, args);
   } catch (error) {
     console.error(error);

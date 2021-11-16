@@ -69,6 +69,8 @@ const commandFiles = fs
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   bot.commands.set(command.name, command); // with the key as the command name and the value as the exported module
+	console.log(`Loaded command ${command.name}`);
+
 }
 
 const events = fs.readdirSync(join(__dirname, 'events')).filter(file => file);

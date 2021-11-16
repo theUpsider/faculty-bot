@@ -2,9 +2,14 @@ import { Client, ClientEvents, Message, MessageAttachment, TextChannel } from "d
 import settings from '../../general-settings.json';
 import { download } from '../functions/extensions';
 import { fromPath } from "pdf2pic"; 
+import { add4WeeksToDate, adsdbloop } from "../functions/extensions"
+import Keyv from "keyv";
+
 module.exports = {
     event: "ready",
     async execute(client: Client) {
+
+        
         console.log(`${client.user?.tag } is ready!`);
         client.user?.setPresence({
             activities: [{
@@ -75,6 +80,10 @@ module.exports = {
             }
           }, meal_check_interval);
         }
+
+        /* setInterval(() => {
+          adsdbloop(client, new Keyv("sqlite://ads.sqlite"))
+        }, 10000) */
       
         // after startup, check if any voice channel are left over in the db (after a crash for example)
         // TODO:
