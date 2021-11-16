@@ -194,7 +194,6 @@ module.exports = {
   // Execute command
   // ----------------------------------------------------------------------------------------------------------------------------------------------
   try {
-    console.log("tryna execute ");
     
     command.execute(message, args);
   } catch (error) {
