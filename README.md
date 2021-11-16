@@ -24,8 +24,8 @@ MAILUSER=
 MAILPW=
 ```
 
-- To register the bot, a developer account at [Discord](https://discord.com/developers/) needs to be created. The key can be filled in the `config.json` under `token`.
-- To finally launch the bot, use `node index.js` in Powershell to launch the bot. Press CTRL + c to end the execution. The console will give useful log.
+- To register the bot, a developer account at [Discord](https://discord.com/developers/) needs to be created. The key can be filled in the `.env` under `TOKEN`.
+- To finally launch the bot, use `npm run build`, then `cd dist` and finally `node src/index.js` in Powershell to launch the bot. Press CTRL + c to end the execution. The console will give useful log.
 - For quick updates, stop the bot and use `git pull`. Start the bot again.
 
 ## Bot Settings
