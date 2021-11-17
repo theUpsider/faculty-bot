@@ -2,13 +2,13 @@ import { Message, TextChannel } from "discord.js";
 import settings from "../../general-settings.json";
 
 module.exports = {
-    name: "deletemsg",
-    description: "Deletes a message by its Id in the current channel",
+    name: "pinmsg",
+    description: "Pins a message by its Id in the current channel",
     args: true,
-    usage: "<channel-id><message id>",
+    usage: "<message id>",
     guildOnly: true,
     cooldown: 5,
-    aliases: ["delmsg", "del"],
+    aliases: ["pinmsg", "pin"],
     async execute(message: Message, args: string[]) {
 
         if (
@@ -26,8 +26,8 @@ module.exports = {
         
         message.channel.messages.fetch(msgId as string)
         .then(msg => {
-            msg.delete();
-            message.channel.send(`:white_check_mark: Message with id **${msgId}** pinned!`);
+          msg.pinnable ? msg.pin() : null;
+          message.channel.send(`:white_check_mark: Message with id **${msgId}** pinned`);
         })
         .catch(() => {
             return message.reply("The message id is invalid!");

@@ -16,7 +16,8 @@
   },
   "roles": {
     "staffrole": "devloper",
-    "verified": "devloper",
+    "semestermodrole": "semestermod",
+    "verified": "Student",
     "mealplannotify": "741364533263597610"
   },
   "settings": {
