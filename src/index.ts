@@ -1,23 +1,12 @@
 require("dotenv").config();
-import { Client, ClientEvents, Collection, MessageAttachment } from "discord.js"
+import { Client, Collection, MessageAttachment } from "discord.js"
 //const Discord = require("discord.js");
 import fetch from "node-fetch";
 import Keyv from "keyv"
 import sqlite from "sqlite3";
-//const { prefix, token, mailpw } = require("./config.json");
-const MailPw = process.env.MAILPW; // prevent on demand loading
 //const fs = require("fs");
 import fs from "fs";
 import { join } from "path";
-
-//inspect = require("util").inspect;
-import { inspect } from "util";
-import pdf2image from 'pdf2image'
-import { fromPath } from 'pdf2pic'
-
-//const pdf2image = require('pdf2image')
-//const { fromPath } = require("pdf2pic");
-
 export interface LooseObject {
   [key: string]: any
 }

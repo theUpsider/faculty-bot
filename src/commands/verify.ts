@@ -29,7 +29,7 @@ module.exports = {
       imap = new Imap({
         user: process.env.MAILUSER as string,
         password: MailPw,
-        host: "mail.cock.li",
+        host: "imap.ionos.de",
         port: 993,
         tls: true,
       });
