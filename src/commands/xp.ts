@@ -2,7 +2,6 @@ import { Message } from "discord.js";
 
 import Keyv from "keyv";
 import settings from "../../general-settings.json"
-const discord = require("discord.js");
 import { toLevel } from "../functions/extensions"
 
 module.exports = {

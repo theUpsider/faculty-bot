@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "dependencies": {
     "@keyv/sqlite": "^2.0.2",
+    "@keyvhq/core": "^1.6.2",
     "canvas": "^2.8.0",
     "discord.js": "^13.3.1",
     "dotenv": "^8.6.0",

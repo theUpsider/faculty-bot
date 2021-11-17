@@ -30,7 +30,7 @@ module.exports = {
   if (!regex.test(message.content)) {
     
     // handle ads
-     if ((message.channel as TextChannel ).id == settings.channels.ads) {
+    /*  if ((message.channel as TextChannel ).id == settings.channels.ads) {
        // TODO extend to database + calculation for the case the bot crashes
        var deletionDate = new Date();
        deletionDate.setMilliseconds(
@@ -42,7 +42,7 @@ module.exports = {
         adsdb.on("error", (err: any) => console.error("Keyv connection error:", err));
        adsdb.set(message.id, deletionDate);
        //message.delete(); // 4 weeks
-     }
+     } */
 
 
     const userXP = await dbxp.get(message.author.id);
@@ -57,15 +57,7 @@ module.exports = {
       // if new level, post XP
       let newXP = userXP + message.content.length / parseFloat(settings.settings.CharsForLevel.toString())
 
-      // check if newXP is +100 of prev XP
-
-      console.log(newXP, userXP);
-      console.log(newXP >= (userXP + 100 ));
-      
-      
-
-      
-      
+      // check if newXP is +100 of prev XP      
       if (newXP >= (userXP + 100 )) {
         
         // send level xp to xp channel
@@ -73,7 +65,7 @@ module.exports = {
         const ctx = canvas.getContext("2d");
 
         // Since the image takes time to load, you should await it
-        const background = await Canvas.loadImage("/home/user/github-pulls/faculty-bot/src/images/banner.png");
+        const background = await Canvas.loadImage("../images/banner.png");
         // This uses the canvas dimensions to stretch the image onto the entire canvas
         ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
         // Select the color of the stroke

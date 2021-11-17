@@ -58,11 +58,6 @@ let db = new sqlite.Database(":memory:", (err: any) => {
   console.log("Connected to the in-memory SQlite database.");
 });
 
-console.log(
-  __dirname
-);
-
-
 const commandFiles = fs
   .readdirSync(join(__dirname, 'commands'))
   .filter((file: any) => file); // read file with commands
