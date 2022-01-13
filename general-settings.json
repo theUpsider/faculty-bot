@@ -16,6 +16,7 @@
   },
   "roles": {
     "staffrole": "Admin",
+    "semestermodrole": "semestermod",
     "verified": "Student",
     "mealplannotify": "899619452897882142"
   },

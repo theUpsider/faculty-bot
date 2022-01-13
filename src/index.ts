@@ -1,64 +1,83 @@
 require("dotenv").config();
-const Discord = require("discord.js");
-const Canvas = require("canvas");
-const fetch = require("node-fetch");
-const Keyv = require("keyv");
-const sqlite3 = require("sqlite3").verbose();
-const { prefix, token, mailpw } = require("./config.json");
-const MailPw = mailpw; // prevent on demand loading
-const { toLevel, logMessage, downloadURI, download } = require("./functions/extensions.js");
-const settings = require("./general-settings.json");
-const fs = require("fs");
+import { Client, Collection, MessageAttachment } from "discord.js"
+//const Discord = require("discord.js");
+import fetch from "node-fetch";
+import Keyv from "keyv"
+import sqlite from "sqlite3";
+//const fs = require("fs");
+import fs from "fs";
+import { join } from "path";
+export interface LooseObject {
+  [key: string]: any
+}
 
-inspect = require("util").inspect;
-const pdf2image = require('pdf2image')
-const { fromPath } = require("pdf2pic");
-
-const bot = new Discord.Client();
+const bot: LooseObject = new Client({
+  intents: 32767, // we do a minor amount of tomfoolery
+  partials: ["MESSAGE", "CHANNEL", "REACTION", "GUILD_MEMBER", "USER"],
+});
 
 // Mail https://github.com/mscdex/node-imap
 
 // cooldowns
-const cooldowns = new Discord.Collection();
+bot.cooldowns = new Collection();
 // commands
-bot.commands = new Discord.Collection();
-const commandFiles = fs
-  .readdirSync("./commands")
-  .filter((file) => file.endsWith(".js")); // read file with commands
-for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
-  bot.commands.set(command.name, command); // with the key as the command name and the value as the exported module
-}
+bot.commands = new Collection();
+bot.events = new Collection();
+
+// Key: discord ID, Value: xp value
+const dbxp = new Keyv("sqlite://xp.sqlite"); // const keyv = new Keyv(); // for in-memory storage //
+dbxp.on("error", (err: Error) => console.error("Keyv connection error:", err));
+// Key: student-email, Value: verification date
+const dbverify = new Keyv("sqlite://verify.sqlite");
+dbverify.on("error", (err: Error) => console.error("Keyv connection error:", err));
+// Key: student-email, Value: discord-id
+const map_emailToId = new Keyv("sqlite://map_emailToId.sqlite");
+map_emailToId.on("error", (err: Error) =>
+  console.error("Keyv connection error:", err)
+);
+// Key: channelId, Value: channelId //TODO: No key value pair needed
+const dbvoicechannels = new Keyv("sqlite://voicechannels.sqlite"); // const keyv = new Keyv(); // for in-memory storage //
+dbvoicechannels.on("error", (err: Error) => console.error("Keyv connection error:", err));
 
 //db stuff
-let db = new sqlite3.Database(":memory:", (err) => {
+let db = new sqlite.Database(":memory:", (err: any) => {
   if (err) {
     return console.error(err.message);
   }
   console.log("Connected to the in-memory SQlite database.");
 });
 
-// Key: discord ID, Value: xp value
-const dbxp = new Keyv("sqlite://xp.sqlite"); // const keyv = new Keyv(); // for in-memory storage //
-dbxp.on("error", (err) => console.error("Keyv connection error:", err));
-// Key: student-email, Value: verification date
-const dbverify = new Keyv("sqlite://verify.sqlite");
-dbverify.on("error", (err) => console.error("Keyv connection error:", err));
-// Key: student-email, Value: discord-id
-const map_emailToId = new Keyv("sqlite://map_emailToId.sqlite");
-map_emailToId.on("error", (err) =>
-  console.error("Keyv connection error:", err)
-);
-// Key: channelId, Value: channelId //TODO: No key value pair needed
-const dbvoicechannels = new Keyv("sqlite://voicechannels.sqlite"); // const keyv = new Keyv(); // for in-memory storage //
-dbvoicechannels.on("error", (err) => console.error("Keyv connection error:", err));
+const commandFiles = fs
+  .readdirSync(join(__dirname, 'commands'))
+  .filter((file: any) => file); // read file with commands
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
+  bot.commands.set(command.name, command); // with the key as the command name and the value as the exported module
+	console.log(`Loaded command ${command.name}`);
+
+}
+
+const events = fs.readdirSync(join(__dirname, 'events')).filter(file => file);
+for (const file of events) {
+	const event = require(`./events/${file}`);
+	bot.events.set(event.event, event);
+
+	// client.on(event.event, e => client.events.get(event.event).execute(client, e, Ticket, Setting));
+	bot.on(event.event, (e1: any, e2: any) => bot.events.get(event.event).execute(bot, [e1, e2],
+    { dbxp, dbvoicechannels, dbverify, db} ));
+	console.log(`Loaded event ${event.event}`);
+}
+
+
+
+
 //--------------------------------------------------
 //                    BOT   LOGIN
 //--------------------------------------------------
-bot.login(token);
+bot.login(process.env.TOKEN);
 
 bot.on("ready", () => {
-  console.info(`Logged in as ${bot.user.tag}!`);
+/*   console.info(`Logged in as ${bot.user.tag}!`);
   bot.user.setActivity("use ..help", { type: "PLAYING" });
 
   // const options = {
@@ -113,12 +132,12 @@ bot.on("ready", () => {
   }
 
   // after startup, check if any voice channel are left over in the db (after a crash for example)
-  // TODO:
+  // TODO: */
 });
 //--------------------------------------------------
 //                  MESSAGE
 //--------------------------------------------------
-bot.on("message", async (message) => {
+/* bot.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
   // no command! - simple message to track for XP
@@ -246,7 +265,7 @@ bot.on("message", async (message) => {
 
   // cooldown
   if (!cooldowns.has(command.name)) {
-    cooldowns.set(command.name, new Discord.Collection());
+    cooldowns.set(command.name, new Collection());
   }
 
   const now = Date.now();
@@ -276,12 +295,12 @@ bot.on("message", async (message) => {
     console.error(error);
     message.reply("there was an error trying to execute that command!");
   }
-});
+}); */
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------
 // User Join
 // ----------------------------------------------------------------------------------------------------------------------------------------------
-bot.on("guildMemberAdd", (member) => {
+bot.on("guildMemberAdd", (member: any) => {
   // const embeded = new Discord.MessageEmbed()
   // 	.setColor(settings.colors.blue)
   // 	.setTitle(`A new user has joined`)
@@ -296,7 +315,7 @@ bot.on("guildMemberAdd", (member) => {
 // ----------------------------------------------------------------------------------------------------------------------------------------------
 // User Voice channel interaction
 // ----------------------------------------------------------------------------------------------------------------------------------------------
-bot.on("voiceStateUpdate", (oldState, newState) => {
+/* bot.on("voiceStateUpdate", (oldState, newState) => {
   try {
     let newUserChannelName = null;
     if (newState.channel !== null) {
@@ -351,10 +370,10 @@ bot.on("voiceStateUpdate", (oldState, newState) => {
   } catch (error) {
     console.error(error);
   }
-});
+}); */
 
 // make sure voice channels are tagged with 🔊
-bot.on("channelUpdate", (oldChannel, newChannel) => {
+/* bot.on("channelUpdate", (oldChannel, newChannel) => {
   if(newChannel == null)
     return;
 
@@ -369,29 +388,12 @@ bot.on("channelUpdate", (oldChannel, newChannel) => {
       }
     }
   });
-});
+}); */
 
 // extended functionality
 // ------------------------
-String.prototype.toHHMMSS = function () {
-  var sec_num = parseInt(this, 10); // don't forget the second param
-  var hours = Math.floor(sec_num / 3600);
-  var minutes = Math.floor((sec_num - hours * 3600) / 60);
-  var seconds = sec_num - hours * 3600 - minutes * 60;
 
-  if (hours < 10) {
-    hours = "0" + hours;
-  }
-  if (minutes < 10) {
-    minutes = "0" + minutes;
-  }
-  if (seconds < 10) {
-    seconds = "0" + seconds;
-  }
-  return hours + "h " + minutes + "min " + seconds + "sec";
-};
-
-function attachIsImage(msgAttach) {
+function attachIsImage(msgAttach: MessageAttachment) {
   var url = msgAttach.url;
   //True if this url is a png image.
   return (
@@ -409,19 +411,4 @@ async function updateBadges() {
   channel.send(file);
 }
 
-// Pass the entire Canvas object because you'll need to access its width, as well its context
-const applyText = (canvas, text) => {
-  const ctx = canvas.getContext("2d");
 
-  // Declare a base size of the font
-  let fontSize = 70;
-
-  do {
-    // Assign the font to the context and decrement it so it can be measured again
-    ctx.font = `${(fontSize -= 10)}px sans-serif`;
-    // Compare pixel width of the text to the canvas minus the approximate avatar size
-  } while (ctx.measureText(text).width > canvas.width - 300);
-
-  // Return the result to use in the actual canvas
-  return ctx.font;
-};

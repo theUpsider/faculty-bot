@@ -2,11 +2,12 @@
   "name": "tournament-bot",
   "version": "1.0.0",
   "description": "bot for tournament management",
-  "main": "index.js",
+  "main": "src/index.ts",
   "dependencies": {
     "@keyv/sqlite": "^2.0.2",
+    "@keyvhq/core": "^1.6.2",
     "canvas": "^2.8.0",
-    "discord.js": "^12.5.3",
+    "discord.js": "^13.3.1",
     "dotenv": "^8.6.0",
     "file-saver": "^2.0.5",
     "imap": "^0.8.19",
@@ -22,12 +23,24 @@
     "unirest": "^0.6.0"
   },
   "devDependencies": {
+    "@types/imap": "^0.8.35",
+    "@types/keyv": "^3.1.3",
+    "@types/node": "^16.11.7",
+    "@types/pdf2image": "^1.2.1",
+    "@types/sqlite3": "^3.1.7",
+    "@typescript-eslint/eslint-plugin": "^5.3.1",
+    "@typescript-eslint/parser": "^5.3.1",
+    "eslint": "^8.2.0",
     "lodash": ">=4.17.21",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.4.4",
     "webpack": "^4.46.0",
     "worker-loader": "^3.0.8"
   },
   "scripts": {
-    "test": "ping"
+    "test": "ping",
+    "build": "tsc ./src",
+    "start": "ts-node src/index.ts"
   },
   "repository": {
     "type": "git",

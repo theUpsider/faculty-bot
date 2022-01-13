@@ -1,7 +1,24 @@
+import { Message, MessageEmbed, TextChannel } from "discord.js";
+
 const discord = require("discord.js");
 const settings = require("../general-settings.json");
 
-module.exports = {
+export const log = async (message: Message, type: string, content: string) => {
+  let logChn = await message.guild?.channels.cache.find(
+    (channel) => channel.name == settings.channels.logs
+  )?.fetch() as TextChannel;
+
+  const logEmbed = new MessageEmbed()
+  .setTitle(`**${type}**`)
+  .setColor("GREEN")
+  .setDescription(content)
+
+  logChn.send({
+    embeds: [logEmbed]
+  })
+}
+
+/* module.exports = {
   async Log(message, Type, content) {
     let logChannel = await message.guild.channels.cache
       .find((channel) => channel.name == settings.channels.logs)
@@ -46,3 +63,4 @@ module.exports = {
     args[0].send(logEmbed);
   },
 };
+ */

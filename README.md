@@ -9,18 +9,23 @@ This project features a Discord bot, with the intend to reduce the administratio
 - To run the code itself, first you need [Node.js](https://nodejs.org/en/). Install this JavaScript runtime.
 - You need to download the project and execute  
   `npm install` inside the primary folder using Powershell (on Windows). This will install the neccesary dependencies.
-- Then you need to create a json file inside the directiory named: `config.json`. Inside you need to fill in the values needed to launch the bot: the discord developer API token, mail pw and the prefix used for every command:
+- Then you need to create a json file inside the directiory named: `config.json`. Inside you need to fill in the values needed to launch the bot: the prefix used for every command:
 
-```
+```json
 {
 	"prefix": "..",
-	"token": "TOKENGOESHERE",
-	"mailpw": "EMAILPWGOESHERE"
 }
 ```
+- Additionally, you'll have to create a `.env` file with the following content: TOKEN -> Your Bots Token, MAILUSER -> the e-mail address used for the `verify` command and MAILPW -> the password associated with the mail account
 
-- To register the bot, a developer account at [Discord](https://discord.com/developers/) needs to be created. The key can be filled in the `config.json` under `token`.
-- To finally launch the bot, use `node index.js` in Powershell to launch the bot. Press CTRL + c to end the execution. The console will give useful log.
+```sh
+TOKEN=
+MAILUSER=
+MAILPW=
+```
+
+- To register the bot, a developer account at [Discord](https://discord.com/developers/) needs to be created. The key can be filled in the `.env` under `TOKEN`.
+- To finally launch the bot, use `npm run build`, then `cd dist` and finally `node src/index.js` in Powershell to launch the bot. Press CTRL + c to end the execution. The console will give useful log.
 - For quick updates, stop the bot and use `git pull`. Start the bot again.
 
 ## Bot Settings
