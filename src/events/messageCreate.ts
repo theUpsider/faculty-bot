@@ -20,11 +20,7 @@ import { LooseObject } from "../index";
 
 module.exports = {
   event: "messageCreate",
-  async execute(
-    client: LooseObject,
-    [message]: [Message],
-    { dbxp }: { dbxp: Keyv }
-  ) {
+  async execute(client: LooseObject, [message]: [Message]) {
     if (message.author.bot) return; // bye bye robots
     const regex = new RegExp(
       `^(<@!?${client.user?.id}>|${config.prefix.toLowerCase()})\\s*\\w*`
@@ -57,6 +53,12 @@ module.exports = {
        adsdb.set(message.id, deletionDate);
        //message.delete(); // 4 weeks
      } */
+
+      // Key: iD, Value: XP
+      const dbxp = new Keyv("sqlite://xp.sqlite");
+      dbxp.on("error", (err: any) =>
+        console.error("Keyv connection error:", err)
+      );
 
       const userXP = await dbxp.get(message.author.id);
 
