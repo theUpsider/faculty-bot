@@ -25,20 +25,20 @@ bot.commands = new Collection();
 bot.events = new Collection();
 
 // Key: discord ID, Value: xp value
-const dbxp = new Keyv("sqlite://../xp.sqlite"); // const keyv = new Keyv(); // for in-memory storage //
+const dbxp = new Keyv("sqlite://xp.sqlite"); // const keyv = new Keyv(); // for in-memory storage //
 dbxp.on("error", (err: Error) => console.error("Keyv connection error:", err));
 // Key: student-email, Value: verification date
-const dbverify = new Keyv("sqlite://../verify.sqlite");
+const dbverify = new Keyv("sqlite://verify.sqlite");
 dbverify.on("error", (err: Error) =>
   console.error("Keyv connection error:", err)
 );
 // Key: student-email, Value: discord-id
-const map_emailToId = new Keyv("sqlite://../map_emailToId.sqlite");
+const map_emailToId = new Keyv("sqlite://map_emailToId.sqlite");
 map_emailToId.on("error", (err: Error) =>
   console.error("Keyv connection error:", err)
 );
 // Key: channelId, Value: channelId //TODO: No key value pair needed
-const dbvoicechannels = new Keyv("sqlite://../voicechannels.sqlite"); // const keyv = new Keyv(); // for in-memory storage //
+const dbvoicechannels = new Keyv("sqlite://voicechannels.sqlite"); // const keyv = new Keyv(); // for in-memory storage //
 dbvoicechannels.on("error", (err: Error) =>
   console.error("Keyv connection error:", err)
 );

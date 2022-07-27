@@ -1,8 +1,7 @@
 import { Message } from "discord.js";
 
 import Keyv from "keyv";
-import settings from "../../general-settings.json"
-import { toLevel } from "../functions/extensions"
+import { toLevel } from "../functions/extensions";
 
 module.exports = {
   name: "xp",
@@ -11,11 +10,13 @@ module.exports = {
   args: false,
   guildOnly: true,
   aliases: ["level", "exp", "progress"],
-  async execute(message: Message, args: string[]) {
+  async execute(message: Message, _args: string[]) {
     //db1
     // Key: iD, Value: XP
     const dbxp = new Keyv("sqlite://xp.sqlite");
-    dbxp.on("error", (err: any) => console.error("Keyv connection error:", err));
+    dbxp.on("error", (err: any) =>
+      console.error("Keyv connection error:", err)
+    );
 
     const userXP = await dbxp.get(message.author.id); // is weird but works that way
 
@@ -25,7 +26,9 @@ module.exports = {
       return;
     } else {
       message.reply(
-        `you have ${Math.trunc(userXP)} XP. This equals to ${toLevel(Math.trunc(userXP))} Levels.`
+        `you have ${Math.trunc(userXP)} XP. This equals to ${toLevel(
+          Math.trunc(userXP)
+        )} Levels.`
       );
     }
     return;
