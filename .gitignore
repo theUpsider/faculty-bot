@@ -62,6 +62,7 @@ typings/
 ./general-settings.json
 
 ./dist
+dist/
 
 # next.js build output
 .next

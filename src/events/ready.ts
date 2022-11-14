@@ -43,39 +43,42 @@ module.exports = {
                 let channel = client.channels.cache.get(settings.channels.mealPlan) as TextChannel;
                 // check if already posted today
                 // get last message from channel
-                
-                // if not been posted today
-                channel.messages.fetch({ limit: 1 }).then(messages => {
-                  let lastMessage = channel.lastMessage?.createdTimestamp;
-                  if (new Date(lastMessage!).getDate() != new Date().getDate()) {
-                    if (channel != undefined) {
-                      download(settings.settings.mealplan, settings.settings.mealplanpdfpath).then(download => {
-      
-                        console.log("Mensaplan downloaded");
-                        // ConvertedFile
-                        const storeAsImage = fromPath(settings.settings.mealplanpdfpath, settings.settings.mealplansettings);
-                        const pageToConvertAsImage = 1;
-      
-                        storeAsImage(pageToConvertAsImage).then((resolve: any) => {
-                          console.log("Mensaplan converted");   
-                          channel.send({
-                            content: `<@&${settings.roles.mealplannotify}>`,
-                            files: [
-                              resolve.path
-                            ]
-                          })
-                          //channel.send(`<@&${settings.roles.mealplannotify}>`, { files: [resolve.path] });
-                          channel.send("En Guada")
-                          return resolve;
-                        });
-      
-                      })
+                if(channel)
+                  // if not been posted today
+                  channel.messages.fetch({ limit: 1 }).then(messages => {
+                    let lastMessage = channel.lastMessage?.createdTimestamp;
+                    if (new Date(lastMessage!).getDate() != new Date().getDate()) {
+                      if (channel != undefined) {
+                        download(settings.settings.mealplan, settings.settings.mealplanpdfpath).then(download => {
+        
+                          console.log("Mensaplan downloaded");
+                          // ConvertedFile
+                          const storeAsImage = fromPath(settings.settings.mealplanpdfpath, settings.settings.mealplansettings);
+                          const pageToConvertAsImage = 1;
+        
+                          storeAsImage(pageToConvertAsImage).then((resolve: any) => {
+                            console.log("Mensaplan converted");
+                            let roleId = channel.guild.roles.cache.find(
+                              role => role.name === settings.roles.mealplannotify
+                              );
+                            channel.send({
+                              content: `<@&${roleId}>`,
+                              files: [
+                                resolve.path
+                              ]
+                            })
+                            //channel.send(`<@&${settings.roles.mealplannotify}>`, { files: [resolve.path] });
+                            channel.send("En Guada")
+                            return resolve;
+                          });
+        
+                        })
+                      }
+                    } else {
+                      //console.log("Mensaplan wurde heute schon pfostiert!");
+                      
                     }
-                  } else {
-                    //console.log("Mensaplan wurde heute schon pfostiert!");
-                    
-                  }
-                }).catch(console.error);
+                  }).catch(console.error);
               }
             }
           }, meal_check_interval);

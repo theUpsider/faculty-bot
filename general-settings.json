@@ -15,10 +15,10 @@
     "red": "#cf0a0a"
   },
   "roles": {
-    "staffrole": "Admin",
+    "staffrole": "Administration",
     "semestermodrole": "semestermod",
     "verified": "Student",
-    "mealplannotify": "899619452897882142"
+    "mealplannotify": "mensaplan"
   },
   "settings": {
     "adstimeout": 2147483647,
@@ -29,7 +29,7 @@
     "mealplancheck": 1,
     "mealplandaycheck": 1,
     "mealplanhourscheck": 8,
-    "mealplansettings":{
+    "mealplansettings": {
       "density": 400,
       "quality": 100,
       "saveFilename": "mensaplan",
