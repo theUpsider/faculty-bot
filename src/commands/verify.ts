@@ -95,29 +95,28 @@ async function registerMember(subject: string, mail: string, message: any) {
         return;
       }
 
-      // if mail matches the username and ID not present do verification
-      if (subject === message.author.username + "#" + message.author.discriminator)
-        await addMember(
-          message,
-          mail,
-          memberToAdd,
-          subject,
-          dbverify,
-          db_map_emailToId
-        );
-      else {
-        logMessage(
-          message,
-          `"${message.author.username}" with mail subject "${subject}" send another username via mail: ${mail}. Mistake or trying to let someone else in?`
-        );
-        message.reply(
-          `You tried to verify a wrong username: ${subject}. Yours is: ${message.author.username}`
-        );
-      }
-
       if (!verifymailDate || verifymailDate === undefined) {
         // if mail is registered and new discord user in mail -> impostor!
         console.log("Newbie. First Server!");
+        // if mail matches the username and ID not present do verification
+        if (subject === message.author.username + "#" + message.author.discriminator)
+          await addMember(
+            message,
+            mail,
+            memberToAdd,
+            subject,
+            dbverify,
+            db_map_emailToId
+          );
+        else {
+          logMessage(
+            message,
+            `"${message.author.username}" with mail subject "${subject}" send another username via mail: ${mail}. Mistake or trying to let someone else in?`
+          );
+          message.reply(
+            `You tried to verify a wrong username: ${subject}. Yours is: ${message.author.username}`
+          );
+        }
       } else if (
         memberToAdd.roles.cache.has(
           memberToAdd.guild.roles.cache.find(
@@ -132,6 +131,7 @@ async function registerMember(subject: string, mail: string, message: any) {
           message,
           `${message.author.username} user tried to verify again with mail: "${mail}", although having no role. Possibly was on other faculty before.`
         );
+        message.reply("You are have been already on another server. Please contact a staff member.");
       }
     } catch (error) {
       console.log(error);

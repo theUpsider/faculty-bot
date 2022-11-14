@@ -38,7 +38,7 @@ module.exports = {
         .catch(console.error);
     }
 
-    if (!regex.test(message.content)) {
+    if (!message.content.toLocaleLowerCase().startsWith(`..`)) {
       // handle ads
       /*  if ((message.channel as TextChannel ).id == settings.channels.ads) {
        // TODO extend to database + calculation for the case the bot crashes
@@ -71,7 +71,7 @@ module.exports = {
         let newXP =
           userXP +
           message.content.length /
-            parseFloat(settings.settings.CharsForLevel.toString());
+          parseFloat(settings.settings.CharsForLevel.toString());
 
         // check if newXP is +100 of prev XP
         if (newXP >= userXP + 100) {
@@ -134,12 +134,13 @@ module.exports = {
         }
 
         // New 1 XP for 200 chars. That means 200 chars equals to one XP Point
+        const lengthPoints = message.content.length / parseFloat(settings.settings.CharsForLevel.toString());
+
         dbxp.set(
           message.author.id,
-          userXP +
-            message.content.length /
-              parseFloat(settings.settings.CharsForLevel.toString())
+          userXP + lengthPoints
         );
+        console.log("XP: " + userXP + " + " + lengthPoints + " = " + (userXP + lengthPoints));
       }
 
       return;
@@ -188,8 +189,7 @@ module.exports = {
       if (now < expirationTime) {
         const timeLeft = (expirationTime - now) / 1000;
         return message.reply(
-          `please wait ${toHHMMSS(timeLeft.toFixed(1))} before reusing the \`${
-            command.name
+          `please wait ${toHHMMSS(timeLeft.toFixed(1))} before reusing the \`${command.name
           }\` command.`
         );
       }
