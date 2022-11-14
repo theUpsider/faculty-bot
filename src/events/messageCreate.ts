@@ -140,7 +140,7 @@ module.exports = {
           message.author.id,
           userXP + lengthPoints
         );
-        console.log("XP: " + userXP + " + " + lengthPoints + " = " + (userXP + lengthPoints));
+        // console.log("XP: " + userXP + " + " + lengthPoints + " = " + (userXP + lengthPoints));
       }
 
       return;
