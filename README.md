@@ -2,31 +2,29 @@
 
 ## Introduction
 
-This project features a Discord bot, with the intend to reduce the administration overhead for faculty related tasks. The bot takes care of verifying new server members.
+This project features a Discord bot, with the intent to reduce the administration overhead for faculty related tasks. The bot takes care of verifying new server members.
 
 ## Setting up the bot
 
-- To run the code itself, first you need [Node.js](https://nodejs.org/en/). Install this JavaScript runtime.
+- To run the code itself, first you need [The Rust Toolchain](https://rust-lang.org). Install this.
 - You need to download the project and execute  
-  `npm install` inside the primary folder using Powershell (on Windows). This will install the neccesary dependencies.
-- Then you need to create a json file inside the directiory named: `config.json`. Inside you need to fill in the values needed to launch the bot: the prefix used for every command:
+  `cargo build --release` inside the primary folder using Powershell (on Windows). This will compile a release optimized build of the bot
 
-```json
-{
-	"prefix": "..",
-}
-```
-- Additionally, you'll have to create a `.env` file with the following content: TOKEN -> Your Bots Token, MAILUSER -> the e-mail address used for the `verify` command and MAILPW -> the password associated with the mail account
 
+- Additionally, you'll have to create a `.env` file with the following content:
+- 
 ```sh
-TOKEN=
+DISCORD_TOKEN=
 MAILUSER=
 MAILPW=
+SMTP_SERVER=
+SMTP_PORT=
+
+RUST_LOG=warn
 ```
 
 - To register the bot, a developer account at [Discord](https://discord.com/developers/) needs to be created. The key can be filled in the `.env` under `TOKEN`.
-- To finally launch the bot, use `npm run build`, then `cd dist` and finally `node src/index.js` in Powershell to launch the bot. Press CTRL + c to end the execution. The console will give useful log.
-- For quick updates, stop the bot and use `git pull`. Start the bot again.
+- To finally launch the bot, use `./target/{release|debug}/faculty_manager`, depending on if you compiled with the release flag or not.
 
 ## Bot Settings
 
@@ -74,9 +72,6 @@ Here you may speficy other adjustable settings of the bot.
       - height": 512
     }
 
-### Other
-
-In the config.js, the mail server and aithentication in verify.js needs to be filled in.
 
 ## Commands
 
