@@ -56,17 +56,18 @@ module.exports = {
                           const storeAsImage = fromPath(settings.settings.mealplanpdfpath, settings.settings.mealplansettings);
                           const pageToConvertAsImage = 1;
         
-                          storeAsImage(pageToConvertAsImage).then((resolve: any) => {
+                          storeAsImage(pageToConvertAsImage).then(async (resolve: any) => {
                             console.log("Mensaplan converted");
                             let roleId = channel.guild.roles.cache.find(
                               role => role.name === settings.roles.mealplannotify
                               );
-                            channel.send({
+                            const planMsg = await channel.send({
                               content: `<@&${roleId}>`,
                               files: [
                                 resolve.path
                               ]
                             })
+                            planMsg.crosspostable ? planMsg.crosspost() : console.log("Mensaplan not crosspostable")
                             //channel.send(`<@&${settings.roles.mealplannotify}>`, { files: [resolve.path] });
                             channel.send("En Guada")
                             return resolve;
@@ -75,7 +76,7 @@ module.exports = {
                         })
                       }
                     } else {
-                      //console.log("Mensaplan wurde heute schon pfostiert!");
+                      console.log("Mensaplan wurde heute schon pfostiert!");
                       
                     }
                   }).catch(console.error);

@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Message, MessageEmbed } from "discord.js";
 
 const { prefix } = require("../../config.json");
 module.exports = {
@@ -8,9 +8,10 @@ module.exports = {
   aliases: ["commands"],
   usage: "<command name>",
   cooldown: 5,
-  execute(message: any, args: any) {
+  execute(message: Message, args: any) {
     const data: string[] = [];
-    const { commands } = message.client;
+
+    const { commands } = message.client as any;
 
     if (!args.length) {
       data.push("Here's a list of all my commands:");
@@ -28,7 +29,7 @@ module.exports = {
 			]
 		})
         .then(() => {
-          if (message.channel.type === "dm") return;
+          if (message.channel.type === "DM") return;
           message.reply("I've sent you a DM with all my commands!");
         })
         .catch((error: any) => {

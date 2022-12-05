@@ -22,6 +22,7 @@ module.exports = {
   event: "messageCreate",
   async execute(client: LooseObject, [message]: [Message]) {
     if (message.author.bot) return; // bye bye robots
+    console.log(message.content);
     const regex = new RegExp(
       `^(<@!?${client.user?.id}>|${config.prefix.toLowerCase()})\\s*\\w*`
     );
@@ -149,6 +150,10 @@ module.exports = {
     //filter args
     const args = message.content.slice(config.prefix.length).split(/ +/); //filter args
     const commandName = args.shift()?.toLowerCase();
+    console.log({
+      commandName,
+      args,
+    });
 
     //command checking aliases
     const command =
@@ -156,7 +161,7 @@ module.exports = {
       client.commands.find(
         (cmd: any) => cmd.aliases && cmd.aliases.includes(commandName)
       );
-
+        console.log(command);
     if (!command) return;
 
     //error checking

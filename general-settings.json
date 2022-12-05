@@ -6,7 +6,7 @@
     "logs": "logs",
     "ads": "stellenausschreibungen",
     "createChannel": "🔊 Neuer Voicechannel",
-    "mealPlan": "899606239804268545"
+    "mealPlan": "1049322486560469025"
   },
   "colors": {
     "blue": "#4200ff",
@@ -18,14 +18,14 @@
     "staffrole": "Administration",
     "semestermodrole": "semestermod",
     "verified": "Student",
-    "mealplannotify": "mensaplan"
+    "mealplannotify": "Mitglied"
   },
   "settings": {
     "adstimeout": 2147483647,
     "CharsForLevel": 200,
     "postMealplan": 1,
     "mealplan": "http://www.max-manager.de/daten-extern/augsburg/pdf/wochenplaene/hs-kempten/aktuell.pdf",
-    "mealplanpdfpath": "/home/akgaming/discord/faculty/usability-bot/mealplan.pdf",
+    "mealplanpdfpath": "../mealplan.pdf",
     "mealplancheck": 1,
     "mealplandaycheck": 1,
     "mealplanhourscheck": 8,
