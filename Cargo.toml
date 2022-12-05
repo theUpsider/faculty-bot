@@ -2,13 +2,14 @@
 name = "faculty_manager"
 version = "0.1.0"
 edition = "2021"
+authors = ["Jan H <hi@rndrmu.moe>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 
 
 [dependencies]
-poise = { version = "0.3.0", features = ["cache"]}
+poise = { version = "0.5.0", features = ["cache"]}
 tokio = { version = "1", features = ["full"] }
 dotenv = "0.15"
 tracing = "0.1"

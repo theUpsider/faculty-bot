@@ -34,12 +34,12 @@ async fn main() -> Result<(), Error> {
                 age(),
             ],
             prefix_options: poise::PrefixFrameworkOptions {
-                prefix: Some(">".to_string()),
+                prefix: Some("..".to_string()),
                 ..Default::default()
             },
             ..Default::default()
         })
-        .user_data_setup(move |_ctx, _ready, _framework| {
+        .setup(move |_ctx, _ready, _framework| {
             Box::pin(async move {
                 Ok(Data {
                     answer_to_life_the_universe_and_everything: 42,
@@ -68,9 +68,13 @@ async fn register(ctx: Context<'_>) -> Result<(), Error> {
 
 #[poise::command(slash_command, prefix_command)]
 async fn age(
-    _ctx: Context<'_>,
+    ctx: Context<'_>,
     #[description = "Selected user"] user: Option<serenity::User>,
 ) -> Result<(), Error> {
-    println!("{:?}", user);
+    
+    let user = user.as_ref().unwrap_or_else(|| ctx.author());
+
+    ctx.say(format!("{}'s account was made <t:{}:R> ", user.name, user.id.created_at().timestamp())).await?;
+
     Ok(())
 }
