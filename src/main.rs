@@ -1,3 +1,5 @@
+mod utils;
+
 use dotenv::dotenv;
 use poise::{
     self,
@@ -6,6 +8,8 @@ use poise::{
         GatewayIntents,
     }
 };
+
+use rand::Rng;
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, Data, Error>;
@@ -60,21 +64,41 @@ async fn main() -> Result<(), Error> {
 
 
 
-#[poise::command(prefix_command)]
+#[poise::command(
+    prefix_command
+)]
 async fn register(ctx: Context<'_>) -> Result<(), Error> {
     poise::builtins::register_application_commands_buttons(ctx).await?;
     Ok(())
 }
 
-#[poise::command(slash_command, prefix_command)]
+#[poise::command(
+    slash_command,
+    prefix_command
+)]
 async fn age(
     ctx: Context<'_>,
     #[description = "Selected user"] user: Option<serenity::User>,
 ) -> Result<(), Error> {
-    
+
+    ctx.defer_or_broadcast().await?;
+
     let user = user.as_ref().unwrap_or_else(|| ctx.author());
 
-    ctx.say(format!("{}'s account was made <t:{}:R> ", user.name, user.id.created_at().timestamp())).await?;
+    let mensaplan = utils::fetch_mensaplan().await?;
+    
+    ctx.send(|msg| {
+        msg.embed(|embed| {
+            embed.title("Age");
+            embed.description(format!("{}'s account was created <t:{}:R>", user.name, user.id.created_at().timestamp() ));
+            embed
+        })
+        .attachment(serenity::AttachmentType::Bytes { 
+            data: std::borrow::Cow::Borrowed(&mensaplan),
+            filename: "mensaplan.png".to_string(),
+         })
+    }).await?;
 
     Ok(())
 }
+
