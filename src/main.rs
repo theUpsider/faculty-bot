@@ -1,5 +1,6 @@
 mod utils;
 mod eventhandler;
+mod config;
 
 use dotenv::dotenv;
 use poise::{
@@ -32,6 +33,8 @@ pub mod prelude {
         NetRequest(reqwest::Error),
         /// Error with a custom message
         WithMessage(String),
+        /// Error from the sqlx migration
+        Migration(sqlx::migrate::MigrateError),
         /// Idk bruh, don't ask me
         Unknown
     }
@@ -64,12 +67,29 @@ pub struct Data {
 async fn main() -> Result<(), prelude::Error> {
     dotenv().ok();
 
-    let conn = Connection::open_in_memory().unwrap();
 
     tracing_subscriber::fmt::init();
     tracing::info!("Starting up");
 
     let token = std::env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
+
+    let db_conn = SqlitePoolOptions::new()
+        .max_connections(5)
+        .connect_with(
+            sqlx::sqlite::SqliteConnectOptions::new()
+                .filename("database.db")
+                .create_if_missing(true)
+        )
+        .await.map_err(prelude::Error::Database)?;
+
+        //sqlx::migrate!().run(&db_conn).await.map_err(prelude::Error::Migration)?;
+
+        // run "faculty_manager.sql"
+
+        sqlx::query_file!("migrations/faculty_manager.sql")
+            .execute(&db_conn)
+            .await
+            .map_err(prelude::Error::Database)?;
 
 
     poise::Framework::builder()
@@ -92,15 +112,7 @@ async fn main() -> Result<(), prelude::Error> {
         .setup(move |_ctx, _ready, _framework| {
             Box::pin(async move {
                 Ok(Data {
-                    db: SqlitePoolOptions::new()
-                        .max_connections(5)
-                        .connect_with(
-                            sqlx::sqlite::SqliteConnectOptions::new()
-                                .filename("database.db")
-                                .create_if_missing(true),
-                        )
-                        .await
-                        .map_err(prelude::Error::Database)?,
+                    db: db_conn.clone(),
                 })
             })
         })
