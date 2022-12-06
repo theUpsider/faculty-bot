@@ -1,4 +1,5 @@
 mod utils;
+mod eventhandler;
 
 use dotenv::dotenv;
 use poise::{
@@ -40,6 +41,11 @@ async fn main() -> Result<(), Error> {
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("..".to_string()),
                 ..Default::default()
+            },
+            event_handler: |ctx, event, framework, data| {
+                Box::pin(async move {
+                    eventhandler::event_listener(ctx, event, &framework, data).await
+                })
             },
             ..Default::default()
         })

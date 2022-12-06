@@ -1,3 +1,4 @@
+use poise::serenity_prelude as serenity;
 use tokio::{process::{
     Command,
 }, io::{AsyncWriteExt, AsyncReadExt}};
@@ -51,4 +52,40 @@ pub async fn fetch_mensaplan() -> Result<Vec<u8>, Error> {
     }
 
 
+}
+
+
+pub async fn show_levelup_image(user: &serenity::User, level: u16) -> Result<Vec<u8>, Error> {
+    let mut file = tokio::fs::File::open("images/banner.png").await?;
+    println!("got image");
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer).await?;
+//convert banner.png -gravity West -pointsize 35 -fill white -draw "text 280,-30 'galaali has reached'" -draw "text 280,45 'LEVEL 187'"  jpeg:-
+
+    let with_text = Command::new("convert")
+        .arg("images/banner.png")
+        .arg("-font")
+        .arg("images/Roboto-Bold.ttf")
+        .arg("-gravity")
+        .arg("West")
+        .arg("-pointsize")
+        .arg("35")
+        .arg("-fill")
+        .arg("white")
+        .arg("-draw")
+        .arg(format!("text 280,-30 '{} has reached'", user.name))
+        .arg("-draw")
+        .arg(format!("text 280,45 'LEVEL {}'", level))
+        .arg("jpeg:-")
+        .output()
+        .await;
+
+
+
+    if let Ok(with_text) = with_text {
+        Ok(with_text.stdout)
+    } else {
+        Err(String::from("Could not convert image").into())
+    }
+    
 }
