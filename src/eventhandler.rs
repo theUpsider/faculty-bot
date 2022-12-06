@@ -1,7 +1,7 @@
 use poise::serenity_prelude::{self as serenity, Mentionable, AttachmentType};
 use crate::{
     Data,
-    Error, utils,
+    prelude::Error, utils,
 };
 use rand::Rng;
 
@@ -24,9 +24,10 @@ pub async fn event_listener(
             new_message
                 .channel_id
                 .say(&ctx.http, format!("{} hat {} xp bekommen (Jetzt bei {:.2})", new_message.author.mention(), xp, new_xp))
-                .await?;
+                .await
+                .map_err(Error::Serenity)?;
 
-            let image = &utils::show_levelup_image(&new_message.author, 1).await?;
+            let image = utils::show_levelup_image(&new_message.author, 1).await?;
             
             new_message
                 .channel_id
@@ -37,7 +38,8 @@ pub async fn event_listener(
                         filename: "levelup.png".into()
                     })
                 })
-                .await?;
+                .await
+                .map_err(Error::Serenity)?;
 
         }
         _ => {}

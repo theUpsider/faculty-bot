@@ -8,7 +8,7 @@ use std::{process::{
     ChildStdin
 }, os};
 
-use crate::Error;
+use crate::prelude::Error;
 
 
 
@@ -21,7 +21,7 @@ async fn pdf_to_png(filepath: std::path::PathBuf) -> Result<Vec<u8>, Error> {
         .arg("-flatten")
         .arg("png:-")
         .output()
-        .await?
+        .await.map_err(Error::IO)?
         .stdout;
 
 
@@ -43,10 +43,17 @@ pub async fn fetch_mensaplan() -> Result<Vec<u8>, Error> {
     } else {
         // download mensaplan
         println!("Mensaplan is not cached");
-        let response = reqwest::get(url).await?;
+        let response = reqwest::get(url).await.map_err(Error::NetRequest)?;
         let tempdir = std::env::temp_dir();
-        let mut file = tokio::fs::File::create(tempdir.join("mensaplan.pdf")).await?;
-        file.write_all(&response.bytes().await?).await?;
+        let mut file = tokio::fs::File::create(tempdir.join("mensaplan.pdf")).await.map_err(Error::IO)?;
+        
+        file
+            .write_all(
+                &response.bytes()
+                .await.map_err(Error::NetRequest)?
+            ).await.map_err(Error::IO)?;
+        
+        
         let png = pdf_to_png(tempdir.join("mensaplan.pdf")).await?;
         Ok(png)
     }
@@ -56,10 +63,10 @@ pub async fn fetch_mensaplan() -> Result<Vec<u8>, Error> {
 
 
 pub async fn show_levelup_image(user: &serenity::User, level: u16) -> Result<Vec<u8>, Error> {
-    let mut file = tokio::fs::File::open("images/banner.png").await?;
+    let mut file = tokio::fs::File::open("images/banner.png").await.map_err(Error::IO)?;
     println!("got image");
     let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer).await?;
+    file.read_to_end(&mut buffer).await.map_err(Error::IO)?;
 //convert banner.png -gravity West -pointsize 35 -fill white -draw "text 280,-30 'galaali has reached'" -draw "text 280,45 'LEVEL 187'"  jpeg:-
 
     let with_text = Command::new("convert")
@@ -85,7 +92,9 @@ pub async fn show_levelup_image(user: &serenity::User, level: u16) -> Result<Vec
     if let Ok(with_text) = with_text {
         Ok(with_text.stdout)
     } else {
-        Err(String::from("Could not convert image").into())
+        Err(
+            Error::WithMessage("Could not convert image".into())
+        )
     }
     
 }

@@ -9,12 +9,41 @@ use poise::{
         GatewayIntents,
     }
 };
+use sqlx::sqlite::SqlitePoolOptions;
 
 use rand::Rng;
 
-pub type Error = Box<dyn std::error::Error + Send + Sync>;
-pub type Context<'a> = poise::Context<'a, Data, Error>;
-pub type ApplicationContext<'a> = poise::ApplicationContext<'a, Data, Error>;
+pub mod prelude {
+    use super::*;
+    type GenericError = Box<dyn std::error::Error + Send + Sync>;
+
+    #[derive(Debug)]
+    pub enum Error {
+        Serenity(serenity::Error),
+        Database(sqlx::Error),
+        Generic(GenericError),
+        IO(std::io::Error),
+        NetRequest(reqwest::Error),
+        WithMessage(String),
+
+    }
+
+    impl std::fmt::Display for Error {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            match self {
+                Error::Serenity(e) => write!(f, "Serenity error: {}", e),
+                Error::Database(e) => write!(f, "Database error: {}", e),
+                Error::Generic(e) => write!(f, "Generic error: {}", e),
+                Error::IO(e) => write!(f, "IO error: {}", e),
+                Error::NetRequest(e) => write!(f, "NetRequest error: {}", e),
+                Error::WithMessage(e) => write!(f, "WithMessage error: {}", e),
+            }
+        }
+    }
+}
+
+pub type Context<'a> = poise::Context<'a, Data, prelude::Error>;
+pub type ApplicationContext<'a> = poise::ApplicationContext<'a, Data, prelude::Error>;
 
 
 #[derive(Clone)]
@@ -23,7 +52,7 @@ pub struct Data {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<(), prelude::Error> {
     dotenv().ok();
 
     tracing_subscriber::fmt::init();
@@ -60,9 +89,9 @@ async fn main() -> Result<(), Error> {
         .intents(GatewayIntents::all())
         
         .build()
-        .await?
+        .await.map_err(prelude::Error::Serenity)?
         .start_autosharded()
-        .await?;
+        .await.map_err(prelude::Error::Serenity)?;
 
 
     Ok(())
@@ -73,8 +102,8 @@ async fn main() -> Result<(), Error> {
 #[poise::command(
     prefix_command
 )]
-async fn register(ctx: Context<'_>) -> Result<(), Error> {
-    poise::builtins::register_application_commands_buttons(ctx).await?;
+async fn register(ctx: Context<'_>) -> Result<(), prelude::Error> {
+    poise::builtins::register_application_commands_buttons(ctx).await.map_err(prelude::Error::Serenity)?;
     Ok(())
 }
 
@@ -85,9 +114,9 @@ async fn register(ctx: Context<'_>) -> Result<(), Error> {
 async fn age(
     ctx: Context<'_>,
     #[description = "Selected user"] user: Option<serenity::User>,
-) -> Result<(), Error> {
+) -> Result<(), prelude::Error> {
 
-    ctx.defer_or_broadcast().await?;
+    ctx.defer_or_broadcast().await.map_err(prelude::Error::Serenity)?;
 
     let user = user.as_ref().unwrap_or_else(|| ctx.author());
 
@@ -103,7 +132,7 @@ async fn age(
             data: std::borrow::Cow::Borrowed(&mensaplan),
             filename: "mensaplan.png".to_string(),
          })
-    }).await?;
+    }).await.map_err(prelude::Error::Serenity)?;
 
     Ok(())
 }
