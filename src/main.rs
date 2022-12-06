@@ -18,14 +18,22 @@ pub mod prelude {
     type GenericError = Box<dyn std::error::Error + Send + Sync>;
 
     #[derive(Debug)]
+    #[non_exhaustive]
     pub enum Error {
+        /// Error from the Serenity library, usually Discord related
         Serenity(serenity::Error),
+        /// Error returned from sqlite
         Database(sqlx::Error),
+        /// Generic error
         Generic(GenericError),
+        /// Error returned from IO (Subprocess/File)
         IO(std::io::Error),
+        /// Error returned from a network request
         NetRequest(reqwest::Error),
+        /// Error with a custom message
         WithMessage(String),
-
+        /// Idk bruh, don't ask me
+        Unknown
     }
 
     impl std::fmt::Display for Error {
@@ -36,7 +44,8 @@ pub mod prelude {
                 Error::Generic(e) => write!(f, "Generic error: {}", e),
                 Error::IO(e) => write!(f, "IO error: {}", e),
                 Error::NetRequest(e) => write!(f, "NetRequest error: {}", e),
-                Error::WithMessage(e) => write!(f, "WithMessage error: {}", e),
+                Error::WithMessage(e) => write!(f, "An error occured: {}", e),
+                _ => write!(f, "Unknown error occured, ask the developers for more information"),
             }
         }
     }
@@ -48,12 +57,14 @@ pub type ApplicationContext<'a> = poise::ApplicationContext<'a, Data, prelude::E
 
 #[derive(Clone)]
 pub struct Data {
-    pub answer_to_life_the_universe_and_everything: u32,
+    pub db: sqlx::SqlitePool,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), prelude::Error> {
     dotenv().ok();
+
+    let conn = Connection::open_in_memory().unwrap();
 
     tracing_subscriber::fmt::init();
     tracing::info!("Starting up");
@@ -81,7 +92,15 @@ async fn main() -> Result<(), prelude::Error> {
         .setup(move |_ctx, _ready, _framework| {
             Box::pin(async move {
                 Ok(Data {
-                    answer_to_life_the_universe_and_everything: 42,
+                    db: SqlitePoolOptions::new()
+                        .max_connections(5)
+                        .connect_with(
+                            sqlx::sqlite::SqliteConnectOptions::new()
+                                .filename("database.db")
+                                .create_if_missing(true),
+                        )
+                        .await
+                        .map_err(prelude::Error::Database)?,
                 })
             })
         })
