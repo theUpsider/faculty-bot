@@ -6,7 +6,8 @@ This project features a Discord bot, with the intent to reduce the administratio
 
 ## Setting up the bot
 
-- To run the code itself, first you need [The Rust Toolchain](https://rust-lang.org). Install this.
+- To run the code itself, first you need [The Rust Programming Language](https://rust-lang.org).
+  Install this using `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` and choose the `stable` toolchain
 - You need to download the project and execute  
   `cargo build --release` inside the primary folder using Powershell (on Windows). This will compile a release optimized build of the bot
 
@@ -23,7 +24,7 @@ SMTP_PORT=
 RUST_LOG=warn
 ```
 
-- To register the bot, a developer account at [Discord](https://discord.com/developers/) needs to be created. The key can be filled in the `.env` under `TOKEN`.
+- To register the bot, a developer account at [Discord](https://discord.com/developers/) needs to be created. The key can be filled in the `.env` under `DISCORD_TOKEN`.
 - To finally launch the bot, use `./target/{release|debug}/faculty_manager`, depending on if you compiled with the release flag or not.
 
 ## Bot Settings
@@ -33,7 +34,7 @@ In order for the bot to communicate with channels, you need to edit the `general
 ### Roles
 
 - staffrole: this is the management role, which may edit the bot via commands.  
-- verified: after a playeer verified with his account. Use this role as you please, maybe to show and hide some channels.
+- verified: after a user verified with his account. Use this role as you please, maybe to show and hide some channels.
 - mealplannotify: role id which will get pinged if new mealplan has been posted
 
 ### Channels
