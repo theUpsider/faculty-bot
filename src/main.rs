@@ -97,6 +97,7 @@ async fn main() -> Result<(), prelude::Error> {
             commands: vec![
                 register(),
                 age(),
+                test(),
             ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("..".to_string()),
@@ -168,3 +169,18 @@ async fn age(
     Ok(())
 }
 
+
+#[poise::command(
+    slash_command,
+    prefix_command
+)]
+async fn test(
+    _ctx: Context<'_>,
+    #[description = "Selected user"] user: Option<serenity::User>,
+) -> Result<(), prelude::Error> {
+
+    return Err(
+        prelude::Error::WithMessage("This is a test".to_string())
+    )
+
+}
