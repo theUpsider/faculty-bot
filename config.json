@@ -29,7 +29,7 @@
     "url": "http://www.max-manager.de/daten-extern/augsburg/pdf/wochenplaene/hs-kempten/aktuell.pdf",
     "check": true,
     "postOnDay": "Monday",
-    "postAtHour": 8,
+    "postAtHour": "08:00:00",
     "imgsettings": {
       "density": 400,
       "quality": 100,

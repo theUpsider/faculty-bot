@@ -7,7 +7,7 @@ use poise::serenity_prelude as serenity;
 
 use crate::prelude::{self, Error};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FacultyManagerConfig {
     pub channels: FacultyManagerChannelConfig,
@@ -18,7 +18,7 @@ pub struct FacultyManagerConfig {
     pub mealplan: FacultyManagerMealplanConfig,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FacultyManagerChannelConfig {
     pub xp: serenity::ChannelId,
@@ -30,7 +30,7 @@ pub struct FacultyManagerChannelConfig {
     pub mealplan: serenity::ChannelId,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FacultyManagerColorConfig {
     pub blue: String,
@@ -39,7 +39,7 @@ pub struct FacultyManagerColorConfig {
     pub red: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FacultyManagerRoleConfig {
     pub staffrole: serenity::RoleId,
@@ -48,24 +48,24 @@ pub struct FacultyManagerRoleConfig {
     pub mealplannotify: serenity::RoleId,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FacultyManagerGeneralConfig {
     pub adstimeout: u64,
     pub chars_for_level: u64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FacultyManagerMealplanConfig {
     pub url: String,
     pub post_mealplan: bool,
-    pub post_on_day: WeekDay,
-    pub post_at_hour: u16,
+    pub post_on_day: chrono::Weekday,
+    pub post_at_hour: chrono::NaiveTime,
     pub imgsettings: MealplanImageSettings,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct MealplanImageSettings {
     pub density: u16,
@@ -85,16 +85,7 @@ fn default_color_config() -> FacultyManagerColorConfig {
 }
 
 
-#[derive(Debug, Serialize, Deserialize)]
-pub enum WeekDay {
-    Monday,
-    Tuesday,
-    Wednesday,
-    Thursday,
-    Friday,
-    Saturday,
-    Sunday,
-}
+
 
 pub fn read_config() -> Result<FacultyManagerConfig, prelude::Error> {
     let config = std::fs::read_to_string("config.json").map_err(Error::IO)?;

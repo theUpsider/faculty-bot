@@ -1,7 +1,10 @@
 mod utils;
 mod eventhandler;
 mod config;
+mod tasks;
 
+
+use chrono::Timelike;
 use dotenv::dotenv;
 use poise::{
     self,
@@ -68,6 +71,7 @@ pub type ApplicationContext<'a> = poise::ApplicationContext<'a, Data, prelude::E
 #[derive(Clone)]
 pub struct Data {
     pub db: sqlx::SqlitePool,
+    pub config: config::FacultyManagerConfig,
 }
 
 #[tokio::main]
@@ -76,7 +80,10 @@ async fn main() -> Result<(), prelude::Error> {
 
     // read config.json
     let config = config::read_config()?;
-    println!("{:?}", config);
+
+    // print mealplan post day and time
+    println!("Mealplan will be posted on {:?} at {:?}", config.mealplan.post_on_day, config.mealplan.post_at_hour);
+
 
     tracing_subscriber::fmt::init();
     tracing::info!("Starting up");
@@ -123,7 +130,8 @@ async fn main() -> Result<(), prelude::Error> {
         .setup(move |_ctx, _ready, _framework| {
             Box::pin(async move {
                 Ok(Data {
-                    db: db_conn.clone(),
+                    db: db_conn,
+                    config: config,
                 })
             })
         })
