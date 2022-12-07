@@ -118,6 +118,7 @@ async fn main() -> Result<(), prelude::Error> {
             ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some(config.prefix.clone()),
+                mention_as_prefix: true,
                 ..Default::default()
             },
             event_handler: |ctx, event, framework, data| {
