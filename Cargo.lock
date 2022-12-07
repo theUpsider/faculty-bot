@@ -1339,9 +1339,9 @@ checksum = "6ac9a59f73473f1b8d852421e59e64809f025994837ef743615c6d0c5b305160"
 
 [[package]]
 name = "poise"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc82ff5958a3e68daa22595e2409bcccb5ae15a8bf4ef519292353cd6cf2d739"
+checksum = "8e4dc40f8d13a883d64f89b25daeebb6622fd138f2518b7b2196da12fd9dd6cc"
 dependencies = [
  "async-trait",
  "derivative",

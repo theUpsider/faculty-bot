@@ -9,7 +9,7 @@ authors = ["Jan H <hi@rndrmu.moe>"]
 
 
 [dependencies]
-poise = { version = "0.5.0", features = ["cache"]}
+poise = { version = "0.5.1", features = ["cache"]}
 tokio = { version = "1", features = ["full"] }
 dotenv = "0.15"
 tracing = "0.1"

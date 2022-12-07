@@ -12,24 +12,30 @@ This project features a Discord bot, with the intent to reduce the administratio
   `cargo build --release` inside the primary folder using Powershell (on Windows). This will compile a release optimized build of the bot
 
 
-- Additionally, you'll have to create a `.env` file with the following content:
-- 
+- Create a `.env` file with the following content:
 ```sh
 DISCORD_TOKEN=
+
+DATABASE_URL=
+
+PREFIX=
+
 MAILUSER=
 MAILPW=
 SMTP_SERVER=
 SMTP_PORT=
 
+# optional, but recommended if you want logs
 RUST_LOG=warn
 ```
 
-- To register the bot, a developer account at [Discord](https://discord.com/developers/) needs to be created. The key can be filled in the `.env` under `DISCORD_TOKEN`.
+- To register the bot, an application at [Discord's Developer Portal](https://discord.dev) needs to be created. The Token can be filled in the `.env` under `DISCORD_TOKEN`.
 - To finally launch the bot, use `./target/{release|debug}/faculty_manager`, depending on if you compiled with the release flag or not.
 
 ## Bot Settings
 
-In order for the bot to communicate with channels, you need to edit the `general-settings.json` and paste in the names of the channels and roles. Those need to be created before launching the bot. Case sensitive!
+In order for the bot to communicate with channels, you need to edit the `config.json` and paste in the Id's of the channels and roles. 
+Those need to be created before launching the bot.
 
 ### Roles
 
@@ -59,16 +65,13 @@ Here you may speficy other adjustable settings of the bot.
 - CharsForLevel: how many characters in a message should equal to 1 Point of Experience
 - postMealplan: (bool) activates the mealplan posting functionality
 	- mealplan : (url) place to download mealplan i.e. http://www.meal/one.pdf
-    - mealplanpdfpath": (path) local path to save and load mealplan
-    - mealplan-check": (int) minutes between the mealplan update check
-    - mealplandaycheck": (int) weekday on which the check and post occurs (0 - 6) (Sun - Sat)
-	- mealplanhourscheck: (int) time at what the check occurs. i.e. 8 for 8am
+    - mealplan-check": (u16) minutes between the mealplan update check
+    - postOnDay": (String) weekday on which the check and post occurs "Monday - Sunday"
+	- postAtHour (String) Hour at which the plan will be posted
     - mealplansettings": (list) default settings for the converter. change if applicable
       - density": 400,
       - quality": 100,
-      - saveFilename": "mensaplan",
-      - savePath": "./",
-      - format": "png",
+      - flatten: true
       - width": 768,
       - height": 512
     }

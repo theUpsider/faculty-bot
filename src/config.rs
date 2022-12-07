@@ -63,6 +63,7 @@ pub struct FacultyManagerMealplanConfig {
     pub post_on_day: chrono::Weekday,
     pub post_at_hour: chrono::NaiveTime,
     pub imgsettings: MealplanImageSettings,
+    pub check: u16
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

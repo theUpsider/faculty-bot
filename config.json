@@ -27,7 +27,7 @@
   "mealplan": {
     "postMealplan": true,
     "url": "http://www.max-manager.de/daten-extern/augsburg/pdf/wochenplaene/hs-kempten/aktuell.pdf",
-    "check": true,
+    "check": 30,
     "postOnDay": "Monday",
     "postAtHour": "08:00:00",
     "imgsettings": {
