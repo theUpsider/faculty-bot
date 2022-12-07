@@ -10,6 +10,7 @@ use crate::prelude::{self, Error};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FacultyManagerConfig {
+    pub prefix: String,
     pub channels: FacultyManagerChannelConfig,
     #[serde(default = "default_color_config")]
     pub colors: FacultyManagerColorConfig,

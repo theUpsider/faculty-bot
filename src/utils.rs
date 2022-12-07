@@ -29,8 +29,7 @@ async fn pdf_to_png(filepath: std::path::PathBuf) -> Result<Vec<u8>, Error> {
 }
 
 /// Fetch newest Mensaplans from the website
-pub async fn fetch_mensaplan() -> Result<Vec<u8>, Error> {
-    let url = "http://www.max-manager.de/daten-extern/augsburg/pdf/wochenplaene/hs-kempten/aktuell.pdf";
+pub async fn fetch_mensaplan<'a>(url: &'a str) -> Result<Vec<u8>, Error> {
 
     println!("Fetching Mensaplan from {}", url);
 

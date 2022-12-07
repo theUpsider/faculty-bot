@@ -117,7 +117,7 @@ async fn main() -> Result<(), prelude::Error> {
                 test(),
             ],
             prefix_options: poise::PrefixFrameworkOptions {
-                prefix: Some("..".to_string()),
+                prefix: Some(config.prefix.clone()),
                 ..Default::default()
             },
             event_handler: |ctx, event, framework, data| {
@@ -131,7 +131,7 @@ async fn main() -> Result<(), prelude::Error> {
             Box::pin(async move {
                 Ok(Data {
                     db: db_conn,
-                    config: config,
+                    config,
                 })
             })
         })
@@ -170,7 +170,7 @@ async fn age(
 
     let user = user.as_ref().unwrap_or_else(|| ctx.author());
 
-    let mensaplan = utils::fetch_mensaplan().await?;
+    let mensaplan = utils::fetch_mensaplan(&ctx.data().config.mealplan.url).await?;
     
     ctx.send(|msg| {
         msg.embed(|embed| {
