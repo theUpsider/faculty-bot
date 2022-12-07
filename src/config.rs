@@ -5,6 +5,8 @@ use serde::{
 
 use poise::serenity_prelude as serenity;
 
+use crate::prelude::{self, Error};
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FacultyManagerConfig {
@@ -31,10 +33,10 @@ pub struct FacultyManagerChannelConfig {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FacultyManagerColorConfig {
-    pub blue: serenity::Color,
-    pub lightblue: serenity::Color,
-    pub green: serenity::Color,
-    pub red: serenity::Color,
+    pub blue: String,
+    pub lightblue: String,
+    pub green: String,
+    pub red: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -57,8 +59,7 @@ pub struct FacultyManagerGeneralConfig {
 #[serde(rename_all = "camelCase")]
 pub struct FacultyManagerMealplanConfig {
     pub url: String,
-    pub pdf_path: String,
-    pub check: bool,
+    pub post_mealplan: bool,
     pub post_on_day: WeekDay,
     pub post_at_hour: u16,
     pub imgsettings: MealplanImageSettings,
@@ -76,10 +77,10 @@ pub struct MealplanImageSettings {
 
 fn default_color_config() -> FacultyManagerColorConfig {
     FacultyManagerColorConfig {
-        blue: serenity::Color::from_rgb(0, 0, 255),
-        lightblue: serenity::Color::from_rgb(0, 255, 255),
-        green: serenity::Color::from_rgb(0, 255, 0),
-        red: serenity::Color::from_rgb(255, 0, 0),
+        blue: "#007bff".to_string(),
+        lightblue: "#17a2b8".to_string(),
+        green: "#28a745".to_string(),
+        red: "#dc3545".to_string(),
     }
 }
 
@@ -93,4 +94,16 @@ pub enum WeekDay {
     Friday,
     Saturday,
     Sunday,
+}
+
+pub fn read_config() -> Result<FacultyManagerConfig, prelude::Error> {
+    let config = std::fs::read_to_string("config.json").map_err(Error::IO)?;
+    let config: FacultyManagerConfig = serde_json::from_str(&config).map_err(Error::Serde)?;
+    Ok(config)
+}
+
+fn hex_to_color(color: impl Into<String>) -> Result<serenity::Color, Error> {
+    let color = color.into();
+    let color = u32::from_str_radix(&color, 16).map_err(Error::ParseIntError)?;
+    Ok(serenity::Color::from(color))
 }

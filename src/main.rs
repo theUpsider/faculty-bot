@@ -35,6 +35,10 @@ pub mod prelude {
         WithMessage(String),
         /// Error from the sqlx migration
         Migration(sqlx::migrate::MigrateError),
+        /// Error from the serde_json library
+        Serde(serde_json::Error),
+        /// Error when parsing goes wrong
+        ParseIntError(std::num::ParseIntError),
         /// Idk bruh, don't ask me
         Unknown
     }
@@ -48,6 +52,9 @@ pub mod prelude {
                 Error::IO(e) => write!(f, "IO error: {}", e),
                 Error::NetRequest(e) => write!(f, "NetRequest error: {}", e),
                 Error::WithMessage(e) => write!(f, "An error occured: {}", e),
+                Error::Migration(e) => write!(f, "Migration error: {}", e),
+                Error::Serde(e) => write!(f, "Deserialization error: {}", e),
+                Error::ParseIntError(e) => write!(f, "ParseIntError: {}", e),
                 _ => write!(f, "Unknown error occured, ask the developers for more information"),
             }
         }
@@ -67,6 +74,9 @@ pub struct Data {
 async fn main() -> Result<(), prelude::Error> {
     dotenv().ok();
 
+    // read config.json
+    let config = config::read_config()?;
+    println!("{:?}", config);
 
     tracing_subscriber::fmt::init();
     tracing::info!("Starting up");
@@ -87,7 +97,7 @@ async fn main() -> Result<(), prelude::Error> {
         // run "faculty_manager.sql"
 
         sqlx::query_file!("migrations/faculty_manager.sql")
-            .execute(&db_conn)
+            .execute(&db_conn) 
             .await
             .map_err(prelude::Error::Database)?;
 
