@@ -95,8 +95,3 @@ pub fn read_config() -> Result<FacultyManagerConfig, prelude::Error> {
     Ok(config)
 }
 
-fn hex_to_color(color: impl Into<String>) -> Result<serenity::Color, Error> {
-    let color = color.into();
-    let color = u32::from_str_radix(&color, 16).map_err(Error::ParseIntError)?;
-    Ok(serenity::Color::from(color))
-}

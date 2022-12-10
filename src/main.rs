@@ -4,7 +4,6 @@ mod config;
 mod tasks;
 
 
-use chrono::Timelike;
 use dotenv::dotenv;
 use poise::{
     self,
@@ -15,7 +14,6 @@ use poise::{
 };
 use sqlx::sqlite::SqlitePoolOptions;
 
-use rand::Rng;
 
 pub mod prelude {
     use super::*;
@@ -195,7 +193,7 @@ async fn age(
 )]
 async fn test(
     _ctx: Context<'_>,
-    #[description = "Selected user"] user: Option<serenity::User>,
+    #[description = "Selected user"] _user: Option<serenity::User>,
 ) -> Result<(), prelude::Error> {
 
     return Err(

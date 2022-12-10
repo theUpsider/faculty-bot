@@ -3,7 +3,6 @@ use crate::{
     Data,
     prelude::Error, utils,
 };
-use rand::Rng;
 
 pub async fn event_listener(
     ctx: &serenity::Context,

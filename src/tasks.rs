@@ -1,26 +1,24 @@
+#![allow(unused_variables, unused_mut, dead_code)]
+
 use crate::{
-    config::{FacultyManagerConfig, self},
-    utils::fetch_mensaplan,
+    config::FacultyManagerConfig,
     prelude::Error,
-    Data, Context
+    Data
 };
 
 use poise::serenity_prelude as serenity;
 
-use tokio::sync::mpsc::{
-    self,
-    Sender,
-    Receiver,
-};
+use tokio::sync::mpsc;
 
-use chrono::{Weekday, Datelike, Timelike};
+use chrono::{Datelike, Timelike};
 
 /// Posts the mensa plan for the current week
 pub async fn post_mensaplan(ctx: &serenity::Context, config: FacultyManagerConfig, data: &Data) -> Result<(), Error> {
+    #![allow(unused_variables, unused_mut)]
     let (tx, mut rx) = mpsc::channel::<()>(1);
 
-    let mut post_day = config.mealplan.post_on_day;
-    let mut post_time = config.mealplan.post_at_hour;
+    let post_day = config.mealplan.post_on_day;
+    let post_time = config.mealplan.post_at_hour;
     let db = data.db.clone();
 
     let task = tokio::spawn(async move {
