@@ -23,7 +23,7 @@
   },
   "general": {
     "adstimeout": 2147483647,
-    "charsForLevel": 200
+    "charsForLevel": 25
   },
   "mealplan": {
     "postMealplan": true,

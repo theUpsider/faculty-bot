@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `verified_users` (
 
 CREATE TABLE IF NOT EXISTS `user_xp` (
     'user_id' INTEGER PRIMARY KEY NOT NULL,
-    'user_xp' INTEGER NOT NULL
+    'user_xp' REAL
 );
 
 

@@ -23,17 +23,19 @@ pub async fn event_listener(
                 .fetch_optional(&data.db)
                 .await
                 .map_err(Error::Database)?
-                .map(|row| row.user_xp)
-                .unwrap_or(0);
+                .map(|row| row.user_xp.unwrap_or(0.) )
+                .unwrap_or(0.);
+
+            
 
             println!("{}: {}", new_message.author.name, xp);
-
-            // add xp
-            let xp_to_add = msg.content.chars().count() as i64 / 20;
-            xp += xp_to_add;
             
+            // add xp
+            let xp_to_add = msg.content.chars().count() as f64 / data.config.general.chars_for_level as f64;
+            xp += xp_to_add;
+            let xp_float = xp as f64;
             // update xp in db 
-            sqlx::query!("INSERT INTO user_xp (user_id, user_xp) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET user_xp = $2", user_id, xp)
+            sqlx::query!("INSERT INTO user_xp (user_id, user_xp) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET user_xp = $2", user_id, xp_float)
                 .execute(&data.db)
                 .await
                 .map_err(Error::Database)?;
@@ -41,11 +43,11 @@ pub async fn event_listener(
             println!("{}: {} -> {}", new_message.author.name, xp - xp_to_add, xp);
 
             // check if lvl up
-            if (xp - xp_to_add) / 100 == (xp / 100) {
+            if (xp - xp_to_add) as f64 / 100. == (xp / 100.) {
                 return Ok(());
             } else {
                 // get lvl from xp
-                let lvl = (xp / 100) as u16;
+                let lvl = (xp / 100.) as u16;
                 
                 if lvl == 0 {
                     return Ok(());

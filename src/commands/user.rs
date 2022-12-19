@@ -63,7 +63,7 @@ pub async fn leaderboard(
     for (i, user) in users.iter().enumerate() {
         if let Some(uid) = user.user_id {
             let usr = serenity::UserId(uid as u64).to_user(&ctx).await.map_err(Error::Serenity)?;
-            leaderboard.push_str(&format!("{}. {} - {}\n", i + 1, usr.tag(), user.user_xp.unwrap_or(0) ));
+            leaderboard.push_str(&format!("{}. {} - {}\n", i + 1, usr.tag(), user.user_xp.unwrap_or(0.) ));
         }
     }
 
