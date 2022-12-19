@@ -1,12 +1,10 @@
 use poise::serenity_prelude as serenity;
-use tokio::{process::{
-    Command,
-}, io::{AsyncWriteExt, AsyncReadExt}};
-
+use tokio::{
+    io::{AsyncReadExt, AsyncWriteExt},
+    process::Command,
+};
 
 use crate::prelude::Error;
-
-
 
 /// Comverts a pdf file to a png buffer
 async fn pdf_to_png(filepath: std::path::PathBuf) -> Result<Vec<u8>, Error> {
@@ -17,16 +15,15 @@ async fn pdf_to_png(filepath: std::path::PathBuf) -> Result<Vec<u8>, Error> {
         .arg("-flatten")
         .arg("png:-")
         .output()
-        .await.map_err(Error::IO)?
+        .await
+        .map_err(Error::IO)?
         .stdout;
-
 
     Ok(child)
 }
 
 /// Fetch newest Mensaplans from the website
 pub async fn fetch_mensaplan<'a>(url: &'a str) -> Result<Vec<u8>, Error> {
-
     println!("Fetching Mensaplan from {}", url);
 
     // check if mensaplan is already cached
@@ -40,29 +37,27 @@ pub async fn fetch_mensaplan<'a>(url: &'a str) -> Result<Vec<u8>, Error> {
         println!("Mensaplan is not cached");
         let response = reqwest::get(url).await.map_err(Error::NetRequest)?;
         let tempdir = std::env::temp_dir();
-        let mut file = tokio::fs::File::create(tempdir.join("mensaplan.pdf")).await.map_err(Error::IO)?;
-        
-        file
-            .write_all(
-                &response.bytes()
-                .await.map_err(Error::NetRequest)?
-            ).await.map_err(Error::IO)?;
-        
-        
+        let mut file = tokio::fs::File::create(tempdir.join("mensaplan.pdf"))
+            .await
+            .map_err(Error::IO)?;
+
+        file.write_all(&response.bytes().await.map_err(Error::NetRequest)?)
+            .await
+            .map_err(Error::IO)?;
+
         let png = pdf_to_png(tempdir.join("mensaplan.pdf")).await?;
         Ok(png)
     }
-
-
 }
 
-
 pub async fn show_levelup_image(user: &serenity::User, level: u16) -> Result<Vec<u8>, Error> {
-    let mut file = tokio::fs::File::open("images/banner.png").await.map_err(Error::IO)?;
+    let mut file = tokio::fs::File::open("images/banner.png")
+        .await
+        .map_err(Error::IO)?;
     println!("got image");
     let mut buffer = Vec::new();
     file.read_to_end(&mut buffer).await.map_err(Error::IO)?;
-//convert banner.png -gravity West -pointsize 35 -fill white -draw "text 280,-30 'galaali has reached'" -draw "text 280,45 'LEVEL 187'"  jpeg:-
+    //convert banner.png -gravity West -pointsize 35 -fill white -draw "text 280,-30 'galaali has reached'" -draw "text 280,45 'LEVEL 187'"  jpeg:-
 
     let with_text = Command::new("convert")
         .arg("images/banner.png")
@@ -82,14 +77,9 @@ pub async fn show_levelup_image(user: &serenity::User, level: u16) -> Result<Vec
         .output()
         .await;
 
-
-
     if let Ok(with_text) = with_text {
         Ok(with_text.stdout)
     } else {
-        Err(
-            Error::WithMessage("Could not convert image".into())
-        )
+        Err(Error::WithMessage("Could not convert image".into()))
     }
-    
 }

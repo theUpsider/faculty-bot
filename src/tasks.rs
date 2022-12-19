@@ -1,22 +1,20 @@
 #![allow(unused_variables, unused_mut, dead_code)]
 
-use crate::{
-    config::FacultyManagerConfig,
-    prelude::Error,
-    Data
-};
+use crate::{config::FacultyManagerConfig, prelude::Error, Data};
 
-use poise::serenity_prelude as serenity;
+use poise::serenity_prelude::{self as serenity, Mentionable};
 
+use sqlx::types::bstr::ByteSlice;
 use tokio::sync::mpsc;
 
 use chrono::{Datelike, Timelike};
 
 /// Posts the mensa plan for the current week
-pub async fn post_mensaplan(ctx: &serenity::Context, config: FacultyManagerConfig, data: &Data) -> Result<(), Error> {
+pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Error> {
     #![allow(unused_variables, unused_mut)]
     let (tx, mut rx) = mpsc::channel::<()>(1);
 
+    let config = data.config.clone();
     let post_day = config.mealplan.post_on_day;
     let post_time = config.mealplan.post_at_hour;
     let db = data.db.clone();
@@ -28,13 +26,52 @@ pub async fn post_mensaplan(ctx: &serenity::Context, config: FacultyManagerConfi
             let hour = now.hour();
 
             if weekday == post_day && hour == post_time.hour() {
+                let mensa_plan = crate::utils::fetch_mensaplan(&config.mealplan.url)
+                    .await
+                    .unwrap();
+                let today = now.date_naive().format("%Y-%m-%d").to_string();
 
+                let mensaplan_posted =
+                    sqlx::query!("SELECT * FROM mensaplan WHERE date = $1", today)
+                        .fetch_optional(&db)
+                        .await
+                        .map_err(Error::Database)
+                        .unwrap()
+                        .map(|row| row.posted)
+                        .unwrap_or(false);
+
+                if mensaplan_posted {
+                    println!("Mensaplan already posted today");
+                } else {
+                    let mut channel = config.channels.mealplan;
+
+                    let mut msg = channel
+                        .send_message(&ctx, |f| {
+                            f.content(format!("{}", config.roles.mealplannotify.mention()))
+                                .add_file(serenity::AttachmentType::Bytes {
+                                    data: std::borrow::Cow::Borrowed(&mensa_plan),
+                                    filename: "mensaplan.png".to_string(),
+                                })
+                        })
+                        .await;
+
+                    sqlx::query!(
+                        "INSERT INTO mensaplan (date, posted) VALUES ($1, $2)",
+                        today,
+                        true
+                    )
+                    .execute(&db)
+                    .await
+                    .map_err(Error::Database)
+                    .unwrap();
+                }
             }
 
+            println!("Sleeping for 30 minutes");
+            tokio::time::sleep(tokio::time::Duration::from_secs(30 * 60)).await;
         }
-    }).await;
-
+    })
+    .await;
 
     Ok(())
-
 }

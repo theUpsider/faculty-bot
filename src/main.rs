@@ -1,19 +1,15 @@
-mod utils;
-mod eventhandler;
-mod config;
-mod tasks;
 mod commands;
+mod config;
+mod eventhandler;
+mod tasks;
+mod utils;
 
 use dotenv::dotenv;
 use poise::{
     self,
-    serenity_prelude::{
-        self as serenity,
-        GatewayIntents,
-    }
+    serenity_prelude::{self as serenity, GatewayIntents},
 };
 use sqlx::sqlite::SqlitePoolOptions;
-
 
 pub mod prelude {
     use super::*;
@@ -41,7 +37,7 @@ pub mod prelude {
         /// Error when parsing goes wrong
         ParseIntError(std::num::ParseIntError),
         /// Idk bruh, don't ask me
-        Unknown
+        Unknown,
     }
 
     impl std::fmt::Display for Error {
@@ -56,7 +52,10 @@ pub mod prelude {
                 Error::Migration(e) => write!(f, "Migration error: {}", e),
                 Error::Serde(e) => write!(f, "Deserialization error: {}", e),
                 Error::ParseIntError(e) => write!(f, "ParseIntError: {}", e),
-                _ => write!(f, "Unknown error occured, ask the developers for more information"),
+                _ => write!(
+                    f,
+                    "Unknown error occured, ask the developers for more information"
+                ),
             }
         }
     }
@@ -64,7 +63,6 @@ pub mod prelude {
 
 pub type Context<'a> = poise::Context<'a, Data, prelude::Error>;
 pub type ApplicationContext<'a> = poise::ApplicationContext<'a, Data, prelude::Error>;
-
 
 #[derive(Clone)]
 pub struct Data {
@@ -80,8 +78,10 @@ async fn main() -> Result<(), prelude::Error> {
     let config = config::read_config()?;
 
     // print mealplan post day and time
-    println!("Mealplan will be posted on {:?} at {:?}", config.mealplan.post_on_day, config.mealplan.post_at_hour);
-
+    println!(
+        "Mealplan will be posted on {:?} at {:?}",
+        config.mealplan.post_on_day, config.mealplan.post_at_hour
+    );
 
     tracing_subscriber::fmt::init();
     tracing::info!("Starting up");
@@ -93,19 +93,19 @@ async fn main() -> Result<(), prelude::Error> {
         .connect_with(
             sqlx::sqlite::SqliteConnectOptions::new()
                 .filename("database.db")
-                .create_if_missing(true)
+                .create_if_missing(true),
         )
-        .await.map_err(prelude::Error::Database)?;
+        .await
+        .map_err(prelude::Error::Database)?;
 
-        //sqlx::migrate!().run(&db_conn).await.map_err(prelude::Error::Migration)?;
+    //sqlx::migrate!().run(&db_conn).await.map_err(prelude::Error::Migration)?;
 
-        // run "faculty_manager.sql"
+    // run "faculty_manager.sql"
 
-        sqlx::query_file!("migrations/faculty_manager.sql")
-            .execute(&db_conn) 
-            .await
-            .map_err(prelude::Error::Database)?;
-
+    sqlx::query_file!("migrations/faculty_manager.sql")
+        .execute(&db_conn)
+        .await
+        .map_err(prelude::Error::Database)?;
 
     poise::Framework::builder()
         .options(poise::FrameworkOptions {
@@ -115,7 +115,7 @@ async fn main() -> Result<(), prelude::Error> {
                 test(),
                 commands::user::verify(),
                 commands::user::leaderboard(),
-                commands::administration::getmail()
+                commands::administration::getmail(),
             ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some(config.prefix.clone()),
@@ -123,9 +123,9 @@ async fn main() -> Result<(), prelude::Error> {
                 ..Default::default()
             },
             event_handler: |ctx, event, framework, data| {
-                Box::pin(async move {
-                    eventhandler::event_listener(ctx, event, &framework, data).await
-                })
+                Box::pin(
+                    async move { eventhandler::event_listener(ctx, event, &framework, data).await },
+                )
             },
             ..Default::default()
         })
@@ -139,68 +139,62 @@ async fn main() -> Result<(), prelude::Error> {
         })
         .token(token)
         .intents(GatewayIntents::all())
-        
         .build()
-        .await.map_err(prelude::Error::Serenity)?
+        .await
+        .map_err(prelude::Error::Serenity)?
         .start_autosharded()
-        .await.map_err(prelude::Error::Serenity)?;
-
+        .await
+        .map_err(prelude::Error::Serenity)?;
 
     Ok(())
 }
 
-
-
-#[poise::command(
-    prefix_command
-)]
+#[poise::command(prefix_command)]
 async fn register(ctx: Context<'_>) -> Result<(), prelude::Error> {
-    poise::builtins::register_application_commands_buttons(ctx).await.map_err(prelude::Error::Serenity)?;
+    poise::builtins::register_application_commands_buttons(ctx)
+        .await
+        .map_err(prelude::Error::Serenity)?;
     Ok(())
 }
 
-#[poise::command(
-    slash_command,
-    prefix_command
-)]
+#[poise::command(slash_command, prefix_command)]
 async fn age(
     ctx: Context<'_>,
     #[description = "Selected user"] user: Option<serenity::User>,
 ) -> Result<(), prelude::Error> {
-
-    ctx.defer_or_broadcast().await.map_err(prelude::Error::Serenity)?;
+    ctx.defer_or_broadcast()
+        .await
+        .map_err(prelude::Error::Serenity)?;
 
     let user = user.as_ref().unwrap_or_else(|| ctx.author());
 
     let mensaplan = utils::fetch_mensaplan(&ctx.data().config.mealplan.url).await?;
-    
+
     ctx.send(|msg| {
         msg.embed(|embed| {
             embed.title("Age");
-            embed.description(format!("{}'s account was created <t:{}:R>", user.name, user.id.created_at().timestamp() ));
+            embed.description(format!(
+                "{}'s account was created <t:{}:R>",
+                user.name,
+                user.id.created_at().timestamp()
+            ));
             embed
         })
-        .attachment(serenity::AttachmentType::Bytes { 
+        .attachment(serenity::AttachmentType::Bytes {
             data: std::borrow::Cow::Borrowed(&mensaplan),
             filename: "mensaplan.png".to_string(),
-         })
-    }).await.map_err(prelude::Error::Serenity)?;
+        })
+    })
+    .await
+    .map_err(prelude::Error::Serenity)?;
 
     Ok(())
 }
 
-
-#[poise::command(
-    slash_command,
-    prefix_command
-)]
+#[poise::command(slash_command, prefix_command)]
 async fn test(
     _ctx: Context<'_>,
     #[description = "Selected user"] _user: Option<serenity::User>,
 ) -> Result<(), prelude::Error> {
-
-    return Err(
-        prelude::Error::WithMessage("This is a test".to_string())
-    )
-
+    return Err(prelude::Error::WithMessage("This is a test".to_string()));
 }

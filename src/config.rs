@@ -1,7 +1,4 @@
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use serde::{Deserialize, Serialize};
 
 use poise::serenity_prelude as serenity;
 
@@ -64,7 +61,7 @@ pub struct FacultyManagerMealplanConfig {
     pub post_on_day: chrono::Weekday,
     pub post_at_hour: chrono::NaiveTime,
     pub imgsettings: MealplanImageSettings,
-    pub check: u16
+    pub check: u16,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -86,12 +83,8 @@ fn default_color_config() -> FacultyManagerColorConfig {
     }
 }
 
-
-
-
 pub fn read_config() -> Result<FacultyManagerConfig, prelude::Error> {
     let config = std::fs::read_to_string("config.json").map_err(Error::IO)?;
     let config: FacultyManagerConfig = serde_json::from_str(&config).map_err(Error::Serde)?;
     Ok(config)
 }
-

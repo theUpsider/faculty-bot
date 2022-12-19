@@ -1,7 +1,4 @@
-use crate::{
-    prelude::Error,
-    Context
-};
+use crate::{prelude::Error, Context};
 use poise::serenity_prelude as serenity;
 
 /// Verify yourself with your student email address
@@ -15,7 +12,10 @@ use poise::serenity_prelude as serenity;
 pub async fn verify(
     ctx: Context<'_>,
     #[description = "Your student email address (must be ending in @stud.hs-kempten.de)"]
-    #[description_localized("de", "Deine Studierenden E-Mail Adresse (muss mit @stud.hs-kempten.de enden)")] 
+    #[description_localized(
+        "de",
+        "Deine Studierenden E-Mail Adresse (muss mit @stud.hs-kempten.de enden)"
+    )]
     #[name_localized("de", "email-adresse")]
     email: String,
 ) -> Result<(), Error> {
@@ -25,7 +25,7 @@ pub async fn verify(
     }
 
     // check if user is already verified
-    let pool = &ctx.data().db;  
+    let pool = &ctx.data().db;
     let user_id = ctx.author().id.0 as i64;
 
     let user = sqlx::query!("SELECT * FROM verified_users WHERE user_id = $1", user_id)
@@ -37,10 +37,8 @@ pub async fn verify(
         return Err(Error::WithMessage("You are already verified".to_string()));
     }
 
-
     Ok(())
 }
-
 
 /// Show Leaderboard
 #[poise::command(
@@ -50,10 +48,8 @@ pub async fn verify(
     name_localized("de", "leaderboard"),
     description_localized("de", "Zeige das Leaderboard")
 )]
-pub async fn leaderboard(
-    ctx: Context<'_>,
-) -> Result<(), Error> {
-    let pool = &ctx.data().db;  
+pub async fn leaderboard(ctx: Context<'_>) -> Result<(), Error> {
+    let pool = &ctx.data().db;
     let users = sqlx::query!("SELECT user_id, user_xp FROM user_xp ORDER BY user_xp DESC LIMIT 10")
         .fetch_all(pool)
         .await
@@ -62,8 +58,16 @@ pub async fn leaderboard(
     let mut leaderboard = String::new();
     for (i, user) in users.iter().enumerate() {
         if let Some(uid) = user.user_id {
-            let usr = serenity::UserId(uid as u64).to_user(&ctx).await.map_err(Error::Serenity)?;
-            leaderboard.push_str(&format!("{}. {} - {}\n", i + 1, usr.tag(), user.user_xp.unwrap_or(0.) ));
+            let usr = serenity::UserId(uid as u64)
+                .to_user(&ctx)
+                .await
+                .map_err(Error::Serenity)?;
+            leaderboard.push_str(&format!(
+                "{}. {} - {}\n",
+                i + 1,
+                usr.tag(),
+                user.user_xp.unwrap_or(0.)
+            ));
         }
     }
 
@@ -74,7 +78,8 @@ pub async fn leaderboard(
             e
         });
         f
-    }).await
+    })
+    .await
     .map_err(Error::Serenity)?;
 
     Ok(())

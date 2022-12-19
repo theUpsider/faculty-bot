@@ -19,10 +19,9 @@ CREATE TABLE IF NOT EXISTS `voice_channels` (
     'deleted' INT(1) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS `mensaplan_hashes` (
-    'hash' TEXT NOT NULL,
-    'date' TIME DEFAULT CURRENT_TIMESTAMP,
-    `is_posted_already` INT(1) NOT NULL
+CREATE TABLE IF NOT EXISTS `mensaplan` (
+    'date' TEXT PRIMARY KEY NOT NULL,
+    'posted' BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS `ads` (
