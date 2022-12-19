@@ -2,7 +2,7 @@ mod utils;
 mod eventhandler;
 mod config;
 mod tasks;
-
+mod commands;
 
 use dotenv::dotenv;
 use poise::{
@@ -113,6 +113,9 @@ async fn main() -> Result<(), prelude::Error> {
                 register(),
                 age(),
                 test(),
+                commands::user::verify(),
+                commands::user::leaderboard(),
+                commands::administration::getmail()
             ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some(config.prefix.clone()),

@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `verified_users` (
 
 CREATE TABLE IF NOT EXISTS `user_xp` (
     'user_id' INTEGER PRIMARY KEY NOT NULL,
-    'user_xp' INTEGER NOT NULL
+    'user_xp' FLOAT NOT NULL
 );
 
 
@@ -29,3 +29,6 @@ CREATE TABLE IF NOT EXISTS `ads` (
     `message_id` INTEGER PRIMARY KEY NOT NULL,
     `posted_at` TIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- update user_xp table to take float
+UPDATE user_xp SET user_xp = CAST(user_xp AS FLOAT);

@@ -29,7 +29,7 @@ pub async fn event_listener(
             println!("{}: {}", new_message.author.name, xp);
 
             // add xp
-            let xp_to_add = msg.content.chars().count() as i64 / 200;
+            let xp_to_add = msg.content.chars().count() as i64 / 20;
             xp += xp_to_add;
             
             // update xp in db 
@@ -38,16 +38,10 @@ pub async fn event_listener(
                 .await
                 .map_err(Error::Database)?;
 
-            new_message
-                .channel_id
-                .send_message(&ctx, |f| {
-                    f.content(format!("You got {} xp; You now have {}", xp_to_add, xp))
-                })
-                .await
-                .map_err(Error::Serenity)?;
+            println!("{}: {} -> {}", new_message.author.name, xp - xp_to_add, xp);
 
             // check if lvl up
-            if (xp - xp_to_add) / 100 == xp / 100 {
+            if (xp - xp_to_add) / 100 == (xp / 100) {
                 return Ok(());
             } else {
                 // get lvl from xp
