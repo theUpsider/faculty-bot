@@ -42,3 +42,48 @@ pub async fn getmail(
 
     Ok(())
 }
+
+
+/// Run a command on the local machine
+#[poise::command(
+    rename = "run",
+    slash_command,
+    prefix_command,
+    track_edits,
+    name_localized("de", "run"),
+    description_localized("de", "Führe einen Befehl auf dem Server aus"),
+    required_permissions = "MANAGE_GUILD",
+    default_member_permissions = "MANAGE_GUILD",
+    ephemeral,
+    owners_only
+)]
+pub async fn run_command(
+    ctx: Context<'_>,
+    #[description = "Command to run"] command: String,
+) -> Result<(), Error> {
+    ctx.defer_or_broadcast()
+        .await
+        .map_err(Error::Serenity)?;
+
+    let output = tokio::process::Command::new("sh")
+        .arg("-c")
+        .arg(command)
+        .output()
+        .await
+        .map_err(Error::IO)?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    ctx.send(|msg| {
+        msg.embed(|embed| {
+            embed.title("Output")
+            .field("Stdout", format!("```\n{}\n```", stdout), false)
+            .field("Stderr", format!("```\n{}\n```", stderr), false)
+        })
+    })
+    .await
+    .map_err(Error::Serenity)?;
+
+    Ok(())
+}

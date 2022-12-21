@@ -9,6 +9,15 @@ use tokio::sync::mpsc;
 
 use chrono::{Datelike, Timelike};
 
+use tracing::{
+    debug,
+    info,
+    instrument,
+    span,
+    Level,
+    instrument::Instrumented,
+};
+
 /// Posts the mensa plan for the current week
 pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Error> {
     #![allow(unused_variables, unused_mut)]
@@ -41,7 +50,7 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
                         .unwrap_or(false);
 
                 if mensaplan_posted {
-                    println!("Mensaplan already posted today");
+                    info!("Mensaplan already posted today");
                 } else {
                     let mut channel = config.channels.mealplan;
 
@@ -53,23 +62,35 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
                                     filename: "mensaplan.png".to_string(),
                                 })
                         })
-                        .await;
+                        .await.map_err(Error::Serenity);
 
-                    sqlx::query!(
+                    if let Ok(msg) = &mut msg {
+                        if let Err(e) = msg.crosspost(&ctx).await.map_err(Error::Serenity) {
+                            tracing::error!("Failed to crosspost mensaplan: {:?}", e);
+                        }
+
+                    }
+
+
+                    let sql_res = sqlx::query!(
                         "INSERT INTO mensaplan (date, posted) VALUES ($1, $2)",
                         today,
                         true
                     )
                     .execute(&db)
                     .await
-                    .map_err(Error::Database)
-                    .unwrap();
+                    .map_err(Error::Database);
+
+
+
                 }
+            } else {
+                info!("Not posting mensaplan today");
             }
 
-            println!("Sleeping for 30 minutes");
-            tokio::time::sleep(tokio::time::Duration::from_secs(30 * 60)).await;
-        }
+            println!("Sleeping for 5 minutes");
+            tokio::time::sleep(tokio::time::Duration::from_secs(5 * 60)).await;
+        } 
     })
     .await;
 

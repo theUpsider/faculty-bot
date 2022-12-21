@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS `verified_users` (
 
 CREATE TABLE IF NOT EXISTS `user_xp` (
     'user_id' INTEGER PRIMARY KEY NOT NULL,
-    'user_xp' REAL
+    'user_xp' REAL NOT NULL DEFAULT 0.0,
+    'user_level' INTEGER NOT NULL DEFAULT 0
 );
 
 
@@ -21,7 +22,8 @@ CREATE TABLE IF NOT EXISTS `voice_channels` (
 
 CREATE TABLE IF NOT EXISTS `mensaplan` (
     'date' TEXT PRIMARY KEY NOT NULL,
-    'posted' BOOLEAN NOT NULL DEFAULT FALSE
+    'posted' BOOLEAN NOT NULL DEFAULT FALSE,
+    'plan_hash' TEXT
 );
 
 CREATE TABLE IF NOT EXISTS `ads` (
@@ -29,3 +31,10 @@ CREATE TABLE IF NOT EXISTS `ads` (
     `posted_at` TIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS `rules` (
+    `rule_number` INTEGER PRIMARY KEY NOT NULL UNIQUE AUTOINCREMENT,
+    `rule_text` TEXT NOT NULL,
+    `rule_number` INTEGER NOT NULL
+);
+
+y

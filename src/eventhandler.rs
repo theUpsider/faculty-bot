@@ -1,5 +1,13 @@
-use crate::{prelude::Error, tasks, utils, Data};
+use crate::{prelude::Error, tasks, utils, Data, structs::{UserXP}};
 use poise::serenity_prelude::{self as serenity, AttachmentType, Mentionable};
+use tracing::{
+    debug,
+    info,
+    instrument,
+    span,
+    Level,
+    instrument::Instrumented,
+};
 
 pub async fn event_listener(
     ctx: &serenity::Context,
@@ -9,12 +17,12 @@ pub async fn event_listener(
 ) -> Result<(), Error> {
     match event {
         poise::Event::Ready { data_about_bot } => {
-            println!("Ready! Logged in as {}", data_about_bot.user.name);
-            println!(
+            info!("Ready! Logged in as {}", data_about_bot.user.name);
+            info!(
                 "Prefix: {}",
                 fw.options.prefix_options.prefix.as_ref().unwrap()
             );
-            println!("Mensaplan task started");
+            info!("Mensaplan task started");
             tasks::post_mensaplan(ctx.clone(), data.clone()).await?;
         }
 
@@ -30,12 +38,14 @@ pub async fn event_listener(
             let msg = new_message.clone();
             let user_id = i64::from(new_message.author.id);
             // get xp from db
-            let mut xp = sqlx::query!("SELECT user_xp FROM user_xp WHERE user_id = $1", user_id)
+            let user_data = sqlx::query_as!(UserXP, "SELECT * FROM user_xp WHERE user_id = $1", user_id)
                 .fetch_optional(&data.db)
                 .await
                 .map_err(Error::Database)?
-                .map(|row| row.user_xp.unwrap_or(0.))
-                .unwrap_or(0.);
+                .unwrap_or_default();
+
+            let mut xp = user_data.user_xp;
+                
 
             println!("{}: {}", new_message.author.name, xp);
 
@@ -52,8 +62,12 @@ pub async fn event_listener(
 
             println!("{}: {} -> {}", new_message.author.name, xp - xp_to_add, xp);
 
-            // check if lvl up
-            if (xp - xp_to_add) as f64 / 100. == (xp / 100.) {
+            // check if lvl up and level is higher than previous
+            
+            if (xp - xp_to_add) as f64 / 100. == (xp / 100.)  // check if lvl up
+                || user_data.level  // check that the new level is higher than the current
+                    >= (xp / 100.) as i64
+                {
                 return Ok(());
             } else {
                 // get lvl from xp
@@ -62,6 +76,12 @@ pub async fn event_listener(
                 if lvl == 0 {
                     return Ok(());
                 }
+
+                // update level in db
+                sqlx::query!("INSERT INTO user_xp (user_id, level) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET level = $2", user_id, lvl)
+                    .execute(&data.db)
+                    .await
+                    .map_err(Error::Database)?;
 
                 let img = utils::show_levelup_image(&new_message.author, lvl).await?;
 

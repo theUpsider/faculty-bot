@@ -1,6 +1,8 @@
 use crate::{prelude::Error, Context};
 use poise::serenity_prelude as serenity;
 
+
+
 /// Verify yourself with your student email address
 #[poise::command(
     slash_command,
@@ -23,6 +25,14 @@ pub async fn verify(
     if !email.ends_with("@stud.hs-kempten.de") {
         return Err(Error::WithMessage("Invalid email address".to_string()));
     }
+
+    let email = crate::utils::find_discord_tag(&ctx.author().tag()).await;
+
+    if let Ok(Some(email)) = email {
+        // email went through
+        // continue with verification
+    }
+
 
     // check if user is already verified
     let pool = &ctx.data().db;
@@ -81,6 +91,47 @@ pub async fn leaderboard(ctx: Context<'_>) -> Result<(), Error> {
     })
     .await
     .map_err(Error::Serenity)?;
+
+    Ok(())
+}
+
+
+/// Show your XP
+#[poise::command(
+    slash_command,
+    prefix_command,
+    track_edits,
+    name_localized("de", "xp"),
+    description_localized("de", "Zeige deine XP")
+)]
+pub async fn xp(ctx: Context<'_>) -> Result<(), Error> {
+    let pool = &ctx.data().db;
+    let user_id = ctx.author().id.0 as i64;
+
+    let user = sqlx::query!("SELECT * FROM user_xp WHERE user_id = $1", user_id)
+        .fetch_optional(pool)
+        .await
+        .map_err(Error::Database)?;
+
+    if let Some(user) = user {
+        ctx.send(|f| {
+            f.embed(|e| {
+                e.description(format!("You have {} xp, that equals to Level {}", user.user_xp, user.level))
+            });
+            f
+        })
+        .await
+        .map_err(Error::Serenity)?;
+    } else {
+        ctx.send(|f| {
+            f.embed(|e| {
+                e.description("You have no XP yet")
+            });
+            f
+        })
+        .await
+        .map_err(Error::Serenity)?;
+    }
 
     Ok(())
 }
