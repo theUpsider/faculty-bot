@@ -32,9 +32,10 @@ CREATE TABLE IF NOT EXISTS `ads` (
 );
 
 CREATE TABLE IF NOT EXISTS `rules` (
-    `rule_number` INTEGER PRIMARY KEY NOT NULL UNIQUE AUTOINCREMENT,
-    `rule_text` TEXT NOT NULL,
-    `rule_number` INTEGER NOT NULL
+    `rule_number` INTEGER PRIMARY KEY NOT NULL UNIQUE,
+    `rule_text` TEXT NOT NULL
 );
 
-y
+CREATE TABLE IF NOT EXISTS `semestermods` (
+    `user_id` INTEGER PRIMARY KEY NOT NULL
+)

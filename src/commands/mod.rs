@@ -10,6 +10,7 @@ use crate::{
 
 pub mod administration;
 pub mod user;
+pub mod moderation;
 
 
 /// Shows a list of all commands

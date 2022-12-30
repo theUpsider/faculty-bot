@@ -1,0 +1,30 @@
+version: "3"
+services:
+    bot:
+        build: .
+        volumes:
+          - type: bind
+            source: ./config.json
+            target: /config.json
+          - type: bind
+            source: ./.env
+            target: /.env
+        environment:
+            DISCORD_TOKEN: "${DISCORD_TOKEN}"
+            DATABASE_URL: "${DATABASE_URL}"
+            PREFIX: "${PREFIX}"
+            MAILUSER: "${MAILUSER}"
+            MAILPW: "${MAILPW}"
+            SMTP_SERVER: "${SMTP_SERVER}"
+            SMTP_PORT: "${SMTP_PORT}"
+            RUST_LOG: "${RUST_LOG}"
+
+
+        depends_on: [database]
+        network_mode: "host"
+    database:
+        image: postgres:13
+        ports: [5432:5432]
+        environment: 
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
