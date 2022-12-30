@@ -24,7 +24,7 @@ pub struct FacultyManagerChannelConfig {
     pub news: serenity::ChannelId,
     pub logs: serenity::ChannelId,
     pub ads: serenity::ChannelId,
-    pub create_channel: serenity::ChannelId,
+    pub create_channel: String,
     pub mealplan: serenity::ChannelId,
 }
 

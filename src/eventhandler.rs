@@ -105,6 +105,62 @@ pub async fn event_listener(
                     .await
                     .map_err(Error::Serenity)?;
             }
+        },
+
+        poise::Event::VoiceStateUpdate { old, new } => {
+            if let Some(old_chan) = old {
+                if old_chan.channel_id == new.channel_id {
+                    // user moved in same channel
+                    return Ok(());
+                }
+
+                // if no one is in the channel anymore, delete it
+                let channel = old_chan.channel_id.unwrap_or_default().to_channel(&ctx).await.map_err(Error::Serenity)?;
+                if let serenity::Channel::Guild(channel) = channel {
+                    if channel.name() == data.config.channels.create_channel {
+                        return Ok(()); // don't delete the create channel
+                    }
+                    if channel.members(&ctx).await.map_err(Error::Serenity)?.is_empty() {
+                        channel.delete(&ctx).await.map_err(Error::Serenity)?;
+                    }
+                }
+
+            }
+
+            let new_channel = new.channel_id.unwrap_or_default().to_channel(&ctx).await.map_err(Error::Serenity)?;
+            let new_channel = match new_channel {
+                serenity::Channel::Guild(channel) => channel,
+                _ => return Ok(()),
+            };
+
+            if &new_channel.name() == &data.config.channels.create_channel {
+
+                let category = new_channel.parent_id;
+
+                let cc = new.guild_id.unwrap().create_channel(&ctx, |f| {
+                    f.name(format!("🔊 {}'s Channel", new.member.as_ref().unwrap().display_name()))
+                        .kind(serenity::ChannelType::Voice)
+                        .permissions(vec![serenity::PermissionOverwrite {
+                            allow: serenity::Permissions::MANAGE_CHANNELS,
+                            deny: serenity::Permissions::empty(),
+                            kind: serenity::PermissionOverwriteType::Member(new.member.as_ref().unwrap().user.id),
+                        }]);
+                        if category.is_some() {
+                            f.category(category.unwrap())
+                        } else {
+                            f
+                        }
+                })
+                .await
+                .map_err(Error::Serenity)?;
+
+                new.member
+                    .as_ref()
+                    .unwrap()
+                    .move_to_voice_channel(&ctx, cc)
+                    .await
+                    .map_err(Error::Serenity)?;
+            }
         }
         _ => {}
     }
