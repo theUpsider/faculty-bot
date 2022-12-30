@@ -1,4 +1,4 @@
-use crate::{prelude::Error, Context};
+use crate::{prelude::Error, Context, structs};
 use poise::serenity_prelude as serenity;
 
 
@@ -80,25 +80,15 @@ pub async fn verify(
 )]
 pub async fn leaderboard(ctx: Context<'_>) -> Result<(), Error> {
     let pool = &ctx.data().db;
-    let users = sqlx::query!("SELECT user_id, user_xp FROM user_xp ORDER BY user_xp DESC LIMIT 10")
+    let users = sqlx::query_as::<sqlx::Sqlite, structs::UserXP>("SELECT * FROM user_xp ORDER BY user_xp DESC LIMIT 10")
         .fetch_all(pool)
         .await
         .map_err(Error::Database)?;
 
     let mut leaderboard = String::new();
     for (i, user) in users.iter().enumerate() {
-        if let Some(uid) = user.user_id {
-            let usr = serenity::UserId(uid as u64)
-                .to_user(&ctx)
-                .await
-                .map_err(Error::Serenity)?;
-            leaderboard.push_str(&format!(
-                "{}. {} - {}\n",
-                i + 1,
-                usr.tag(),
-                user.user_xp.unwrap_or(0.)
-            ));
-        }
+        let user_discord = serenity::UserId(user.user_id as u64).to_user(&ctx.serenity_context()).await.map_err(Error::Serenity)?;
+        leaderboard.push_str(&format!("{}. {} - {} XP\n", i + 1, user_discord.tag(), user.user_xp));
     }
 
     ctx.send(|f| {
@@ -128,7 +118,8 @@ pub async fn xp(ctx: Context<'_>) -> Result<(), Error> {
     let pool = &ctx.data().db;
     let user_id = ctx.author().id.0 as i64;
 
-    let user = sqlx::query!("SELECT * FROM user_xp WHERE user_id = $1", user_id)
+    let user = sqlx::query_as::<sqlx::Sqlite, structs::UserXP>("SELECT * FROM user_xp WHERE user_id = $1")
+        .bind(user_id)
         .fetch_optional(pool)
         .await
         .map_err(Error::Database)?;

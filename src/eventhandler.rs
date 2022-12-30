@@ -1,4 +1,4 @@
-use crate::{prelude::Error, tasks, utils, Data, structs::{UserXP}};
+use crate::{prelude::Error, tasks, utils, Data, structs::{UserXP, self}};
 use poise::serenity_prelude::{self as serenity, AttachmentType, Mentionable};
 use tracing::{
     debug,
@@ -38,7 +38,8 @@ pub async fn event_listener(
             let msg = new_message.clone();
             let user_id = i64::from(new_message.author.id);
             // get xp from db
-            let user_data = sqlx::query_as!(UserXP, "SELECT * FROM user_xp WHERE user_id = $1", user_id)
+            let user_data = sqlx::query_as::<sqlx::Sqlite, structs::UserXP>("SELECT * FROM user_xp WHERE user_id = $1")
+                .bind(user_id)
                 .fetch_optional(&data.db)
                 .await
                 .map_err(Error::Database)?
@@ -55,11 +56,14 @@ pub async fn event_listener(
             xp += xp_to_add;
             let xp_float = xp as f64;
             // update xp in db
-            sqlx::query!("INSERT INTO user_xp (user_id, user_xp) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET user_xp = $2", user_id, xp_float)
+            let user_db = sqlx::query("INSERT INTO user_xp (user_id, user_xp) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET user_xp = $2")
+                .bind(user_id)
+                .bind(xp_float)
                 .execute(&data.db)
                 .await
                 .map_err(Error::Database)?;
 
+            
             println!("{}: {} -> {}", new_message.author.name, xp - xp_to_add, xp);
 
             // check if lvl up and level is higher than previous

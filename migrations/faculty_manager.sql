@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `verified_users` (
 CREATE TABLE IF NOT EXISTS `user_xp` (
     'user_id' INTEGER PRIMARY KEY NOT NULL,
     'user_xp' REAL NOT NULL DEFAULT 0.0,
-    'user_level' INTEGER NOT NULL DEFAULT 0
+    'level' INTEGER NOT NULL DEFAULT 0
 );
 
 
