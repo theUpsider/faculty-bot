@@ -26,37 +26,57 @@ pub async fn verify(
         return Err(Error::WithMessage("Invalid email address".to_string()));
     }
 
-    let email = crate::utils::find_discord_tag(&ctx.author().tag()).await;
+    let mmail = crate::utils::find_discord_tag(&ctx.author().tag()).await;
 
-    if let Ok(Some(email)) = email {
-        // email went through
-        // continue with verification
-    }
+    let _mail_found = match mmail {
+        Ok(Some(m)) => m,
+        Ok(None) => {
+            return Err(Error::WithMessage("Could not find a mail containing your discord tag. Please try again. Contact an admin if this error persists.".into()));
+        },
+        Err(e) => {
+            return Err(Error::WithMessage(format!("An error occured while trying to find your mail. Please try again. Contact an admin if this error persists. Error: {}", e)));
+        }
+    };
 
 
     // check if user is already verified
     let pool = &ctx.data().db;
     let user_id = ctx.author().id.0 as i64;
 
+
     let user = sqlx::query!("SELECT * FROM verified_users WHERE user_id = $1", user_id)
         .fetch_optional(pool)
         .await
         .map_err(Error::Database)?;
 
+
     if user.is_some() {
         return Err(Error::WithMessage("You are already verified".to_string()));
+    } else {
+
+        sqlx::query!(
+            "INSERT INTO verified_users (user_id, user_email) VALUES ($1, $2)",
+            user_id,
+            email
+        )
+        .execute(pool)
+        .await
+        .map_err(Error::Database)?;
+
+
+        ctx.say("You are now verified!").await.map_err(Error::Serenity)?;
     }
 
     Ok(())
 }
 
-/// Show Leaderboard
+/// Show the Top 10 users by XP
 #[poise::command(
     slash_command,
     prefix_command,
     track_edits,
     name_localized("de", "leaderboard"),
-    description_localized("de", "Zeige das Leaderboard")
+    description_localized("de", "Zeige die besten 10 Nutzer anhand ihrer XP")
 )]
 pub async fn leaderboard(ctx: Context<'_>) -> Result<(), Error> {
     let pool = &ctx.data().db;

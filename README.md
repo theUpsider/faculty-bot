@@ -16,6 +16,7 @@ This project features a Discord bot, with the intent to reduce the administratio
 ```sh
 DISCORD_TOKEN=
 
+# PostgreSQL format e.g. postgres://dbuser:dbpass@localhost:5432/db_name
 DATABASE_URL=
 
 PREFIX=
@@ -32,6 +33,8 @@ RUST_LOG=warn
 - To register the bot, an application at [Discord's Developer Portal](https://discord.dev) needs to be created. The Token can be filled in the `.env` under `DISCORD_TOKEN`.
 - To finally launch the bot, use `./target/{release|debug}/faculty_manager`, depending on if you compiled with the release flag or not.
 
+Or alternatively use the provided `docker-compose.yml` by first installing docker with your favourite method, then running `docker compose up -d` in a terminal
+
 ## Bot Settings
 
 In order for the bot to communicate with channels, you need to edit the `config.json` and paste in the Id's of the channels and roles. 
@@ -41,7 +44,7 @@ Those need to be created before launching the bot.
 
 - staffrole: this is the management role, which may edit the bot via commands.  
 - verified: after a user verified with his account. Use this role as you please, maybe to show and hide some channels.
-- mealplannotify: role id which will get pinged if new mealplan has been posted
+- mealplannotify: role id which will get pinged if a new mealplan has been posted
 
 ### Channels
 
