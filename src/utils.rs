@@ -3,7 +3,6 @@ use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     process::Command,
 };
-use tracing_subscriber::fmt::format;
 
 use crate::prelude::Error;
 
@@ -156,6 +155,7 @@ impl<K: Eq, V> OrderedMap<K, V> {
         Self(Vec::new())
     }
 
+    #[allow(dead_code)]
     /// Finds a value in the map by the given key
     pub fn get(&self, k: &K) -> Option<&V> {
         self.0
@@ -164,6 +164,7 @@ impl<K: Eq, V> OrderedMap<K, V> {
             .map(|entry| &entry.1)
     }
 
+    #[allow(dead_code)]
     /// Inserts a key value pair into the map
     pub fn insert(&mut self, k: K, v: V) {
         match self.0.iter_mut().find(|entry| entry.0 == k) {

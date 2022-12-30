@@ -1,6 +1,5 @@
 use poise::{
-    serenity_prelude::{self as serenity, GatewayIntents, Permissions},
-    Framework,
+    serenity_prelude::{self as serenity},
 };
 
 use crate::{
@@ -25,9 +24,7 @@ pub async fn help(
     command: Option<String>,
     
 ) -> Result<(), Error> {
-    let locale = ctx.locale().unwrap_or("en-US");
-    let cmds = &ctx.framework().options.commands;
-    let non = String::from("No description provided");
+
 
     let config = HelpConfiguration::default();
 
@@ -58,7 +55,6 @@ async fn help_autocomplete<'a>(
         .collect::<Vec<_>>()
 }
 
-use std::fmt::Write as _;
 
 /// Optional configuration for how the help message from [`help()`] looks
 pub struct HelpConfiguration<'a> {
@@ -85,7 +81,7 @@ impl Default for HelpConfiguration<'_> {
 async fn help_single_command(
     ctx: crate::Context<'_>,
     command_name: &str,
-    config: HelpConfiguration<'_>,
+    _config: HelpConfiguration<'_>,
 ) -> Result<(), Error> {
     let command = ctx.framework().options().commands.iter().find(|command| {
         if command.name.eq_ignore_ascii_case(command_name) {
@@ -128,7 +124,7 @@ async fn help_single_command(
 /// Code for printing an overview of all commands (e.g. `~help`)
 async fn help_all_commands(
     ctx: crate::Context<'_>,
-    config: HelpConfiguration<'_>,
+    _config: HelpConfiguration<'_>,
 ) -> Result<(), Error> {
     let mut categories = crate::utils::OrderedMap::<Option<&str>, Vec<&poise::Command<Data, Error>>>::new();
     for cmd in &ctx.framework().options().commands {
@@ -139,7 +135,7 @@ async fn help_all_commands(
 
     let mut embed = serenity::CreateEmbed::default();
     embed.title("Help");
-    for (category_name, commands) in categories {
+    for (_category_name, commands) in categories {
         for command in commands {
             if command.hide_in_help {
                 continue;
@@ -169,8 +165,6 @@ async fn help_all_commands(
                 continue;
             };
 
-            let total_command_name_length = prefix.chars().count() + command.name.chars().count();
-            let padding = 12_usize.saturating_sub(total_command_name_length) + 1;
             let (arg_name, arg_desc, required) = command
                 .parameters
                 .iter()
@@ -180,7 +174,7 @@ async fn help_all_commands(
                     let required = param.required;
                     (name, desc, required)
                 })
-                .fold((String::new(), String::new(), true), |(mut arg_name, mut arg_desc, mut required), (name, desc, req)| {
+                .fold((String::new(), String::new(), true), |(mut arg_name, mut arg_desc, mut required), (name, desc, _req)| {
                     if !required {
                         required = false;
                     }

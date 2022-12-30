@@ -1,12 +1,7 @@
-use crate::{prelude::Error, tasks, utils, Data, structs::{UserXP, self}};
+use crate::{prelude::Error, tasks, utils, Data, structs::{self}};
 use poise::serenity_prelude::{self as serenity, AttachmentType, Mentionable};
 use tracing::{
-    debug,
     info,
-    instrument,
-    span,
-    Level,
-    instrument::Instrumented,
 };
 
 pub async fn event_listener(
@@ -56,7 +51,7 @@ pub async fn event_listener(
             xp += xp_to_add;
             let xp_float = xp as f64;
             // update xp in db
-            let user_db = sqlx::query("INSERT INTO user_xp (user_id, user_xp) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET user_xp = $2")
+            sqlx::query("INSERT INTO user_xp (user_id, user_xp) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET user_xp = $2")
                 .bind(user_id)
                 .bind(xp_float)
                 .execute(&data.db)

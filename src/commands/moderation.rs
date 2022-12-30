@@ -1,11 +1,10 @@
 use poise::{
-    serenity_prelude::{self as serenity, GatewayIntents, Permissions},
-    Framework,
+    serenity_prelude::{self as serenity, Permissions},
 };
 
 use crate::{
     prelude::Error,
-    Context, Data
+    Context
 };
 
 

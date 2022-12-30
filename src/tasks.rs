@@ -1,21 +1,15 @@
 #![allow(unused_variables, unused_mut, dead_code)]
 
-use crate::{config::FacultyManagerConfig, prelude::Error, Data};
+use crate::{prelude::Error, Data};
 
 use poise::serenity_prelude::{self as serenity, Mentionable};
 
-use sqlx::types::bstr::ByteSlice;
 use tokio::sync::mpsc;
 
 use chrono::{Datelike, Timelike};
 
 use tracing::{
-    debug,
     info,
-    instrument,
-    span,
-    Level,
-    instrument::Instrumented,
 };
 
 /// Posts the mensa plan for the current week
@@ -89,7 +83,7 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
             }
 
             println!("Sleeping for 5 minutes");
-            tokio::time::sleep(tokio::time::Duration::from_secs(5 * 60)).await;
+            tokio::time::sleep(tokio::time::Duration::from_secs((&data.config.mealplan.check * 60).into())).await;
         } 
     })
     .await;
