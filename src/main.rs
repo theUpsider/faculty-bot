@@ -159,7 +159,10 @@ async fn main() -> Result<(), prelude::Error> {
     Ok(())
 }
 
-#[poise::command(prefix_command)]
+#[poise::command(
+    prefix_command,
+    required_permissions = "MANAGE_GUILD",
+)]
 async fn register(ctx: Context<'_>) -> Result<(), prelude::Error> {
     poise::builtins::register_application_commands_buttons(ctx)
         .await

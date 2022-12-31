@@ -18,7 +18,9 @@ pub async fn event_listener(
                 fw.options.prefix_options.prefix.as_ref()
             );
             info!("Mensaplan task started");
-            tasks::post_mensaplan(ctx.clone(), data.clone()).await?;
+            if data.config.mealplan.post_mealplan {
+                tasks::post_mensaplan(ctx.clone(), data.clone()).await?;
+            }
         }
 
         poise::Event::Message { new_message } => {
@@ -110,6 +112,12 @@ pub async fn event_listener(
         },
 
         poise::Event::VoiceStateUpdate { old, new } => {
+
+            let created_channels = sqlx::query_as::<sqlx::Postgres, structs::VoiceChannels>("SELECT * FROM voice_channels")
+                .fetch_all(&mut data.db.acquire().await.map_err(Error::Database)?)
+                .await
+                .map_err(Error::Database)?;
+
             if let Some(old_chan) = old {
                 if old_chan.channel_id == new.channel_id {
                     // user moved in same channel
@@ -122,8 +130,20 @@ pub async fn event_listener(
                     if channel.name() == data.config.channels.create_channel {
                         return Ok(()); // don't delete the create channel
                     }
+
+                    // also we dont want to delete any other non temp channel
+                    if !created_channels.iter().any(|c| c.channel_id == channel.id.0 as i64) {
+                        return Ok(());
+                    }
+
                     if channel.members(&ctx).await.map_err(Error::Serenity)?.is_empty() {
                         channel.delete(&ctx).await.map_err(Error::Serenity)?;
+                        // remove channel from db
+                        sqlx::query("DELETE FROM voice_channels WHERE channel_id = $1")
+                            .bind(channel.id.0 as i64)
+                            .execute(&mut data.db.acquire().await.map_err(Error::Database)?)
+                            .await
+                            .map_err(Error::Database)?;
                     }
                 }
 
@@ -155,6 +175,14 @@ pub async fn event_listener(
                 })
                 .await
                 .map_err(Error::Serenity)?;
+
+                sqlx::query("INSERT INTO voice_channels (channel_id, owner_id, deleted) VALUES ($1, $2, $3)")
+                    .bind(cc.id.0 as i64)
+                    .bind(new.member.as_ref().unwrap().user.id.0 as i64)
+                    .bind(false)
+                    .execute(&mut data.db.acquire().await.map_err(Error::Database)?)
+                    .await
+                    .map_err(Error::Database)?;
 
                 new.member
                     .as_ref()

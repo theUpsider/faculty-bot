@@ -85,6 +85,8 @@ fn default_color_config() -> FacultyManagerColorConfig {
 
 pub fn read_config() -> Result<FacultyManagerConfig, prelude::Error> {
     let config = std::fs::read_to_string("config.json").map_err(Error::IO)?;
+    println!("Config: {}", config);
     let config: FacultyManagerConfig = serde_json::from_str(&config).map_err(Error::Serde)?;
+    println!("Config (Serialized): {:?}", config);
     Ok(config)
 }

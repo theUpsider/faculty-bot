@@ -17,7 +17,6 @@ pub struct VerifiedUsers {
 pub struct VoiceChannels {
     pub channel_id: i64,
     pub owner_id: i64,
-    pub deleted: i64,
 }
 
 #[derive(Debug, FromRow)]
