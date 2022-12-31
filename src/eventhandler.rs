@@ -176,10 +176,9 @@ pub async fn event_listener(
                 .await
                 .map_err(Error::Serenity)?;
 
-                sqlx::query("INSERT INTO voice_channels (channel_id, owner_id, deleted) VALUES ($1, $2, $3)")
+                sqlx::query("INSERT INTO voice_channels (channel_id, owner_id) VALUES ($1, $2)")
                     .bind(cc.id.0 as i64)
                     .bind(new.member.as_ref().unwrap().user.id.0 as i64)
-                    .bind(false)
                     .execute(&mut data.db.acquire().await.map_err(Error::Database)?)
                     .await
                     .map_err(Error::Database)?;
