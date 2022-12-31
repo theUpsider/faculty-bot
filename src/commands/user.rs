@@ -8,6 +8,7 @@ use poise::serenity_prelude as serenity;
     slash_command,
     prefix_command,
     track_edits,
+    guild_only,
     name_localized("de", "verifizieren"),
     description_localized("de", "Verifiziere dich mit deiner Studierenden E-Mail Adresse")
 )]
@@ -21,10 +22,10 @@ pub async fn verify(
     #[name_localized("de", "email-adresse")]
     email: String,
 ) -> Result<(), Error> {
-    // check if email is valid, we will send a code to this email and verify its authenticity
-    if !email.ends_with("@stud.hs-kempten.de") {
+    // check if email is valid
+    /* if !email.ends_with("@stud.hs-kempten.de") {
         return Err(Error::WithMessage("Invalid email address".to_string()));
-    }
+    } */
 
     let mmail = crate::utils::find_discord_tag(&ctx.author().tag()).await;
 
@@ -44,7 +45,8 @@ pub async fn verify(
     let user_id = ctx.author().id.0 as i64;
 
 
-    let user = sqlx::query!("SELECT * FROM verified_users WHERE user_id = $1", user_id)
+    let user = sqlx::query("SELECT * FROM verified_users WHERE user_id = $1")
+        .bind(user_id)
         .fetch_optional(pool)
         .await
         .map_err(Error::Database)?;
@@ -54,17 +56,23 @@ pub async fn verify(
         return Err(Error::WithMessage("You are already verified".to_string()));
     } else {
 
-        sqlx::query!(
-            "INSERT INTO verified_users (user_id, user_email) VALUES ($1, $2)",
-            user_id,
-            email
+        sqlx::query(
+            "INSERT INTO verified_users (user_id, user_email) VALUES ($1, $2)"
         )
+        .bind(user_id)
+        .bind(email)
         .execute(pool)
         .await
         .map_err(Error::Database)?;
 
 
         ctx.say("You are now verified!").await.map_err(Error::Serenity)?;
+
+        // give them the verified role
+        let verified_role = ctx.data().config.roles.verified;
+
+        let mem = ctx.author_member().await.unwrap();
+        mem.into_owned().add_role(&ctx.serenity_context(), verified_role).await.map_err(Error::Serenity)?;
     }
 
     Ok(())
@@ -80,7 +88,7 @@ pub async fn verify(
 )]
 pub async fn leaderboard(ctx: Context<'_>) -> Result<(), Error> {
     let pool = &ctx.data().db;
-    let users = sqlx::query_as::<sqlx::Sqlite, structs::UserXP>("SELECT * FROM user_xp ORDER BY user_xp DESC LIMIT 10")
+    let users = sqlx::query_as::<sqlx::Postgres, structs::UserXP>("SELECT * FROM user_xp ORDER BY user_xp DESC LIMIT 10")
         .fetch_all(pool)
         .await
         .map_err(Error::Database)?;
@@ -118,7 +126,7 @@ pub async fn xp(ctx: Context<'_>) -> Result<(), Error> {
     let pool = &ctx.data().db;
     let user_id = ctx.author().id.0 as i64;
 
-    let user = sqlx::query_as::<sqlx::Sqlite, structs::UserXP>("SELECT * FROM user_xp WHERE user_id = $1")
+    let user = sqlx::query_as::<sqlx::Postgres, structs::UserXP>("SELECT * FROM user_xp WHERE user_id = $1")
         .bind(user_id)
         .fetch_optional(pool)
         .await
@@ -127,7 +135,7 @@ pub async fn xp(ctx: Context<'_>) -> Result<(), Error> {
     if let Some(user) = user {
         ctx.send(|f| {
             f.embed(|e| {
-                e.description(format!("You have {} xp, that equals to Level {}", user.user_xp, user.level))
+                e.description(format!("You have {} xp, that equals to Level {}", user.user_xp, user.user_level))
             });
             f
         })

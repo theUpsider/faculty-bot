@@ -78,13 +78,13 @@ pub async fn show_levelup_image(user: &serenity::User, level: u16) -> Result<Vec
 
 /// Find discord tag in email
 pub async fn find_discord_tag(tag: &str) -> imap::error::Result<Option<String>> {
-    let domain = env!("SMTP_SERVER");
-    let username = env!("MAILUSER");
-    let password = env!("MAILPW");
+    let domain = std::env::var("SMTP_SERVER").unwrap();
+    let username = std::env::var("MAILUSER").unwrap();
+    let password = std::env::var("MAILPW").unwrap();
     let tls = native_tls::TlsConnector::builder().build().unwrap();
       // we pass in the domain twice to check that the server's TLS
     // certificate is valid for the domain we're connecting to.
-    let client = imap::connect((domain, 993), domain, &tls).unwrap();
+    let client = imap::connect((domain.clone(), 993), domain, &tls).unwrap();
 
     // the client we have here is unauthenticated.
     // to do anything useful with the e-mails, we need to log in

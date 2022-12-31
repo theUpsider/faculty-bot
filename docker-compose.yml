@@ -11,7 +11,7 @@ services:
             target: /.env
         environment:
             DISCORD_TOKEN: "${DISCORD_TOKEN}"
-            DATABASE_URL: "${DATABASE_URL}"
+            DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}"
             PREFIX: "${PREFIX}"
             MAILUSER: "${MAILUSER}"
             MAILPW: "${MAILPW}"

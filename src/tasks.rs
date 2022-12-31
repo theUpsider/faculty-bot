@@ -1,6 +1,6 @@
 #![allow(unused_variables, unused_mut, dead_code)]
 
-use crate::{prelude::Error, Data};
+use crate::{prelude::Error, Data, structs};
 
 use poise::serenity_prelude::{self as serenity, Mentionable};
 
@@ -35,7 +35,8 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
                 let today = now.date_naive().format("%Y-%m-%d").to_string();
 
                 let mensaplan_posted =
-                    sqlx::query!("SELECT * FROM mensaplan WHERE date = $1", today)
+                    sqlx::query_as::<sqlx::Postgres, structs::Mensaplan>("SELECT * FROM mensaplan WHERE date = $1")
+                        .bind(&today)
                         .fetch_optional(&db)
                         .await
                         .map_err(Error::Database)
@@ -66,11 +67,11 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
                     }
 
 
-                    let sql_res = sqlx::query!(
-                        "INSERT INTO mensaplan (date, posted) VALUES ($1, $2)",
-                        today,
-                        true
+                    let sql_res = sqlx::query(
+                        "INSERT INTO mensaplan (date, posted) VALUES ($1, $2)"
                     )
+                    .bind(&today)
+                    .bind(true)
                     .execute(&db)
                     .await
                     .map_err(Error::Database);

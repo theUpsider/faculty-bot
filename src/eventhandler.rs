@@ -14,8 +14,8 @@ pub async fn event_listener(
         poise::Event::Ready { data_about_bot } => {
             info!("Ready! Logged in as {}", data_about_bot.user.name);
             info!(
-                "Prefix: {}",
-                fw.options.prefix_options.prefix.as_ref().unwrap()
+                "Prefix: {:?}",
+                fw.options.prefix_options.prefix.as_ref()
             );
             info!("Mensaplan task started");
             tasks::post_mensaplan(ctx.clone(), data.clone()).await?;
@@ -32,10 +32,15 @@ pub async fn event_listener(
             }
             let msg = new_message.clone();
             let user_id = i64::from(new_message.author.id);
+
+
             // get xp from db
-            let user_data = sqlx::query_as::<sqlx::Sqlite, structs::UserXP>("SELECT * FROM user_xp WHERE user_id = $1")
+            let mut pool = data.db.acquire().await.map_err(Error::Database)?;
+            
+
+            let user_data = sqlx::query_as::<sqlx::Postgres, structs::UserXP>("SELECT * FROM user_xp WHERE user_id = $1")
                 .bind(user_id)
-                .fetch_optional(&data.db)
+                .fetch_optional(&mut pool)
                 .await
                 .map_err(Error::Database)?
                 .unwrap_or_default();
@@ -54,7 +59,7 @@ pub async fn event_listener(
             sqlx::query("INSERT INTO user_xp (user_id, user_xp) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET user_xp = $2")
                 .bind(user_id)
                 .bind(xp_float)
-                .execute(&data.db)
+                .execute(&mut pool)
                 .await
                 .map_err(Error::Database)?;
 
@@ -64,25 +69,27 @@ pub async fn event_listener(
             // check if lvl up and level is higher than previous
             
             if (xp - xp_to_add) as f64 / 100. == (xp / 100.)  // check if lvl up
-                || user_data.level  // check that the new level is higher than the current
-                    >= (xp / 100.) as i64
+                || user_data.user_level  // check that the new level is higher than the current
+                    >= (xp / 100.) as i32
                 {
                 return Ok(());
             } else {
                 // get lvl from xp
-                let lvl = (xp / 100.) as u16;
+                let lvl = (xp / 100.) as i32;
 
                 if lvl == 0 {
                     return Ok(());
                 }
 
                 // update level in db
-                sqlx::query!("INSERT INTO user_xp (user_id, level) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET level = $2", user_id, lvl)
-                    .execute(&data.db)
+                sqlx::query("INSERT INTO user_xp (user_id, user_level) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET user_level = $2")
+                    .bind(user_id)
+                    .bind(lvl)
+                    .execute(&mut pool)
                     .await
                     .map_err(Error::Database)?;
 
-                let img = utils::show_levelup_image(&new_message.author, lvl).await?;
+                let img = utils::show_levelup_image(&new_message.author, lvl as u16).await?;
 
                 new_message
                     .channel_id

@@ -21,7 +21,7 @@ pub async fn getmail(
 ) -> Result<(), Error> {
     let pool = &ctx.data().db;
     let uid = user.id.0 as i64;
-    let db_user = sqlx::query_as::<sqlx::Sqlite, structs::VerifiedUsers>("SELECT * FROM verified_users WHERE user_id = $1")
+    let db_user = sqlx::query_as::<sqlx::Postgres, structs::VerifiedUsers>("SELECT * FROM verified_users WHERE user_id = $1")
         .bind(uid)
         .fetch_optional(pool)
         .await

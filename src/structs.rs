@@ -4,7 +4,7 @@ use sqlx::FromRow;
 pub struct UserXP {
     pub user_id: i64,
     pub user_xp: f64,
-    pub level: i64,
+    pub user_level: i32,
 }
 
 #[derive(Debug, FromRow)]
@@ -50,7 +50,7 @@ impl Default for UserXP {
         Self {
             user_id: 0,
             user_xp: 0.0,
-            level: 0,
+            user_level: 0,
         }
     }
 }

@@ -10,7 +10,7 @@ use poise::{
     self,
     serenity_prelude::{self as serenity, GatewayIntents},
 };
-use sqlx::sqlite::SqlitePoolOptions;
+use sqlx::postgres::PgPoolOptions;
 
 pub mod prelude {
     use super::*;
@@ -67,7 +67,7 @@ pub type ApplicationContext<'a> = poise::ApplicationContext<'a, Data, prelude::E
 
 #[derive(Clone)]
 pub struct Data {
-    pub db: sqlx::SqlitePool,
+    pub db: sqlx::Pool<sqlx::Postgres>,
     pub config: config::FacultyManagerConfig,
 }
 
@@ -89,24 +89,26 @@ async fn main() -> Result<(), prelude::Error> {
 
     let token = std::env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
-    let db_conn = SqlitePoolOptions::new()
-        .max_connections(5)
-        .connect_with(
-            sqlx::sqlite::SqliteConnectOptions::new()
-                .filename("database.db")
-                .create_if_missing(true),
-        )
+    let db_url = std::env::var("DATABASE_URL").expect("Expected a database url in the environment");
+
+    let pool = PgPoolOptions::new()
+        .max_connections(15)
+        .connect(&db_url)
         .await
         .map_err(prelude::Error::Database)?;
 
     //sqlx::migrate!().run(&db_conn).await.map_err(prelude::Error::Migration)?;
 
     // run "faculty_manager.sql"
-
-    sqlx::query_file!("migrations/faculty_manager.sql")
-        .execute(&db_conn)
+    /* sqlx::query_file!("migrations/faculty_manager.sql")
+        .execute(&conn)
         .await
-        .map_err(prelude::Error::Database)?;
+        .map_err(prelude::Error::Database)?; */
+
+  /*   sqlx::migrate!()
+        .run(&pool)
+        .await
+        .map_err(prelude::Error::Migration)?; */
 
     poise::Framework::builder()
         .options(poise::FrameworkOptions {
@@ -140,7 +142,7 @@ async fn main() -> Result<(), prelude::Error> {
         .setup(move |_ctx, _ready, _framework| {
             Box::pin(async move {
                 Ok(Data {
-                    db: db_conn,
+                    db: pool,
                     config,
                 })
             })
