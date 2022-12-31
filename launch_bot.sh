@@ -17,7 +17,7 @@ case $1 in
         ;;
     docker)
         echo "Launching bot via docker..."
-        launch_docker.sh
+        launch_docker
         ;;
     *)
         echo "Invalid launch mode!"
