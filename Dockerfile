@@ -10,12 +10,12 @@ RUN apt-get update && apt-get install -y cmake && apt-get clean
 COPY Cargo.toml Cargo.lock ./
 RUN mkdir src && \
     echo "// dummy file" > src/lib.rs && \
-    cargo build && \
+    cargo build --release && \
     rm -r src
 
 # This is the actual build, copy in the rest of the sources
 COPY . .
-RUN cargo build
+RUN cargo build --release
 
 # Now make the runtime container
 FROM debian:buster-slim

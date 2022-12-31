@@ -1,6 +1,20 @@
 #!/bin/bash
 
 # This script is used to launch the bot
+function launch_docker() {
+    # remove old container
+    echo "Removing old container..."
+    docker rm -f faculty_manager
+
+    echo "Pulling docker image..."
+    docker pull ghcr.io/rndrmu/facultymanager:latest
+
+    echo "Launching Database..."
+    docker compose -f docker_db.yml up -d
+
+    echo "Launching Bot..."
+    docker run -d --name="faculty_manager" --net host -v $PWD/config.json:/config.json -v $PWD/images:/images --env-file .env faculty_manager:latest
+}
 
 # Check launch mode (openrc, systemd or docker)
 case $1 in
@@ -26,21 +40,4 @@ case $1 in
         ;;
 esac
 
-# Build the docker image
-
-function launch_docker() {
-    echo "Building docker image..."
-    docker build -t faculty-manager . > /dev/null
-
-    echo "Launching Bot..."
-    docker run -d --name="faculty_manager" --net host --env-file .env faculty_manager:latest
-}
-echo "Building docker image..."
-docker build -t faculty-manager . > /dev/null
-
-echo "Launching Database..."
-docker compose -f docker_db.yml up -d
-
-echo "Launching Bot..."
-docker run -d --name="faculty_manager" --net host --env-file .env faculty_manager:latest
 
