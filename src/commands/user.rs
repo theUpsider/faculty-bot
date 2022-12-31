@@ -23,9 +23,9 @@ pub async fn verify(
     email: String,
 ) -> Result<(), Error> {
     // check if email is valid
-    /* if !email.ends_with("@stud.hs-kempten.de") {
+    if !email.ends_with("@stud.hs-kempten.de") {
         return Err(Error::WithMessage("Invalid email address".to_string()));
-    } */
+    }
 
     let mmail = crate::utils::find_discord_tag(&ctx.author().tag()).await;
 

@@ -44,7 +44,7 @@ pub mod prelude {
     impl std::fmt::Display for Error {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             match self {
-                Error::Serenity(e) => write!(f, "Serenity error: {}", e),
+                Error::Serenity(e) => write!(f, "Discord error: {}", e),
                 Error::Database(e) => write!(f, "Database error: {}", e),
                 Error::Generic(e) => write!(f, "Generic error: {}", e),
                 Error::IO(e) => write!(f, "IO error: {}", e),
@@ -73,10 +73,13 @@ pub struct Data {
 
 #[tokio::main]
 async fn main() -> Result<(), prelude::Error> {
-    dotenv().ok();
+    // only load .env file if it exists
+    if std::path::Path::new(".env").exists() {
+        dotenv().ok();
+    }
 
     // read config.json
-    let config = config::read_config()?;
+    let config = config::read_config().expect("Failed to read config file");
 
     // print mealplan post day and time
     println!(

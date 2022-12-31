@@ -3,12 +3,9 @@ services:
     bot:
         build: .
         volumes:
-          - type: bind
-            source: ./config.json
-            target: /config.json
-          - type: bind
-            source: ./.env
-            target: /.env
+          - '$PWD/config.json:/config.json'
+          - '$PWD/images:/images'
+          - '$PWD/migrations:/migrations'
         environment:
             DISCORD_TOKEN: "${DISCORD_TOKEN}"
             DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}"
@@ -18,8 +15,6 @@ services:
             SMTP_SERVER: "${SMTP_SERVER}"
             SMTP_PORT: "${SMTP_PORT}"
             RUST_LOG: "${RUST_LOG}"
-
-
         depends_on: [database]
         network_mode: "host"
     database:

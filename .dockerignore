@@ -5,4 +5,4 @@ target
 # on simple config changes/development 
 Dockerfile
 docker-compose.*
-config.toml
+config.json

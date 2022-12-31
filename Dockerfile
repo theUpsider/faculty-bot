@@ -20,9 +20,13 @@ RUN cargo build
 # Now make the runtime container
 FROM debian:buster-slim
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y ffmpeg ca-certificates && rm -rf /var/lib/apt/lists/*
+# Install graphics-/imagemagick
+RUN apt-get update && apt-get upgrade -y && apt-get install -y graphicsmagick imagemagick ghostscript && rm -rf /var/lib/apt/lists/*
+# allow ghostscript to convert pdf to png
+RUN  mv /etc/ImageMagick-6/policy.xml /etc/ImageMagick-6/policy.xml.off
 
 COPY --from=builder /faculty_manager/target/debug/faculty_manager /usr/local/bin/faculty_manager
-COPY Cargo.lock .
+# copy config and env files
+COPY Cargo.lock /
 
 CMD ["/usr/local/bin/faculty_manager"]

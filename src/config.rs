@@ -49,8 +49,8 @@ pub struct FacultyManagerRoleConfig {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FacultyManagerGeneralConfig {
-    pub adstimeout: u64,
-    pub chars_for_level: u64,
+    pub adstimeout: i64,
+    pub chars_for_level: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -61,7 +61,7 @@ pub struct FacultyManagerMealplanConfig {
     pub post_on_day: chrono::Weekday,
     pub post_at_hour: chrono::NaiveTime,
     pub imgsettings: MealplanImageSettings,
-    pub check: u16,
+    pub check: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -84,9 +84,7 @@ fn default_color_config() -> FacultyManagerColorConfig {
 }
 
 pub fn read_config() -> Result<FacultyManagerConfig, prelude::Error> {
-    let config = std::fs::read_to_string("config.json").map_err(Error::IO)?;
-    println!("Config: {}", config);
+    let config = std::fs::read_to_string("./config.json").map_err(Error::IO)?;
     let config: FacultyManagerConfig = serde_json::from_str(&config).map_err(Error::Serde)?;
-    println!("Config (Serialized): {:?}", config);
     Ok(config)
 }

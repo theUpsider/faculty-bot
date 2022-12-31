@@ -28,8 +28,7 @@ pub async fn fetch_mensaplan<'a>(url: &'a str) -> Result<Vec<u8>, Error> {
     println!("Fetching Mensaplan from {}", url); // be careful not to rape the server
         // download mensaplan
         let response = reqwest::get(url).await.map_err(Error::NetRequest)?;
-        let tempdir = std::env::temp_dir();
-        let mut file = tokio::fs::File::create(tempdir.join("mensaplan.pdf"))
+        let mut file = tokio::fs::File::create("images/mensaplan.pdf")
             .await
             .map_err(Error::IO)?;
 
@@ -37,7 +36,7 @@ pub async fn fetch_mensaplan<'a>(url: &'a str) -> Result<Vec<u8>, Error> {
             .await
             .map_err(Error::IO)?;
 
-        let png = pdf_to_png(tempdir.join("mensaplan.pdf")).await?;
+        let png = pdf_to_png("images/mensaplan.pdf".into()).await?;
         Ok(png)
 }
 
@@ -45,10 +44,8 @@ pub async fn show_levelup_image(user: &serenity::User, level: u16) -> Result<Vec
     let mut file = tokio::fs::File::open("images/banner.png")
         .await
         .map_err(Error::IO)?;
-    println!("got image");
     let mut buffer = Vec::new();
     file.read_to_end(&mut buffer).await.map_err(Error::IO)?;
-    //convert banner.png -gravity West -pointsize 35 -fill white -draw "text 280,-30 'galaali has reached'" -draw "text 280,45 'LEVEL 187'"  jpeg:-
 
     let with_text = Command::new("convert")
         .arg("images/banner.png")
@@ -64,7 +61,7 @@ pub async fn show_levelup_image(user: &serenity::User, level: u16) -> Result<Vec
         .arg(format!("text 280,-30 '{} has reached'", user.name))
         .arg("-draw")
         .arg(format!("text 280,45 'LEVEL {}'", level))
-        .arg("jpeg:-")
+        .arg("png:-")
         .output()
         .await;
 

@@ -84,7 +84,7 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
             }
 
             println!("Sleeping for 5 minutes");
-            tokio::time::sleep(tokio::time::Duration::from_secs((&data.config.mealplan.check * 60).into())).await;
+            tokio::time::sleep(tokio::time::Duration::from_secs(data.config.mealplan.check * 60)).await;
         } 
     })
     .await;
