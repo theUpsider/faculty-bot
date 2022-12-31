@@ -25,7 +25,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y graphicsmagick im
 # allow ghostscript to convert pdf to png
 RUN  mv /etc/ImageMagick-6/policy.xml /etc/ImageMagick-6/policy.xml.off
 
-COPY --from=builder /faculty_manager/target/debug/faculty_manager /usr/local/bin/faculty_manager
+COPY --from=builder /faculty_manager/target/release/faculty_manager /usr/local/bin/faculty_manager
 # copy config and env files
 COPY Cargo.lock /
 
