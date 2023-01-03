@@ -35,7 +35,17 @@ RUST_LOG=warn
 ```
 
 - To register the bot, you'll need to register an application at [Discord's Developer Portal](https://discord.dev) The Token should be filled in the `.env` file under `DISCORD_TOKEN` key.
-- To finally launch the bot, use `docker compose up -d` or `docker-compose up -d`
+
+## Launching
+- Fill the `.env` and the `config.json`
+
+- Easy: Use either the `launch_bot.sh` or `launch_bot.ps1` scripts
+- Hard: 
+  - Install `Postgres 13`
+  - The Rust Toolchain
+  - Run the `faculty_manager.sql` file to init the database
+  - Use your favourite Process Manager to keep the bot running
+    (Notable Mentions: [pm2](https://pm2.io), systemd, openrc)
 
 
 ## Bot Settings
