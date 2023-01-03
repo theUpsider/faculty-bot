@@ -17,7 +17,7 @@ struct TaskConfig {
     pub post_mealplan: bool,
     pub post_on_day: chrono::Weekday,
     pub post_at: chrono::NaiveTime,
-    pub mealplan_settings: FacultyManagerMealplanConfig
+    pub mealplan_settings: FacultyManagerMealplanConfig,
     pub post_channel: serenity::ChannelId,
 }
 
