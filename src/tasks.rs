@@ -16,7 +16,7 @@ struct TaskConfig {
     pub notify_role: serenity::RoleId,
     pub post_mealplan: bool,
     pub post_on_day: chrono::Weekday,
-    pub post_at_hour: chrono::NaiveTime,
+    pub post_at: chrono::NaiveTime,
     pub mealplan_settings: FacultyManagerMealplanConfig
     pub post_channel: serenity::ChannelId,
 }
@@ -30,7 +30,7 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
         notify_role: data.config.roles.mealplannotify,
         post_mealplan: data.config.mealplan.post_mealplan,
         post_on_day: data.config.mealplan.post_on_day,
-        post_at_hour: data.config.mealplan.post_at_hour,
+        post_at: data.config.mealplan.post_at_hour,
         mealplan_settings: data.config.mealplan.clone(),
         post_channel: data.config.channels.mealplan,
     };
@@ -42,7 +42,7 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
             let weekday = now.weekday();
             let hour = now.hour();
 
-            if weekday == task_conf.post_on_day && hour == task_conf.post_at_hour.hour() {
+            if weekday == task_conf.post_on_day && hour == task_conf.post_at.hour() {
                 let mensa_plan = crate::utils::fetch_mensaplan(&task_conf.mealplan_settings.url)
                     .await
                     .unwrap();
