@@ -10,7 +10,8 @@ function launch_docker() {
     docker pull ghcr.io/rndrmu/facultymanager:latest
 
     echo "Launching Database..."
-    docker compose -f docker_db.yml up -d
+    #docker compose -f docker_db.yml up -d
+    docker run -d --name="faculty_manager_db" --net host -v $PWD/db:/var/lib/postgresql/data -e POSTGRES_PASSWORD=postgres -e POSTGRES
 
     echo "Launching Bot..."
     docker run -d --name="faculty_manager" --net host -v $PWD/config.json:/config.json -v $PWD/images:/images --env-file .env faculty_manager:latest

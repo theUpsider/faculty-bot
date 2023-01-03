@@ -1,6 +1,6 @@
 #![allow(unused_variables, unused_mut, dead_code)]
 
-use crate::{prelude::Error, Data, structs};
+use crate::{prelude::Error, Data, structs, config::FacultyManagerMealplanConfig};
 
 use poise::serenity_prelude::{self as serenity, Mentionable};
 
@@ -12,14 +12,28 @@ use tracing::{
     info,
 };
 
+struct TaskConfig {
+    pub notify_role: serenity::RoleId,
+    pub post_mealplan: bool,
+    pub post_on_day: chrono::Weekday,
+    pub post_at_hour: chrono::NaiveTime,
+    pub mealplan_settings: FacultyManagerMealplanConfig
+    pub post_channel: serenity::ChannelId,
+}
+
 /// Posts the mensa plan for the current week
 pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Error> {
     #![allow(unused_variables, unused_mut)]
     let (tx, mut rx) = mpsc::channel::<()>(1);
 
-    let config = data.config.clone();
-    let post_day = config.mealplan.post_on_day;
-    let post_time = config.mealplan.post_at_hour;
+    let task_conf = TaskConfig {
+        notify_role: data.config.roles.mealplannotify,
+        post_mealplan: data.config.mealplan.post_mealplan,
+        post_on_day: data.config.mealplan.post_on_day,
+        post_at_hour: data.config.mealplan.post_at_hour,
+        mealplan_settings: data.config.mealplan.clone(),
+        post_channel: data.config.channels.mealplan,
+    };
     let db = data.db.clone();
 
     let task = tokio::spawn(async move {
@@ -28,8 +42,8 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
             let weekday = now.weekday();
             let hour = now.hour();
 
-            if weekday == post_day && hour == post_time.hour() {
-                let mensa_plan = crate::utils::fetch_mensaplan(&config.mealplan.url)
+            if weekday == task_conf.post_on_day && hour == task_conf.post_at_hour.hour() {
+                let mensa_plan = crate::utils::fetch_mensaplan(&task_conf.mealplan_settings.url)
                     .await
                     .unwrap();
                 let today = now.date_naive().format("%Y-%m-%d").to_string();
@@ -47,11 +61,11 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
                 if mensaplan_posted {
                     info!("Mensaplan already posted today");
                 } else {
-                    let mut channel = config.channels.mealplan;
+                    let mut channel = task_conf.post_channel;
 
                     let mut msg = channel
                         .send_message(&ctx, |f| {
-                            f.content(format!("{}", config.roles.mealplannotify.mention()))
+                            f.content(format!("{}", task_conf.notify_role.mention()))
                                 .add_file(serenity::AttachmentType::Bytes {
                                     data: std::borrow::Cow::Borrowed(&mensa_plan),
                                     filename: "mensaplan.png".to_string(),
