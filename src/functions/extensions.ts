@@ -5,9 +5,10 @@ import fs from "fs";
 import http from "http";
 //const http = require('http');
 import https from "https";
-import { Client, GuildChannel, Message, TextChannel } from "discord.js";
+import { Client, GuildChannel, Message, TextChannel, MessageEmbed } from "discord.js";
 import { Canvas } from "canvas";
 import Keyv from "keyv";
+import FeedParser from "feedparser";
 //const https = require('https');
 
 
@@ -40,6 +41,27 @@ export const logMessage = async (message: Message, msg: string): Promise<void> =
   if (logChannel) {
     await logChannel.send(msg);
   }
+}
+
+export const rss = (url: string) => {
+  return new Promise((resolve, reject) => {
+    const feedparser = new FeedParser();
+    const items: any[] = [];
+    feedparser.on('error', reject);
+    feedparser.on('readable', function() {
+      let item;
+      while ((item = this.read())) {
+        items.push(item);
+      }
+    });
+    feedparser.on('end', function() {
+      const sortedItems = items.sort((a, b) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
+      resolve(sortedItems[0]);
+    });
+    request(url).pipe(feedparser);
+  });
 }
 
 

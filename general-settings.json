@@ -6,7 +6,8 @@
     "logs": "logs",
     "ads": "stellenausschreibungen",
     "createChannel": "🔊 Neuer Voicechannel",
-    "mealPlan": "899606239804268545"
+    "mealPlan": "899606239804268545",
+    "rss": "1087742021684449320"
   },
   "colors": {
     "blue": "#4200ff",
@@ -37,6 +38,11 @@
       "format": "png",
       "width": 768,
       "height": 512
-    }
+    },
+    "postRSS": 1,
+    "RSSURL": "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=GE+BA+ALL&title=Thema",
+    "rsscheck": 1,
+    "rssdaycheck": 1,
+    "rsshourscheck": 8,
   }
 }
