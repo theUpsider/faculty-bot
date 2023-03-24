@@ -94,7 +94,8 @@ export const rsshelper = async (client, lastmsg, specificURL) => {
     }
     
     if (latestPost.content) {
-      embed.setDescription(latestPost.content);
+      embed.setDescription(latestPost.content.replace(/\nall$/, ''));
+      console.log("\nEmbed desc: \n" + embed.description);
     }
 
     const channel = client;
