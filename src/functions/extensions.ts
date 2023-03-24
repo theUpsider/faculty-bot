@@ -84,7 +84,7 @@ export const rsshelper = async (client, lastmsg, specificURL) => {
     if (latestPost.title) {
       embed.setTitle(latestPost.title);
       if(lastmsg == latestPost.title) {
-        console.log("Post titles Match!");
+        //console.log("Post titles Match!");
         samemsg = true;
       }
     }
@@ -95,7 +95,7 @@ export const rsshelper = async (client, lastmsg, specificURL) => {
     
     if (latestPost.content) {
       embed.setDescription(latestPost.content.replace(/\nall$/, ''));
-      console.log("\nEmbed desc: \n" + embed.description);
+      //console.log("\nEmbed desc: \n" + embed.description);
     }
 
     const channel = client;

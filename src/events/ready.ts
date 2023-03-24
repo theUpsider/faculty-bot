@@ -86,7 +86,7 @@ module.exports = {
 
         // rss feed check
         // checks 1x every hour
-        var rss_check_interval = settings.RSSsettings.RSSCheckIntervalHours * 10 * 1000;// * 60;
+        var rss_check_interval = settings.RSSsettings.RSSCheckIntervalHours * 60 * 1000 * 60;
         // if feature is activated
         if (settings.RSSsettings.postRSS){
           console.log("RSS activated")
