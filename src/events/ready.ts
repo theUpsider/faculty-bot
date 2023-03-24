@@ -1,9 +1,8 @@
-import { Client, ClientEvents, Message, MessageAttachment, TextChannel } from "discord.js";
+import { Client, ClientEvents, Message, MessageAttachment, TextChannel, MessageEmbed } from "discord.js";
 import settings from '../../general-settings.json';
-import { download } from '../functions/extensions';
-import { rss } from '../functions/extensions';
+import { download, rss, add4WeeksToDate, adsdbloop } from '../functions/extensions';
 import { fromPath } from "pdf2pic"; 
-import { add4WeeksToDate, adsdbloop } from "../functions/extensions"
+import Parser from "rss-parser";
 import Keyv from "keyv";
 
 module.exports = {
@@ -86,33 +85,13 @@ module.exports = {
         }
 
         // rss feed check
-        var rss_check_interval = settings.settings.rsscheck * 60 * 1000;
+        // checks 1x every hour
+        var rss_check_interval = settings.RSSsettings.RSSCheckIntervalHours * 60 * 1000 * 60;
         // if feature is activated
-        if (settings.settings.postRSS){
+        if (settings.RSSsettings.postRSS){
           console.log("RSS activated")
           setInterval(async function () {
-            let isWeekdayNow = new Date().getDay() == settings.settings.rssdaycheck ? 1 : 0
-            if (isWeekdayNow) {
-              if(new Date().getHours() >= settings.settings.rsshourscheck) {
-                let channel = client.channels.cache.get(settings.channels.rss) as TextChannel;
-                if(channel) {
-                  channel.messages.fetch({ limit: 1 }).then(messages => {
-                    let lastMessage = channel.lastMessage?.createdTimestamp;
-                    if (new Date(lastMessage!).getDate() != new Date().getDate()) {
-                      if (channel != undefined) {
-                        // get rss feed
-                        rss(settings.settings.RSSURL).then(rss => {
-                          channel.send(rss)
-                        }
-                      }
-                    } else {
-                      //console.log("Mensaplan wurde heute schon pfostiert!");
-                      
-                    }
-                  }).catch(console.error);
-                }
-              }
-            }
+              rss(client);
           }, rss_check_interval);
         }
 

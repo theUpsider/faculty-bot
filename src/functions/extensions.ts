@@ -8,7 +8,8 @@ import https from "https";
 import { Client, GuildChannel, Message, TextChannel, MessageEmbed } from "discord.js";
 import { Canvas } from "canvas";
 import Keyv from "keyv";
-import FeedParser from "feedparser";
+import Parser from "rss-parser";
+import request from "request";
 //const https = require('https');
 
 
@@ -43,25 +44,66 @@ export const logMessage = async (message: Message, msg: string): Promise<void> =
   }
 }
 
-export const rss = (url: string) => {
-  return new Promise((resolve, reject) => {
-    const feedparser = new FeedParser();
-    const items: any[] = [];
-    feedparser.on('error', reject);
-    feedparser.on('readable', function() {
-      let item;
-      while ((item = this.read())) {
-        items.push(item);
+export const rss = (client: Client) => {
+  if(settings.RSSsettings.rssChannels.length == settings.RSSsettings.RSSURLs.length) {
+    if(new Date().getHours() >= settings.RSSsettings.RSSCheckAfterTimeHours) {
+      // FOREACH
+      for (let i = 0; i < settings.RSSsettings.rssChannels.length; i++) {
+        let channel = client.channels.cache.get(settings.RSSsettings.rssChannels[i]) as TextChannel;
+        if(channel) {
+          channel.messages.fetch({ limit: 1 }).then(messages => {
+            let lastMessage = channel.lastMessage?.createdTimestamp;
+            //if (new Date(lastMessage!).getDate() != new Date().getDate()) {
+              if (channel != undefined) {
+                // get rss feed
+                if(channel.lastMessage?.embeds[0] && channel.lastMessage.embeds[0].title) {
+                  rsshelper(channel, channel.lastMessage.embeds[0].title, settings.RSSsettings.RSSURLs[i]);
+                } else {
+                  rsshelper(channel, "Hatsune Miku",  settings.RSSsettings.RSSURLs[i]);
+                }
+              } else {
+              //console.log("RSS Feed wurde heute schon pfostiert!");
+            }
+          //}
+          }).catch(console.error);
+        }
       }
-    });
-    feedparser.on('end', function() {
-      const sortedItems = items.sort((a, b) => {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      });
-      resolve(sortedItems[0]);
-    });
-    request(url).pipe(feedparser);
-  });
+    }
+  }
+}
+
+export const rsshelper = async (client, lastmsg, specificURL) => {
+  const parser = new Parser();
+  const feed = await parser.parseURL(specificURL);
+  const latestPost = feed.items?.[0];
+  var samemsg = false;
+
+  if (latestPost) {
+    const test = new String(latestPost.title);
+    const embed = new MessageEmbed();
+    if (latestPost.title) {
+      embed.setTitle(latestPost.title);
+      if(lastmsg == latestPost.title) {
+        console.log("Post titles Match!");
+        samemsg = true;
+      }
+    }
+
+    if (latestPost.link) {
+      embed.setURL(latestPost.link);
+    }
+    
+    if (latestPost.content) {
+      embed.setDescription(latestPost.content);
+    }
+
+    const channel = client;
+    if (channel && !samemsg) {
+      channel.send({
+        content: "El Plan(ungsportal)",
+        embeds: [embed]});
+    }
+  }
 }
 
 

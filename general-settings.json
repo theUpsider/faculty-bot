@@ -6,8 +6,7 @@
     "logs": "logs",
     "ads": "stellenausschreibungen",
     "createChannel": "🔊 Neuer Voicechannel",
-    "mealPlan": "899606239804268545",
-    "rss": "1087742021684449320"
+    "mealPlan": "1088834626522456185"
   },
   "colors": {
     "blue": "#4200ff",
@@ -26,7 +25,7 @@
     "CharsForLevel": 200,
     "postMealplan": 1,
     "mealplan": "http://www.max-manager.de/daten-extern/augsburg/pdf/wochenplaene/hs-kempten/aktuell.pdf",
-    "mealplanpdfpath": "/home/akgaming/discord/faculty/usability-bot/mealplan.pdf",
+    "mealplanpdfpath": "C:/Users/Janma/AppData/Local/Temp/mealplan.pdf",
     "mealplancheck": 1,
     "mealplandaycheck": 1,
     "mealplanhourscheck": 8,
@@ -38,11 +37,28 @@
       "format": "png",
       "width": 768,
       "height": 512
-    },
+    }
+    
+  },
+  "RSSsettings": {
+    "rssChannels": [
+      "1087740850395693096",
+      "1087742021684449320",
+      "1087742288706404454",
+      "1087742576213368852",
+      "1087743074500878346",
+      "1087743506010873856"
+    ],
     "postRSS": 1,
-    "RSSURL": "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=GE+BA+ALL&title=Thema",
-    "rsscheck": 1,
-    "rssdaycheck": 1,
-    "rsshourscheck": 8,
+    "RSSURLs": [
+      "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=IF+BA+ALL&title=Thema",
+      "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=GE+BA+ALL&title=Thema",
+      "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=WK+BA+ALL&title=Thema",
+      "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=GP+MED+BA+ALL&title=Thema",
+      "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=MI+MA+ALL&title=Thema",
+      "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=GEVC+MA+MG+ALL&title=Thema"
+    ],
+    "RSSCheckIntervalHours": 1,
+    "RSSCheckAfterTimeHours": 8
   }
 }
