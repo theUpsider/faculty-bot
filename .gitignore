@@ -73,3 +73,8 @@ mealplan.pdf
 untitled.1.png
 mensaplan.1.png
 general-settings.json
+general-settings.json
+
+
+# jans special dir to switch between live and testing
+settings_files/*

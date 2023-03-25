@@ -1,8 +1,8 @@
-import { Client, ClientEvents, Message, MessageAttachment, TextChannel } from "discord.js";
+import { Client, ClientEvents, Message, MessageAttachment, TextChannel, MessageEmbed } from "discord.js";
 import settings from '../../general-settings.json';
-import { download } from '../functions/extensions';
+import { download, rss, add4WeeksToDate, adsdbloop } from '../functions/extensions';
 import { fromPath } from "pdf2pic"; 
-import { add4WeeksToDate, adsdbloop } from "../functions/extensions"
+import Parser from "rss-parser";
 import Keyv from "keyv";
 
 module.exports = {
@@ -82,6 +82,17 @@ module.exports = {
               }
             }
           }, meal_check_interval);
+        }
+
+        // rss feed check
+        // checks 1x every hour
+        var rss_check_interval = settings.RSSsettings.RSSCheckIntervalHours * 60 * 1000 * 60;
+        // if feature is activated
+        if (settings.RSSsettings.postRSS){
+          console.log("RSS activated")
+          setInterval(async function () {
+              rss(client);
+          }, rss_check_interval);
         }
 
         /* setInterval(() => {
