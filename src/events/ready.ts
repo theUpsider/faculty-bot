@@ -1,6 +1,6 @@
 import { Client, ClientEvents, Message, MessageAttachment, TextChannel, MessageEmbed } from "discord.js";
 import settings from '../../general-settings.json';
-import { download, rss, add4WeeksToDate, adsdbloop } from '../functions/extensions';
+import { download, RSS, add4WeeksToDate, adsdbloop } from '../functions/extensions';
 import { fromPath } from "pdf2pic"; 
 import Parser from "rss-parser";
 import Keyv from "keyv";
@@ -91,7 +91,7 @@ module.exports = {
         if (settings.RSSsettings.postRSS){
           console.log("RSS activated")
           setInterval(async function () {
-              rss(client);
+            RSS(client);
           }, rss_check_interval);
         }
 
