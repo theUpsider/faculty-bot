@@ -44,27 +44,27 @@ export const logMessage = async (message: Message, msg: string): Promise<void> =
   }
 }
 
-export const rss = (client: Client) => {
-  if(settings.RSSsettings.rssChannels.length == settings.RSSsettings.RSSURLs.length) {
+export const RSS = (client: Client) => {
+  //Makin the Code more Readable
+  let rssChannels = settings.RSSsettings.rssChannels;
+  let RSSURLs = settings.RSSsettings.RSSURLs;
+
+
+  if(rssChannels.length == RSSURLs.length) {
     if(new Date().getHours() >= settings.RSSsettings.RSSCheckAfterTimeHours) {
-      // FOREACH
-      for (let i = 0; i < settings.RSSsettings.rssChannels.length; i++) {
-        let channel = client.channels.cache.get(settings.RSSsettings.rssChannels[i]) as TextChannel;
+      
+      for (let i = 0; i < rssChannels.length; i++) {
+        let channel = client.channels.cache.get(rssChannels[i]) as TextChannel;
         if(channel) {
           channel.messages.fetch({ limit: 1 }).then(messages => {
-            let lastMessage = channel.lastMessage?.createdTimestamp;
-            //if (new Date(lastMessage!).getDate() != new Date().getDate()) {
               if (channel != undefined) {
                 // get rss feed
                 if(channel.lastMessage?.embeds[0] && channel.lastMessage.embeds[0].title) {
-                  rsshelper(channel, channel.lastMessage.embeds[0].title, settings.RSSsettings.RSSURLs[i]);
+                  PrepareMessageAndSend(channel, channel.lastMessage.embeds[0], RSSURLs[i]);
                 } else {
-                  rsshelper(channel, "Hatsune Miku",  settings.RSSsettings.RSSURLs[i]);
+                  PrepareMessageAndSend(channel, new MessageEmbed().setTitle("Hatsune Miku").setFooter({text: "UwU"}),  RSSURLs[i]);
                 }
-              } else {
-              //console.log("RSS Feed wurde heute schon pfostiert!");
-            }
-          //}
+              } 
           }).catch(console.error);
         }
       }
@@ -72,37 +72,63 @@ export const rss = (client: Client) => {
   }
 }
 
-export const rsshelper = async (client, lastmsg, specificURL) => {
+
+
+async function PrepareMessageAndSend(channel: TextChannel, lastmsg: MessageEmbed, specificURL: string) {
   const parser = new Parser();
   const feed = await parser.parseURL(specificURL);
   const latestPost = feed.items?.[0];
-  var samemsg = false;
+  var sameTitle = false;
+  var samePubDate = false;
 
   if (latestPost) {
-    const test = new String(latestPost.title);
-    const embed = new MessageEmbed();
+    const embed = new MessageEmbed()
+    // hehe
+    .setColor(0xb00b69);
+
     if (latestPost.title) {
       embed.setTitle(latestPost.title);
-      if(lastmsg == latestPost.title) {
+      if (lastmsg.title == latestPost.title) {
         //console.log("Post titles Match!");
-        samemsg = true;
+        sameTitle = true;
       }
+    }
+
+    if(latestPost.pubDate) {
+      // Removes unnecessary chars from timestamp
+      var mystring: string = latestPost.pubDate.replace(/\+[0-9]*$/, '');
+      if(lastmsg.footer) {
+        // strings won't match, when no regex removal is done
+        if(lastmsg.footer.text.toLowerCase().replace(/(\n*)( *)/g, '') == mystring.toLowerCase().replace(/(\n*)( *)/g, '')) {
+          samePubDate = true;
+        }
+      }
+      // embed.setTimestamp won't take pubDate and isoDate isn't gonna cut it
+      embed.setFooter({text: mystring});
     }
 
     if (latestPost.link) {
       embed.setURL(latestPost.link);
     }
-    
+
     if (latestPost.content) {
+      // Removes unneccessary text from feed (HSKE specific)
       embed.setDescription(latestPost.content.replace(/\nall$/, ''));
       //console.log("\nEmbed desc: \n" + embed.description);
     }
 
-    const channel = client;
-    if (channel && !samemsg) {
+    if (channel && !sameTitle) {
       channel.send({
-        content: "El Plan(ungsportal)",
-        embeds: [embed]});
+        content: "Neue Nachricht im Planungsportal:",
+        embeds: [embed]
+      });
+    } else if(channel && sameTitle && !samePubDate) {
+      channel.send({
+        content: "Der letzte Post im Planungsportal wurde aktualisiert",
+        embeds: [embed]
+      });
+    } else {
+      //console.log("Keine neuen Pfosten im Planungsportal");
     }
   }
 }
