@@ -1,5 +1,6 @@
 {
   "prefix": ">",
+  "clientId": "1025099279561392189",
   "channels": {
     "xp": "bot-commands",
     "rules": "rules",

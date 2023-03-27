@@ -35,7 +35,7 @@ module.exports = {
       message.content.toLocaleLowerCase().startsWith(`.. verify`)
     ) {
       message
-        .reply("You need to use ..verify")
+        .reply("You need to use /verify")
         .then(() => message.delete())
         .catch(console.error);
     }
@@ -57,10 +57,7 @@ module.exports = {
      } */
 
       // Key: iD, Value: XP
-      const dbxp = new Keyv("sqlite://xp.sqlite");
-      dbxp.on("error", (err: any) =>
-        console.error("Keyv connection error:", err)
-      );
+      const dbxp = client.dbxp;
 
       const userXP = await dbxp.get(message.author.id);
 

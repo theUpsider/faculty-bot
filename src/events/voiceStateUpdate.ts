@@ -5,7 +5,7 @@ import settings from '../../general-settings.json';
 
 module.exports = {
     event: "voiceStateUpdate",
-    async execute (client: FacultyManager, [oldState, newState] : [VoiceState, VoiceState], { dbvoicechannels } : {dbvoicechannels: Keyv}) {
+    async execute (client: FacultyManager, [oldState, newState] : [VoiceState, VoiceState]) {
         try {
             let newUserChannelName;
             if (newState.channel !== null) {
@@ -36,14 +36,14 @@ module.exports = {
                     // Move creator in his new channel
                     newState.member?.voice.setChannel(result);
                     // Store newly created channel id for deletion
-                    dbvoicechannels.set(result.id, result.id);
+                    client.dbvoicechannels.set(result.id, result.id);
                   });;
             }
          
             // Check if old channel was a temporary voice channel
             if (oldState.channel !== null) {
               let oldChannelId = oldState.channel.id;
-              let trackedVoiceChannelId = dbvoicechannels.get(oldChannelId);
+              let trackedVoiceChannelId = client.dbvoicechannels.get(oldChannelId);
               trackedVoiceChannelId.then(function(channelId)
               {
                 // If channel is tracked as temporary voice channel
@@ -53,7 +53,7 @@ module.exports = {
                     // delete channel
                     oldState.channel?.delete();
                     // remove entry in tracker db
-                    dbvoicechannels.delete(oldChannelId);
+                    client.dbvoicechannels.delete(oldChannelId);
                   }
                 }
               });

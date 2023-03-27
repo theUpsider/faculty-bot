@@ -1,74 +1,60 @@
-import { EmbedBuilder } from "discord.js";
+import { ContextMenuCommandBuilder, EmbedBuilder } from "discord.js";
 import { prefix } from "../../general-settings.json";
 
-module.exports = {
-  name: "help",
-  admin: false,
-  description: "List all of my commands or info about a specific command.",
-  aliases: ["commands"],
-  usage: "<command name>",
-  cooldown: 5,
-  execute(message: any, args: any) {
-    const data: string[] = [];
-    const { commands } = message.client;
+import { CommandInteraction, Message, PermissionFlagsBits, SlashCommandBuilder, TextChannel } from "discord.js";
+import defineCommand from "../utils";
 
-    if (!args.length) {
-      data.push("Here's a list of all my commands:");
-      data.push(commands.map((command: any) => command.name).join(", "));
-      data.push(
-        `\nYou can send \`${prefix}help [command name]\` to get info on a specific command!`
-      );
 
-      return message.author
-        .send({
-			embeds: [
-				new EmbedBuilder()
-				.setTitle("Command Help")
-				.setDescription(data.toString())
-			]
-		})
-        .then(() => {
-          if (message.channel.type === "dm") return;
-          message.reply("I've sent you a DM with all my commands!");
-        })
-        .catch((error: any) => {
-          console.warn(
-            `Could not send help DM to ${message.author.tag}.\n`,
-            error
-          );
-          message.reply(
-            "it seems like I can't DM you! Do you have DMs disabled?"
-          );
-        });
+export default defineCommand({
+  slashSetup: new SlashCommandBuilder()
+    .setName("help")
+    .setDescription("List all of my commands or info about a specific command.")
+    .addStringOption(option => option.setName("command").setDescription("The command to get info about").setRequired(false))
+    .setDefaultMemberPermissions(PermissionFlagsBits.ViewChannel),
+    run: async (client, ctx, args): Promise<void> => {
+        // discriminate if the command was run via slash or prefix
+        const contextType = ctx instanceof Message ? "prefix" : "slash";
+        const specificCommand = contextType === "prefix" ? (ctx as Message).content.split(" ")[1] : ( ctx as CommandInteraction ).options.get("command", false);
+
+        const data: string[] = [];
+        const { commands } = client;
+
+        if (specificCommand) {
+            const name = specificCommand?.toString();
+            const command = commands.get(name);
+
+            if (!command) {
+                ctx.reply("That's not a valid command!");
+                return;
+            }
+
+            data.push(`**Name:** ${command.slashSetup.name}`);
+
+            const commandType = command.slashSetup instanceof SlashCommandBuilder ? "slash" : "contextmenu";
+
+            if (commandType === "slash") {
+                const slashCommand = command.slashSetup as SlashCommandBuilder;
+                slashCommand.description ? data.push(`**Description:** ${slashCommand.description}`) : data.push(`**Description:** No description provided`);
+                slashCommand.options ? data.push(`**Options:** ${slashCommand.options.map(option => option).join(", ")}`) : data.push(`**Options:** No options provided`);
+                slashCommand.default_member_permissions ? data.push(`**Default Permission:** ${slashCommand.default_member_permissions}`) : data.push(`**Default Permission:** No default permission provided`);
+            } else {
+                const contextMenuCommand = command.contextMenuSetup as ContextMenuCommandBuilder;
+                contextMenuCommand.default_member_permissions ? data.push(`**Default Permission:** ${contextMenuCommand.default_member_permissions}`) : data.push(`**Default Permission:** No default permission provided`);
+                contextMenuCommand.type ? data.push(`**Type:** ${contextMenuCommand.type}`) : data.push(`**Type:** No type provided ???`);
+
+            }
+
+            ctx.reply({ content: data.toString(), ephemeral: false });
+
+        }
+
+        data.push(`Here's a list of all my commands:`);
+        data.push(commands.map(command => command.slashSetup.name).join(", "));
+        data.push(`\nYou can send \`/help [command name]\` to get info on a specific command!`);
+
+        ctx.reply({ content: data.toString(), ephemeral: false });
+
+
     }
+});
 
-    const name = args[0].toLowerCase();
-    const command =
-      commands.get(name) ||
-      commands.find((c: any) => c.aliases && c.aliases.includes(name));
-
-    if (!command) {
-      return message.reply("that's not a valid command!");
-    }
-
-    data.push(`**Name:** ${command.name}`);
-
-    if (command.aliases)
-      data.push(`**Aliases:** ${command.aliases.join(", ")}`);
-    if (command.description)
-      data.push(`**Description:** ${command.description}`);
-    if (command.usage)
-      data.push(`**Usage:** ${prefix}${command.name} ${command.usage}`);
-
-    data.push(`**Cooldown:** ${command.cooldown || 3} second(s)`);
-
-    message.channel.send({
-		embeds: [
-			new EmbedBuilder()
-			.setTitle("Command Help")
-			.setDescription(data.toString())
-		]
-	});
-    return;
-  },
-};

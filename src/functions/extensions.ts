@@ -26,13 +26,8 @@ export const toLevel = (number: number): number => {
   return (0.01 * number) ^ 0.8;
 };
 
-export const validateEmail = (email: string, message: Message): boolean => {
-  if (studentEmailVerification.test(email)) {
-    return true;
-  } else {
-    message.channel.send("Please enter a valid email address. \n try using the scheme: `..verify max.mustermann@stud.hs-kempten.de`");
-    return false;
-  }
+export const validateEmail = (email: string): boolean => {
+  return studentEmailVerification.test(email);
 }
 
 export const logMessage = async (message: Message, msg: string): Promise<void> => {
@@ -78,8 +73,8 @@ async function PrepareMessageAndSend(channel: TextChannel, lastmsg: EmbedBuilder
   const parser = new Parser();
   const feed = await parser.parseURL(specificURL);
   const latestPost = feed.items?.[0];
-  var sameTitle = false;
-  var samePubDate = false;
+  let sameTitle = false;
+  let samePubDate = false;
 
   if (latestPost) {
     const embed = new EmbedBuilder()
@@ -96,7 +91,7 @@ async function PrepareMessageAndSend(channel: TextChannel, lastmsg: EmbedBuilder
 
     if(latestPost.pubDate) {
       // Removes unnecessary chars from timestamp
-      var mystring: string = latestPost.pubDate.replace(/\+[0-9]*$/, '');
+      let mystring: string = latestPost.pubDate.replace(/\+[0-9]*$/, '');
       if((lastmsg as Embed).footer) {
         // strings won't match, when no regex removal is done
         if((lastmsg as Embed).footer?.text.toLowerCase().replace(/(\n*)( *)/g, '') == mystring.toLowerCase().replace(/(\n*)( *)/g, '')) {
@@ -207,10 +202,10 @@ export const applyText = (canvas: Canvas, text: string): string => {
 };
 
 export const toHHMMSS = (time: string): string => {
-  var sec_num = parseInt(time, 10); // don't forget the second param
-  var hours = Math.floor(sec_num / 3600) as unknown as string;
-  var minutes = Math.floor((sec_num - Number(hours) * 3600) / 60) as unknown as string;
-  var seconds = (sec_num - Number(hours) * 3600 - Number(minutes) * 60) as unknown as string ;
+  let sec_num = parseInt(time, 10),
+   hours = Math.floor(sec_num / 3600) as unknown as string,
+   minutes = Math.floor((sec_num - Number(hours) * 3600) / 60) as unknown as string,
+   seconds = (sec_num - Number(hours) * 3600 - Number(minutes) * 60) as unknown as string ;
 
   if (Number(hours) < 10) {
     hours = "0" + hours as string;

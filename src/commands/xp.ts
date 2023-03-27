@@ -1,36 +1,32 @@
-import { Message } from "discord.js";
+import { Message, SlashCommandBuilder } from "discord.js";
 
 import Keyv from "keyv";
+import defineCommand from "../utils";
 import { toLevel } from "../functions/extensions";
 
-module.exports = {
-  name: "xp",
-  admin: false,
-  description: "displays your XP and Level",
-  args: false,
-  guildOnly: true,
-  aliases: ["level", "exp", "progress"],
-  async execute(message: Message, _args: string[]) {
+
+export default defineCommand({
+  slashSetup: new SlashCommandBuilder()
+    .setName("xp")
+    .setDescription("displays your XP and Level"),
+  run: async (client, ctx, args): Promise<void> => {
     //db1
     // Key: iD, Value: XP
-    const dbxp = new Keyv("sqlite://xp.sqlite");
-    dbxp.on("error", (err: any) =>
-      console.error("Keyv connection error:", err)
-    );
-
-    const userXP = await dbxp.get(message.author.id); // is weird but works that way
+    const dbxp = client.dbxp;
+    
+    const userXP = await dbxp.get(ctx.member.user.id); // is weird but works that way
 
     if (!userXP || userXP === undefined) {
-      await dbxp.set(message.author.id, 1); // set to 1 for 1 XP
-      message.reply(`you can now start to earn xp!`);
+      await dbxp.set(ctx.member.user.id, 1); // set to 1 for 1 XP
+      ctx.reply(`you can now start to earn xp!`);
       return;
     } else {
-      message.reply(
+      ctx.reply(
         `you have ${Math.trunc(userXP)} XP. This equals to ${toLevel(
           Math.trunc(userXP)
         )} Levels.`
       );
     }
-    return;
-  },
-};
+  }
+});
+

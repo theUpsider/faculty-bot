@@ -1,34 +1,44 @@
-import { Message, Role } from "discord.js";
+import { Role, Message, EmbedBuilder, PermissionFlagsBits, SlashCommandBuilder, CommandInteraction, GuildMember } from "discord.js";
+import defineCommand from "../utils";
 
 //const Keyv = require("keyv");
 import Keyv from "keyv";
-const settings = require("../../general-settings.json")
+import settings from "../../general-settings.json"
 import { validateEmail, logMessage } from "../functions/extensions"
-//const { ValidateEmail, logMessage } = require("../functions/extensions.js");
 const MailPw = process.env.MAILPW as string; // prevent on demand loading
 import Imap from "imap"
-//var Imap = require("imap");
-// Mail https://github.com/mscdex/node-imap
-var imaps = require('imap-simple');
+import imaps from "imap-simple";
+import { FacultyManager } from "index";
 const _ = require('lodash');
 
+export default defineCommand({
+  slashSetup: new SlashCommandBuilder()
+    .setName("verify")
+    .setDescription("verifies your email adress")
+    .addStringOption(option => option.setName("email").setDescription("The email to verify").setRequired(true))
+    // default permissions for the command is everyone
+    .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages)
+    .setDMPermission(false),
+  run: async (client, ctx, args): Promise<void> => {
+    // discriminate if the command was run via slash or prefix
+    const email = (ctx as CommandInteraction).options.get("email", true).value?.toString();
 
-module.exports = {
-  name: "verify",
-  admin: false,
-  description: "verifies your email adress",
-  args: false,
-  guildOnly: true,
-  usage: "",
-  async execute(message: Message) {
-    // get member from guild the message was sent in
-    const memberToAdd = await message.guild?.members.fetch(message.author.id);
+    if (!validateEmail(email)) {
+      ctx.reply({ content: `:x: ${email} is not a valid email adress`, ephemeral: true });
+      return;
+    }
 
-    logMessage(message, `${memberToAdd?.user.tag} tries to verify...`);
+    const member = ctx.member;
 
-    var mailFound = false;
+    const role = ctx.guild?.roles.cache.find(role => role.name === settings.roles.verified) as Role;
 
-    var config = {
+    if (member?.roles.toString().includes(role.id)) { // retard overload
+      ctx.reply({ content: `:x: ${member.user.username} is already verified`, ephemeral: true });
+      return;
+    }
+
+    let mailFound = false;
+    const config = {
       imap: {
         user: process.env.MAILUSER as string,
         password: MailPw,
@@ -40,30 +50,99 @@ module.exports = {
     };
     imaps.connect(config).then(function (connection) {
       return connection.openBox('INBOX').then(function () {
-        var searchCriteria = [["HEADER", "SUBJECT", message.author.tag]];
-        var fetchOptions = {
+        const searchCriteria = [["HEADER", "SUBJECT", ctx.member.user.username]];
+        const fetchOptions = {
           bodies: ['HEADER', 'TEXT'],
         };
         return connection.search(searchCriteria, fetchOptions).then(function (messages) {
           messages.forEach(async function (item) {
 
-            var all = _.find(item.parts, { "which": "HEADER" })
-            var subject = all.body.subject[0] ?? undefined;
-            var fromEmail = all.body['return-path'][0];
+            const all = _.find(item.parts, { "which": "HEADER" })
+            const subject = all.body.subject[0] ?? undefined;
+            const fromEmail = all.body['return-path'][0];
 
             //in case there are pre existing mails, skip the process
             const mail = fromEmail.split(`<`)[1].split(`>`)[0];
-            if (!mailFound) await registerMember(subject, mail, message);
+            if (!mailFound) await registerMember(client, mail, member as GuildMember, subject);
             mailFound = true;
           });
         });
       });
     });
-    return;
-  },
-};
 
-async function registerMember(subject: string, mail: string, message: any) {
+    const embed = new EmbedBuilder()
+
+    ctx.reply({ embeds: [embed] });
+  }
+});
+
+async function registerMember(client: FacultyManager, mail: string, member: GuildMember, subject?: string) {
+  const endmail = mail.split(`@`)[1];
+
+  // is student
+  if (endmail.toString().includes("stud.hs-kempten.de")) {
+    // TODO if something failed, answer mail whats wrong!
+    // Key: student-email, Value: verification date
+    const dbverify = client.dbverify;
+    dbverify.on("error", (err) =>
+      console.error("Keyv connection error:", err)
+    );
+    // Key: student-email, Value: discord-id
+    const db_map_emailToId = new Keyv("sqlite://map_emailToId.sqlite");
+    db_map_emailToId.on("error", (err) =>
+      console.error("Keyv connection error:", err)
+    );
+    // parse mail
+    try {
+      const memberToAdd = await member.guild.members.fetch(
+        member.id
+      );
+      const verifymailDate = await dbverify.get(mail);
+      console.info(`Mail subject: `, subject);
+
+      const fromMailDiscordId = await db_map_emailToId.get(mail);
+
+      if (fromMailDiscordId) {
+        await memberToAdd.send(
+          `:x: You already verified with this email adress!`
+        );
+        return;
+      }
+
+      if (verifymailDate) {
+        await memberToAdd.send(
+          `:x: You already verified with this email adress!`
+        );
+        return;
+      }
+
+      // add role
+      const role = member.guild.roles.cache.find(
+        (role) => role.name === settings.roles.verified
+      ) as Role;
+      await memberToAdd.roles.add(role);
+      // save to db
+      await dbverify.set(mail, new Date());
+      await db_map_emailToId.set(mail, memberToAdd.id);
+      // send success message
+      await memberToAdd.send(
+        `:white_check_mark: You successfully verified with the email adress ${mail}`
+      );
+    } catch (err) {
+      console.error(err);
+      await member.send(
+        `:x: Something went wrong while verifying your email adress!`
+      );
+    }
+  } else {
+    await member.send(
+      `:x: You can only verify with a student email adress!`
+    );
+  }
+}
+
+
+async function _registerMember(subject: string, mail: string, message: any) {
   const endmail = mail.split(`@`)[1];
 
   // is student

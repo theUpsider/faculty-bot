@@ -2,7 +2,7 @@ import { Message, TextChannel } from "discord.js";
 const settings = require("../../general-settings.json")
 const discord = require("discord.js");
 
-module.exports = {
+const blah = {
   name: "sendmessage",
   admin: true,
   description: "send a message as the bot",

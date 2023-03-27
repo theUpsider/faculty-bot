@@ -12,7 +12,8 @@ type SlashArgOptions = {
 }
 
 export interface CommandDefinition {
-    slashSetup?: SlashCommandBuilder | ContextMenuCommandBuilder;
+    slashSetup?: SlashCommandBuilder,
+    contextMenuSetup?: ContextMenuCommandBuilder,
     run: (client: FacultyManager, ctx: CommandInteraction | Message, args: string[]) => Promise<void>;
 }
 
@@ -32,25 +33,6 @@ export function isMessage(ctx: CommandInteraction | Message): ctx is Message {
 }
 
 export async function register_commands(commands: CommandDefinition[], client: FacultyManager): Promise<boolean> {
-    const rest = new REST({ version: '10' }).setToken(client.token);
-    for (const command of commands) {
-        if (!command.slashSetup) {
-            console.log(`Skipping a command without slash setup`);
-            continue;
-        }
-        console.log(`Registering command ${command.slashSetup?.name}`);
-        try {
-            console.log(`Started refreshing ${commands.length} application (/) commands.`);
-            const data = await rest.put(
-                Routes.applicationCommands("1025099279561392189"),
-                { body: commands.map(command => command.slashSetup?.toJSON()) },
-            );
-
-            console.log(`Successfully reloaded application (/) commands.`);
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
+   
     return true;
 }

@@ -1,4 +1,4 @@
-import { Client, ClientEvents, Message, AttachmentBuilder, TextChannel, EmbedBuilder, ActivityType } from "discord.js";
+import { Client, ClientEvents, Message, AttachmentBuilder, TextChannel, EmbedBuilder, ActivityType, REST, Routes } from "discord.js";
 import settings from '../../general-settings.json';
 import { download, RSS, add4WeeksToDate, adsdbloop } from '../functions/extensions';
 import { fromPath } from "pdf2pic"; 
@@ -10,6 +10,26 @@ module.exports = {
     event: "ready",
     async execute(client: FacultyManager) {
 
+      const rest = new REST({ version: '10' }).setToken(client.token);
+      for (const command of client.commands.values()) {
+          if (!command.slashSetup) {
+              continue;
+          }
+          try {
+              console.log('Started refreshing application (/) commands.');
+              await rest.put(
+                  Routes.applicationCommands(client.user?.id),
+                  { body: client.commands.map(command => command.slashSetup?.toJSON()) },
+              );
+  
+          } catch (error) {
+              console.error(error);
+          }
+  
+      }
+      console.log(`Successfully reloaded ${client.commands.size} commands.`);
+
+  
         
         console.log(`${client.user?.tag } is ready!`);
         client.user?.setPresence({
@@ -32,7 +52,7 @@ module.exports = {
         // };
       
         // mealplan check
-        var minutes = settings.settings.mealplancheck, meal_check_interval = minutes * 60 * 1000;
+        const minutes = settings.settings.mealplancheck, meal_check_interval = minutes * 60 * 1000;
         // if feature is activated
         if (settings.settings.postMealplan) {
           console.log("Mensaplan activated")
@@ -89,7 +109,7 @@ module.exports = {
 
         // rss feed check
         // checks 1x every hour
-        var rss_check_interval = settings.RSSsettings.RSSCheckIntervalHours * 60 * 1000 * 60;
+        const rss_check_interval = settings.RSSsettings.RSSCheckIntervalHours * 60 * 1000 * 60;
         // if feature is activated
         if (settings.RSSsettings.postRSS){
           console.log("RSS activated")

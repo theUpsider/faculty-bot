@@ -44,7 +44,7 @@ export class FacultyManager extends Client {
   }
 
   attachIsImage(msgAttach: Attachment) {
-    var url = msgAttach.url;
+    let url = msgAttach.url;
     //True if this url is a png image.
     return (
       url.indexOf("png", url.length - "png".length /*or 3*/) ||
@@ -58,8 +58,9 @@ export class FacultyManager extends Client {
     // commands
     const commandFiles = fs.readdirSync(join(__dirname, "commands")).filter((file: any) => file); // read file with commands
     for (const file of commandFiles) {
-      const command = (await import(`./commands/${file}`)).default;
-      this.commands.set(command.name, command);
+      const command: CommandDefinition = (await import(`./commands/${file}`)).default;
+      if (command.slashSetup)
+         this.commands.set(command.slashSetup?.name, command);
     }
   }
 
@@ -70,7 +71,10 @@ export class FacultyManager extends Client {
       const event = (await import(`./events/${file}`)).default;
       this.events.set(event.event, event);
       this.on(event.event, (e1: any, e2: any) => {
-          this.events.get(event.event).execute(this, [e1, e2], { dbxp: Keyv, dbvoicechannels: Keyv, dbverify: Keyv, db: sqlite.Database });
+          console.log("event: " + event.event);
+          console.log("e1: " + e1);
+          console.log("e2: " + e2);
+          this.events.get(event.event).execute(this, [e1, e2]);
       });
     }
   }
@@ -106,7 +110,7 @@ main().catch((err) => {
 // ------------------------
 
 function attachIsImage(msgAttach: Attachment) {
-  var url = msgAttach.url;
+  const url = msgAttach.url;
   //True if this url is a png image.
   return (
     url.indexOf("png", url.length - "png".length /*or 3*/) ||

@@ -5,7 +5,7 @@ import settings from '../../general-settings.json'
 
 module.exports = {
     event: "guildMemberAdd",
-    async execute (client: FacultyManager, [member] : [GuildMember], { dbxp } : { dbxp: Keyv }) {
+    async execute (client: FacultyManager, [member] : [GuildMember]) {
 
         const embed = new EmbedBuilder()
             .setColor(Colors.Blurple)
