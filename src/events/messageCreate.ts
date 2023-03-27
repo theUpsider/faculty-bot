@@ -2,8 +2,9 @@ import {
   Client,
   Collection,
   Message,
-  MessageAttachment,
+  Attachment,
   TextChannel,
+  AttachmentBuilder,
 } from "discord.js";
 import {
   logMessage,
@@ -14,13 +15,14 @@ import {
 import Canvas from "canvas";
 import Keyv from "keyv";
 import settings from "../../general-settings.json";
-import config from "../../config.json";
+import config from "../../general-settings.json";
 
-import { LooseObject } from "../index";
+import { FacultyManager } from "../index";
+
 
 module.exports = {
   event: "messageCreate",
-  async execute(client: LooseObject, [message]: [Message]) {
+  async execute(client: FacultyManager, [message]: [Message]) {
     if (message.author.bot) return; // bye bye robots
     const regex = new RegExp(
       `^(<@!?${client.user?.id}>|${config.prefix.toLowerCase()})\\s*\\w*`
@@ -116,9 +118,11 @@ module.exports = {
           );
 
           // Use helpful Attachment class structure to process the file for you
-          const attachment = new MessageAttachment(
+          const attachment = new AttachmentBuilder(
             canvas.toBuffer(),
-            "level-up-image.png"
+            {
+              name: "levelup.png",
+            }
           );
           console.log();
           let lvlmsg = (await message.guild?.channels.cache
@@ -152,7 +156,7 @@ module.exports = {
 
     //command checking aliases
     const command =
-      client.commands.get(commandName) ||
+      client.commands.get(commandName!) ||
       client.commands.find(
         (cmd: any) => cmd.aliases && cmd.aliases.includes(commandName)
       );
@@ -161,48 +165,20 @@ module.exports = {
 
     //error checking
     //guild check
-    if (command.guildOnly && !message.channel.isText()) {
-      return message.reply("I can't execute that command inside DMs!");
-    }
+
 
     //args check
-    if (command.args && !args.length) {
-      let reply = `You didn't provide any arguments, ${message.author}!`;
 
-      if (command.usage) {
-        reply += `\nThe proper usage would be: \`${process.env.PREFIX}${command.name} ${command.usage}\``;
-      }
-      return message.channel.send(reply);
-    }
 
-    // cooldown
-    if (!client.cooldowns.has(command.name)) {
-      client.cooldowns.set(command.name, new Collection());
-    }
 
-    const now = Date.now();
-    const timestamps = client.cooldowns.get(command.name);
-    const cooldownAmount = (command.cooldown || 1) * 1000;
-    if (timestamps.has(message.author.id)) {
-      const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
 
-      if (now < expirationTime) {
-        const timeLeft = (expirationTime - now) / 1000;
-        return message.reply(
-          `please wait ${toHHMMSS(timeLeft.toFixed(1))} before reusing the \`${command.name
-          }\` command.`
-        );
-      }
-    } else {
-      timestamps.set(message.author.id, now);
-      setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
-    }
+
 
     // ----------------------------------------------------------------------------------------------------------------------------------------------
     // Execute command
     // ----------------------------------------------------------------------------------------------------------------------------------------------
     try {
-      command.execute(message, args);
+      command.run(client, message, args);
     } catch (error) {
       console.error(error);
       message.reply("there was an error trying to execute that command!");

@@ -1,14 +1,14 @@
-import { GuildMember, MessageEmbed, TextChannel } from "discord.js";
+import { GuildMember, EmbedBuilder, TextChannel, Colors } from "discord.js";
 import Keyv from "keyv";
-import { LooseObject } from "../index";
+import { FacultyManager } from "../index";
 import settings from '../../general-settings.json'
 
 module.exports = {
     event: "guildMemberAdd",
-    async execute (client: LooseObject, [member] : [GuildMember], { dbxp } : { dbxp: Keyv }) {
+    async execute (client: FacultyManager, [member] : [GuildMember], { dbxp } : { dbxp: Keyv }) {
 
-        const embed = new MessageEmbed()
-            .setColor("BLURPLE")
+        const embed = new EmbedBuilder()
+            .setColor(Colors.Blurple)
             .setTitle("A new user has joined")
             .setDescription(
                 `Welcome **${member.user.username}** to the tournament server! Before doing anything else read <#${settings.channels.news}> and <#${settings.channels.rules}>. Any further questions should be directed towards our staff. Enjoy your stay!`

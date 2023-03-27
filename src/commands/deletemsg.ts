@@ -1,14 +1,24 @@
-import { Message, TextChannel } from "discord.js";
+import { ApplicationCommandOptionType, ApplicationCommandType, CommandInteraction, ContextMenuCommandBuilder, ContextMenuCommandInteraction, Message, PermissionFlagsBits, SlashCommandBuilder, Snowflake, TextChannel } from "discord.js";
 import settings from "../../general-settings.json";
+import defineCommand from "../utils";
+
+
+defineCommand({
+    slashSetup: new ContextMenuCommandBuilder()
+    .setName("delete-message")
+    .setType(ApplicationCommandType.Message)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
+    run: async (client, ctx, args): Promise<void> => {
+
+        // we can safely assume that the context is a context menu command interaction always
+        const msg = ( ctx as ContextMenuCommandInteraction ).options.getMessage("message", true);
+
+        msg.deletable ? msg.delete() : ctx.reply("Message is not deletable!");
+    }
+        
+});        
 
 module.exports = {
-    name: "deletemsg",
-    description: "Deletes a message by its Id in the current channel",
-    args: true,
-    usage: "<channel-id><message id>",
-    guildOnly: true,
-    cooldown: 5,
-    aliases: ["delmsg", "del"],
     async execute(message: Message, args: string[]) {
 
         if (

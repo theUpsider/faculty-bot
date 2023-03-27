@@ -5,7 +5,7 @@ import fs from "fs";
 import http from "http";
 //const http = require('http');
 import https from "https";
-import { Client, GuildChannel, Message, TextChannel, MessageEmbed } from "discord.js";
+import { Client, GuildChannel, Message, TextChannel, EmbedBuilder, Embed } from "discord.js";
 import { Canvas } from "canvas";
 import Keyv from "keyv";
 import Parser from "rss-parser";
@@ -62,7 +62,7 @@ export const RSS = (client: Client) => {
                 if(channel.lastMessage?.embeds[0] && channel.lastMessage.embeds[0].title) {
                   PrepareMessageAndSend(channel, channel.lastMessage.embeds[0], RSSURLs[i]);
                 } else {
-                  PrepareMessageAndSend(channel, new MessageEmbed().setTitle("Hatsune Miku").setFooter({text: "UwU"}),  RSSURLs[i]);
+                  PrepareMessageAndSend(channel, new EmbedBuilder().setTitle("Hatsune Miku").setFooter({text: "UwU"}),  RSSURLs[i]);
                 }
               } 
           }).catch(console.error);
@@ -74,7 +74,7 @@ export const RSS = (client: Client) => {
 
 
 
-async function PrepareMessageAndSend(channel: TextChannel, lastmsg: MessageEmbed, specificURL: string) {
+async function PrepareMessageAndSend(channel: TextChannel, lastmsg: EmbedBuilder | Embed, specificURL: string) {
   const parser = new Parser();
   const feed = await parser.parseURL(specificURL);
   const latestPost = feed.items?.[0];
@@ -82,13 +82,13 @@ async function PrepareMessageAndSend(channel: TextChannel, lastmsg: MessageEmbed
   var samePubDate = false;
 
   if (latestPost) {
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
     // hehe
     .setColor(0xb00b69);
 
     if (latestPost.title) {
       embed.setTitle(latestPost.title);
-      if (lastmsg.title == latestPost.title) {
+      if ((lastmsg as Embed).title == latestPost.title) {
         //console.log("Post titles Match!");
         sameTitle = true;
       }
@@ -97,9 +97,9 @@ async function PrepareMessageAndSend(channel: TextChannel, lastmsg: MessageEmbed
     if(latestPost.pubDate) {
       // Removes unnecessary chars from timestamp
       var mystring: string = latestPost.pubDate.replace(/\+[0-9]*$/, '');
-      if(lastmsg.footer) {
+      if((lastmsg as Embed).footer) {
         // strings won't match, when no regex removal is done
-        if(lastmsg.footer.text.toLowerCase().replace(/(\n*)( *)/g, '') == mystring.toLowerCase().replace(/(\n*)( *)/g, '')) {
+        if((lastmsg as Embed).footer?.text.toLowerCase().replace(/(\n*)( *)/g, '') == mystring.toLowerCase().replace(/(\n*)( *)/g, '')) {
           samePubDate = true;
         }
       }

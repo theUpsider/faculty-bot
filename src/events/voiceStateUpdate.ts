@@ -1,11 +1,11 @@
-import { VoiceState, Permissions, VoiceChannel, PermissionOverwriteManager, Snowflake } from "discord.js";
+import { VoiceState, Permissions, VoiceChannel, PermissionOverwriteManager, Snowflake, PermissionOverwrites, PermissionFlagsBits, ChannelType } from "discord.js";
 import Keyv from "keyv";
-import { LooseObject } from "../index";
+import { FacultyManager } from "../index";
 import settings from '../../general-settings.json';
 
 module.exports = {
     event: "voiceStateUpdate",
-    async execute (client: LooseObject, [oldState, newState] : [VoiceState, VoiceState], { dbvoicechannels } : {dbvoicechannels: Keyv}) {
+    async execute (client: FacultyManager, [oldState, newState] : [VoiceState, VoiceState], { dbvoicechannels } : {dbvoicechannels: Keyv}) {
         try {
             let newUserChannelName;
             if (newState.channel !== null) {
@@ -19,27 +19,27 @@ module.exports = {
         
             // When a create Channel has been clicked
             if (newUserChannelName === settings.channels.createChannel) {
-
+              
+              // `🔊 ${newState.member?.user.username}`,
                 let newVC = newState.guild.channels.create(
-                    `🔊 ${newState.member?.user.username}`,
                     {
-                        type: "GUILD_VOICE",
-                        permissionOverwrites: [
-                            {
-                                type: "member",
-                                id: newState.member?.user.id! as Snowflake,
-                                allow: [Permissions.FLAGS.MANAGE_CHANNELS],
-                            }
-                        ]
+                      name: `🔊 ${newState.member?.user.username}`,
+                      type: ChannelType.GuildVoice,
+                      permissionOverwrites: [
+                        {
+                            id: newState.member?.user.id! as Snowflake,
+                            allow: [PermissionFlagsBits.ManageChannels],
+                        }
+                    ]
                     }
-                ).then(function (result) {
+                ).then(function (result: VoiceChannel) {
                     // Move creator in his new channel
                     newState.member?.voice.setChannel(result);
                     // Store newly created channel id for deletion
                     dbvoicechannels.set(result.id, result.id);
                   });;
             }
-        
+         
             // Check if old channel was a temporary voice channel
             if (oldState.channel !== null) {
               let oldChannelId = oldState.channel.id;
@@ -64,3 +64,4 @@ module.exports = {
           }
     }
 }
+

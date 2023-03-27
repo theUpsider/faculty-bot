@@ -1,10 +1,10 @@
 import { DMChannel, Guild, GuildChannel } from "discord.js";
 import Keyv from "keyv";
-import { LooseObject } from "../index";
+import { FacultyManager } from "../index";
 
 module.exports = {
     event: "channelUpdate",
-    async execute (client: LooseObject, [oldChannel, newChannel] : [GuildChannel, GuildChannel], { dbvoicechannels } : {dbvoicechannels: Keyv}) {
+    async execute (client: FacultyManager, [oldChannel, newChannel] : [GuildChannel, GuildChannel], { dbvoicechannels } : {dbvoicechannels: Keyv}) {
         if(newChannel == null)
         return;
     

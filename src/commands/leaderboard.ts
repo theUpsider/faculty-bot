@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from "discord.js";
+import { Message, EmbedBuilder } from "discord.js";
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('xp.sqlite');
 import Keyv from "keyv";
@@ -67,7 +67,7 @@ module.exports = {
 
     message.reply({
         embeds: [
-            new MessageEmbed()
+            new EmbedBuilder()
             .setTitle("Top 10 by Level")
             .setColor("#0099ff")
             .setDescription(users.map(user => `<@${user.id}> is level ${user.levels} with ${user.xp} XP`).join("\n"))

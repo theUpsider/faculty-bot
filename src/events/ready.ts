@@ -1,20 +1,21 @@
-import { Client, ClientEvents, Message, MessageAttachment, TextChannel, MessageEmbed } from "discord.js";
+import { Client, ClientEvents, Message, AttachmentBuilder, TextChannel, EmbedBuilder, ActivityType } from "discord.js";
 import settings from '../../general-settings.json';
 import { download, RSS, add4WeeksToDate, adsdbloop } from '../functions/extensions';
 import { fromPath } from "pdf2pic"; 
 import Parser from "rss-parser";
 import Keyv from "keyv";
+import { FacultyManager } from "index";
 
 module.exports = {
     event: "ready",
-    async execute(client: Client) {
+    async execute(client: FacultyManager) {
 
         
         console.log(`${client.user?.tag } is ready!`);
         client.user?.setPresence({
             activities: [{
                 name: `..help`,
-                type: "LISTENING"
+                type: ActivityType.Listening
             }]
         });
 
@@ -62,10 +63,12 @@ module.exports = {
                               role => role.name === settings.roles.mealplannotify
                               );
                             channel.send({
-                              content: `<@&${roleId}>`,
+                              content: roleId?.mentionable ? `<@&${settings.roles.mealplannotify}>` : "",
                               files: [
                                 resolve.path
                               ]
+                            }).then(message => {
+                              message.crosspostable ? message.crosspost() : null; // broadcast message to all subbed servers
                             })
                             //channel.send(`<@&${settings.roles.mealplannotify}>`, { files: [resolve.path] });
                             channel.send("En Guada")

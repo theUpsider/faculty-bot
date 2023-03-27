@@ -1,4 +1,5 @@
 {
+  "prefix": ">",
   "channels": {
     "xp": "bot-commands",
     "rules": "rules",

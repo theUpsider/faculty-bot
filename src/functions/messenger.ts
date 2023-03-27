@@ -1,16 +1,14 @@
-import { Message, MessageEmbed, TextChannel } from "discord.js";
-
-const discord = require("discord.js");
-const settings = require("../general-settings.json");
+import { Message, EmbedBuilder, TextChannel, Colors } from "discord.js";
+import settings from "../../general-settings.json";
 
 export const log = async (message: Message, type: string, content: string) => {
   let logChn = await message.guild?.channels.cache.find(
     (channel) => channel.name == settings.channels.logs
   )?.fetch() as TextChannel;
 
-  const logEmbed = new MessageEmbed()
+  const logEmbed = new EmbedBuilder()
   .setTitle(`**${type}**`)
-  .setColor("GREEN")
+  .setColor(Colors.Green)
   .setDescription(content)
 
   logChn.send({

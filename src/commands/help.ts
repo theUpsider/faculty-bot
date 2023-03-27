@@ -1,6 +1,6 @@
-import { MessageEmbed } from "discord.js";
+import { EmbedBuilder } from "discord.js";
+import { prefix } from "../../general-settings.json";
 
-const { prefix } = require("../../config.json");
 module.exports = {
   name: "help",
   admin: false,
@@ -22,7 +22,7 @@ module.exports = {
       return message.author
         .send({
 			embeds: [
-				new MessageEmbed()
+				new EmbedBuilder()
 				.setTitle("Command Help")
 				.setDescription(data.toString())
 			]
@@ -64,7 +64,7 @@ module.exports = {
 
     message.channel.send({
 		embeds: [
-			new MessageEmbed()
+			new EmbedBuilder()
 			.setTitle("Command Help")
 			.setDescription(data.toString())
 		]
