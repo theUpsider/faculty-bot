@@ -2,8 +2,9 @@
 
 use crate::{prelude::Error, Data, structs, config::FacultyManagerMealplanConfig};
 
-use poise::serenity_prelude::{self as serenity, Mentionable};
+use poise::serenity_prelude::{self as serenity, Mentionable, ChannelId};
 
+use rss::Channel;
 use tokio::sync::mpsc;
 
 use chrono::{Datelike, Timelike};
@@ -21,10 +22,13 @@ struct TaskConfig {
     pub post_channel: serenity::ChannelId,
 }
 
+struct TaskConfigRss {
+    pub channels: Vec<serenity::ChannelId>,
+    pub feeds: Vec<String>,
+}
+
 /// Posts the mensa plan for the current week
 pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Error> {
-    #![allow(unused_variables, unused_mut)]
-    let (tx, mut rx) = mpsc::channel::<()>(1);
 
     let task_conf = TaskConfig {
         notify_role: data.config.roles.mealplannotify,
@@ -104,4 +108,85 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
     .await;
 
     Ok(())
+}
+
+pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
+    let conf = TaskConfigRss {
+        channels: data.config.rss_settings.rss_channels,
+        feeds: data.config.rss_settings.rss_urls
+    };
+    let db = data.db.clone();
+    let feeds = fetch_feeds(conf.feeds).await.unwrap();
+
+
+    let task = tokio::spawn(async move {
+        loop {
+
+            for feed in feeds.iter() {
+                let channel = feed.title();
+                let items = feed.items();
+                // get latest item
+                let latest = items.first().unwrap();
+
+                    let title = latest.title().unwrap();
+                    let link = latest.link().unwrap();
+                    let description = latest.description().unwrap();
+                    let date = latest.pub_date().unwrap();
+
+                    let sql_res = sqlx::query_as::<sqlx::Postgres, structs::Rss>("SELECT * FROM rss WHERE title = $1")
+                        .bind(&title)
+                        .fetch_optional(&db)
+                        .await
+                        .map_err(Error::Database)
+                        .unwrap();
+
+                    if let Some(_) = sql_res {} else { // because let-else won't let me not return from this
+                        // post
+                        let msg = ChannelId::from(1070021986849390623).send_message(&ctx, |f| {
+                            f.content(format!("{}: {}", channel, title))
+                                .embed(|e| {
+                                    e.title(title)
+                                        .url(link)
+                                        .description(description)
+                                        .timestamp(date)
+                                })
+                        }).await.map_err(Error::Serenity).unwrap();
+
+                        let sql_res = sqlx::query(
+                            "INSERT INTO rss (title, message) VALUES ($1, $2)"
+                        )
+                        .bind(&title)
+                        .bind(msg.id.0 as i64)
+                        .execute(&db)
+                        .await
+                        .map_err(Error::Database).unwrap();
+
+                    };
+                    
+            }
+
+            println!("Sleeping for 5 minutes");
+            tokio::time::sleep(tokio::time::Duration::from_secs(5 * 60)).await;
+        } 
+    });
+
+    Ok(())
+}
+
+async fn fetch_feeds(feeds: Vec<impl Into<String>>) -> Result<Vec<Channel>, Error> {
+    let mut channels = Vec::new();
+
+    for feed in feeds {
+        let bytestream = reqwest::get(feed.into())
+            .await
+            .map_err(Error::NetRequest)?
+            .bytes()
+            .await
+            .map_err(Error::NetRequest)?;
+        let channel = Channel::read_from(&bytestream[..]).map_err(Error::Rss)?;
+        channels.push(channel);
+    }
+
+
+    Ok(channels)
 }

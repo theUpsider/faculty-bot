@@ -17,9 +17,14 @@ pub async fn event_listener(
                 "Prefix: {:?}",
                 fw.options.prefix_options.prefix.as_ref()
             );
-            info!("Mensaplan task started");
             if data.config.mealplan.post_mealplan {
+                info!("Mensaplan task started");
                 tasks::post_mensaplan(ctx.clone(), data.clone()).await?;
+            }
+
+            if data.config.rss_settings.post_rss {
+                info!("RSS task started");
+                tasks::post_rss(ctx.clone(), data.clone()).await?;
             }
         }
 

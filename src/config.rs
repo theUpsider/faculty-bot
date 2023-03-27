@@ -14,6 +14,7 @@ pub struct FacultyManagerConfig {
     pub roles: FacultyManagerRoleConfig,
     pub general: FacultyManagerGeneralConfig,
     pub mealplan: FacultyManagerMealplanConfig,
+    pub rss_settings: FacultyManagerRssConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -81,6 +82,16 @@ fn default_color_config() -> FacultyManagerColorConfig {
         green: "#28a745".to_string(),
         red: "#dc3545".to_string(),
     }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct FacultyManagerRssConfig {
+    pub rss_channels: Vec<serenity::ChannelId>,
+    pub post_rss: bool,
+    pub rss_urls: Vec<String>,
+    pub rss_check_interval_hours: u64,
+    pub rss_check_after_time_hours: u64,
 }
 
 pub fn read_config() -> Result<FacultyManagerConfig, prelude::Error> {

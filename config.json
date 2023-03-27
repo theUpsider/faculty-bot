@@ -38,5 +38,26 @@
       "width": 768,
       "height": 512
     }
+  },
+  "rssSettings": {
+    "postRss": true,
+    "rssChannels": [
+      "1087740850395693096",
+      "1087742021684449320",
+      "1087742288706404454",
+      "1087742576213368852",
+      "1087743074500878346",
+      "1087743506010873856"
+    ],
+    "rssUrls": [
+      "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=IF+BA+ALL&title=Thema",
+      "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=GE+BA+ALL&title=Thema",
+      "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=WK+BA+ALL&title=Thema",
+      "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=GP+MED+BA+ALL&title=Thema",
+      "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=MI+MA+ALL&title=Thema",
+      "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=GEVC+MA+MG+ALL&title=Thema"
+    ],
+    "rssCheckIntervalHours": 1,
+    "rssCheckAfterTimeHours": 8
   }
 }

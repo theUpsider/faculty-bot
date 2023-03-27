@@ -37,6 +37,8 @@ pub mod prelude {
         Serde(serde_json::Error),
         /// Error when parsing goes wrong
         ParseIntError(std::num::ParseIntError),
+        /// Rss error
+        Rss(rss::Error),
         /// Idk bruh, don't ask me
         Unknown,
     }
