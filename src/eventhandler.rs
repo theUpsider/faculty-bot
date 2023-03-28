@@ -17,14 +17,35 @@ pub async fn event_listener(
                 "Prefix: {:?}",
                 fw.options.prefix_options.prefix.as_ref()
             );
+            
+/* 
+            if data.config.rss_settings.post_rss {
+                info!("RSS task started");
+                tasks::post_rss(ctx.clone(), data.clone()).await?;
+            }
+
             if data.config.mealplan.post_mealplan {
                 info!("Mensaplan task started");
                 tasks::post_mensaplan(ctx.clone(), data.clone()).await?;
+            } */
+
+            // start mensa task & rss task if enabled so they can run in parallel
+             if data.config.mealplan.post_mealplan {
+                info!("Mensaplan task started");
+                let context = ctx.clone();
+                let d = data.clone();
+                tokio::spawn(async move {
+                    tasks::post_mensaplan(context, d).await.unwrap();
+                });
             }
 
             if data.config.rss_settings.post_rss {
                 info!("RSS task started");
-                tasks::post_rss(ctx.clone(), data.clone()).await?;
+                let context = ctx.clone();
+                let d = data.clone();
+                tokio::spawn(async move {
+                    tasks::post_rss(context, d).await.unwrap();
+                });
             }
         }
 
@@ -71,7 +92,7 @@ pub async fn event_listener(
                 .map_err(Error::Database)?;
 
             
-            println!("{}: {} -> {}", new_message.author.name, xp - xp_to_add, xp);
+            println!("{}: {} -> {} | Level: {}", new_message.author.name, xp - xp_to_add, xp, user_data.user_level);
 
             // check if lvl up and level is higher than previous
             

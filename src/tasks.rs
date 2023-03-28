@@ -38,9 +38,8 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
         mealplan_settings: data.config.mealplan.clone(),
         post_channel: data.config.channels.mealplan,
     };
-    let db = data.db.clone();
+    
 
-    let task = tokio::spawn(async move {
         loop {
             let now = chrono::Local::now();
             let weekday = now.weekday();
@@ -55,7 +54,7 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
                 let mensaplan_posted =
                     sqlx::query_as::<sqlx::Postgres, structs::Mensaplan>("SELECT * FROM mensaplan WHERE date = $1")
                         .bind(&today)
-                        .fetch_optional(&db)
+                        .fetch_optional(&data.db)
                         .await
                         .map_err(Error::Database)
                         .unwrap()
@@ -90,7 +89,7 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
                     )
                     .bind(&today)
                     .bind(true)
-                    .execute(&db)
+                    .execute(&data.db)
                     .await
                     .map_err(Error::Database);
 
@@ -101,13 +100,11 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
                 info!("Not posting mensaplan today");
             }
 
-            println!("Sleeping for 5 minutes");
+            info!("Sleeping for 5 minutes");
             tokio::time::sleep(tokio::time::Duration::from_secs(data.config.mealplan.check * 60)).await;
         } 
-    })
-    .await;
 
-    Ok(())
+
 }
 
 pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
@@ -119,7 +116,6 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
     let feeds = fetch_feeds(conf.feeds).await.unwrap();
 
 
-    let task = tokio::spawn(async move {
         loop {
 
             for feed in feeds.iter() {
@@ -132,8 +128,9 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
                     let link = latest.link().unwrap();
                     let description = latest.description().unwrap();
                     let date = latest.pub_date().unwrap();
+                    let date_ = chrono::DateTime::parse_from_rfc2822(date).unwrap();
 
-                    let sql_res = sqlx::query_as::<sqlx::Postgres, structs::Rss>("SELECT * FROM rss WHERE title = $1")
+                    let sql_res = sqlx::query_as::<sqlx::Postgres, structs::Rss>("SELECT * FROM posted_rss WHERE rss_title = $1")
                         .bind(&title)
                         .fetch_optional(&db)
                         .await
@@ -148,12 +145,13 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
                                     e.title(title)
                                         .url(link)
                                         .description(description)
-                                        .timestamp(date)
+                                        .timestamp(date_.to_rfc3339())
+                                        .color(0xb00b69)
                                 })
                         }).await.map_err(Error::Serenity).unwrap();
 
                         let sql_res = sqlx::query(
-                            "INSERT INTO rss (title, message) VALUES ($1, $2)"
+                            "INSERT INTO posted_rss (rss_title, message_id) VALUES ($1, $2)"
                         )
                         .bind(&title)
                         .bind(msg.id.0 as i64)
@@ -168,9 +166,7 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
             println!("Sleeping for 5 minutes");
             tokio::time::sleep(tokio::time::Duration::from_secs(5 * 60)).await;
         } 
-    });
 
-    Ok(())
 }
 
 async fn fetch_feeds(feeds: Vec<impl Into<String>>) -> Result<Vec<Channel>, Error> {

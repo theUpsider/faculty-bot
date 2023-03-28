@@ -1,6 +1,7 @@
 version: "3"
 services:
     bot:
+        container_name: faculty_manager
         build: .
         volumes:
           - '$PWD/config.json:/config.json'
@@ -16,8 +17,10 @@ services:
             SMTP_PORT: "${SMTP_PORT}"
             RUST_LOG: "${RUST_LOG}"
         depends_on: [database]
-        network_mode: "host"
+        networks:
+            - bot
     database:
+        container_name: database
         image: postgres:13
         ports: [5432:5432]
         environment: 
@@ -25,3 +28,8 @@ services:
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         volumes:
           - ./migrations/faculty_manager.sql:/docker-entrypoint-initdb.d/init.sql
+        networks:
+            - bot
+    
+networks: 
+    bot: {}
