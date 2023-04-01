@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 use poise::serenity_prelude as serenity;
@@ -87,11 +89,10 @@ fn default_color_config() -> FacultyManagerColorConfig {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FacultyManagerRssConfig {
-    pub rss_channels: Vec<serenity::ChannelId>,
     pub post_rss: bool,
-    pub rss_urls: Vec<String>,
     pub rss_check_interval_hours: u64,
     pub rss_check_after_time_hours: u64,
+    pub rss_feed_data: HashMap<serenity::ChannelId, String>
 }
 
 pub fn read_config() -> Result<FacultyManagerConfig, prelude::Error> {

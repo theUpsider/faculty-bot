@@ -23,8 +23,7 @@ struct TaskConfig {
 }
 
 struct TaskConfigRss {
-    pub channels: Vec<serenity::ChannelId>,
-    pub feeds: Vec<String>,
+    pub map: std::collections::HashMap<serenity::ChannelId, String>,
 }
 
 /// Posts the mensa plan for the current week
@@ -109,18 +108,17 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
 
 pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
     let conf = TaskConfigRss {
-        channels: data.config.rss_settings.rss_channels,
-        feeds: data.config.rss_settings.rss_urls
+        map: data.config.rss_settings.rss_feed_data,
     };
     let db = data.db.clone();
-    let feeds = fetch_feeds(conf.feeds).await.unwrap();
-
+/*     let feeds = fetch_feeds(conf.feeds).await.unwrap();
+ */
 
         loop {
 
-            for feed in feeds.iter() {
-                let channel = feed.title();
-                let items = feed.items();
+            for (channel_id, feed_url) in conf.map.iter() {
+                let channel = fetch_feed(feed_url).await.unwrap();
+                let items = channel.items();
                 // get latest item
                 let latest = items.first().unwrap();
 
@@ -139,14 +137,23 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
 
                     if let Some(_) = sql_res {} else { // because let-else won't let me not return from this
                         // post
-                        let msg = ChannelId::from(1070021986849390623).send_message(&ctx, |f| {
-                            f.content(format!("{}: {}", channel, title))
+                        let msg = channel_id.send_message(&ctx, |f| {
+                            f.content(format!("{}",title))
                                 .embed(|e| {
                                     e.title(title)
                                         .url(link)
                                         .description(description)
                                         .timestamp(date_.to_rfc3339())
                                         .color(0xb00b69)
+                                })
+                                .components(|c| {
+                                    c.create_action_row(|a| {
+                                        a.create_button(|b| {
+                                            b.label("Open in Browser")
+                                                .style(serenity::ButtonStyle::Link)
+                                                .url(link)
+                                        })
+                                    })
                                 })
                         }).await.map_err(Error::Serenity).unwrap();
 
@@ -169,20 +176,16 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
 
 }
 
-async fn fetch_feeds(feeds: Vec<impl Into<String>>) -> Result<Vec<Channel>, Error> {
-    let mut channels = Vec::new();
+async fn fetch_feed(feed: impl Into<String>) -> Result<Channel, Error> {
 
-    for feed in feeds {
-        let bytestream = reqwest::get(feed.into())
-            .await
-            .map_err(Error::NetRequest)?
-            .bytes()
-            .await
-            .map_err(Error::NetRequest)?;
-        let channel = Channel::read_from(&bytestream[..]).map_err(Error::Rss)?;
-        channels.push(channel);
-    }
+    let bytestream = reqwest::get(feed.into())
+        .await
+        .map_err(Error::NetRequest)?
+        .bytes()
+        .await
+        .map_err(Error::NetRequest)?;
+    let channel = Channel::read_from(&bytestream[..]).map_err(Error::Rss)?;
 
 
-    Ok(channels)
+    Ok(channel)
 }
