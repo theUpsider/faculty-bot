@@ -163,7 +163,7 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
                     
             }
 
-            println!("Sleeping for 5 minutes");
+            info!("Sleeping for 5 minutes");
             tokio::time::sleep(tokio::time::Duration::from_secs(5 * 60)).await;
         } 
 

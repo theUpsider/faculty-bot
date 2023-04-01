@@ -4,9 +4,9 @@ services:
         container_name: faculty_manager
         build: .
         volumes:
-          - '$PWD/config.json:/config.json'
-          - '$PWD/images:/images'
-          - '$PWD/migrations:/migrations'
+          - '${PWD}/config.json:/config.json'
+          - '${PWD}/images:/images'
+          - '${PWD}/migrations:/migrations'
         environment:
             DISCORD_TOKEN: "${DISCORD_TOKEN}"
             DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}"
