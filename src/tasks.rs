@@ -13,6 +13,7 @@ use tracing::{
     info,
 };
 
+
 struct TaskConfig {
     pub notify_role: serenity::RoleId,
     pub post_mealplan: bool,
@@ -24,6 +25,7 @@ struct TaskConfig {
 
 struct TaskConfigRss {
     pub map: std::collections::HashMap<serenity::ChannelId, String>,
+    pub clean_regex: regex::Regex,
 }
 
 /// Posts the mensa plan for the current week
@@ -109,6 +111,7 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
 pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
     let conf = TaskConfigRss {
         map: data.config.rss_settings.rss_feed_data,
+        clean_regex: regex::Regex::new(r"\\n(if wk med|all)").unwrap(),
     };
     let db = data.db.clone();
 /*     let feeds = fetch_feeds(conf.feeds).await.unwrap();
@@ -142,7 +145,10 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
                                 .embed(|e| {
                                     e.title(title)
                                         .url(link)
-                                        .description(description)
+                                        .description(
+                                            conf.clean_regex
+                                                .replace_all(description, "")
+                                        )
                                         .timestamp(date_.to_rfc3339())
                                         .color(0xb00b69)
                                 })

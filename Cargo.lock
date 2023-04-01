@@ -586,6 +586,7 @@ dependencies = [
  "native-tls",
  "poise",
  "rand",
+ "regex",
  "reqwest",
  "rss",
  "serde",
