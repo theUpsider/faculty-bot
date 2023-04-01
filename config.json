@@ -48,7 +48,7 @@
       "1087742576213368852": "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=GP+MED+BA+ALL&title=Thema",
       "1087743074500878346": "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=MI+MA+ALL&title=Thema",
       "1087743506010873856": "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=GEVC+MA+MG+ALL&title=Thema"
-    }
+    },
     "rssCheckIntervalHours": 1,
     "rssCheckAfterTimeHours": 8
   }
