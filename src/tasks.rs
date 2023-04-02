@@ -2,7 +2,7 @@
 
 use crate::{prelude::Error, Data, structs, config::FacultyManagerMealplanConfig};
 
-use poise::serenity_prelude::{self as serenity, Mentionable, ChannelId};
+use poise::serenity_prelude::{self as serenity, Mentionable, ChannelId, MessageId};
 
 use rss::Channel;
 use tokio::sync::mpsc;
@@ -138,10 +138,58 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
                         .map_err(Error::Database)
                         .unwrap();
 
-                    if let Some(_) = sql_res {} else { // because let-else won't let me not return from this
+                    if let Some(exists) = sql_res {
+                        info!("Update to Already posted rss item");
+                        let curr_chan = channel_id;
+                        let msg = curr_chan
+                            .message(&ctx, exists.message_id as u64)
+                            .await
+                            .map_err(Error::Serenity)
+                            .unwrap();
+                        let embed = msg.embeds.first().unwrap();
+
+                        let this_date = embed.timestamp.as_ref().unwrap().parse::<chrono::DateTime<chrono::Utc>>().unwrap();
+                        let item_date = date_.with_timezone(&chrono::Utc);
+
+                        // compare dates and post update if newer
+                        if this_date < item_date {
+                            let msg = channel_id.send_message(&ctx, |f| {
+                                f.content(format!("Der letzte Post im Planungsportal wurde aktualisiert · {}",title))
+                                    .embed(|e| {
+                                        e.title(title)
+                                            .url(link)
+                                            .description(
+                                                conf.clean_regex
+                                                    .replace_all(description, "")
+                                            )
+                                            .timestamp(date_.to_rfc3339())
+                                            .color(0xb00b69)
+                                    })
+                                    .components(|c| {
+                                        c.create_action_row(|a| {
+                                            a.create_button(|b| {
+                                                b.label("Open in Browser")
+                                                    .style(serenity::ButtonStyle::Link)
+                                                    .url(link)
+                                            })
+                                        })
+                                    })
+                            }).await.map_err(Error::Serenity).unwrap();
+
+                            let sql_res = sqlx::query(
+                                "UPDATE posted_rss SET message_id = $1 WHERE rss_title = $2"
+                            )
+                            .bind(msg.id.0 as i64)
+                            .bind(&title)
+                            .execute(&db)
+                            .await
+                            .map_err(Error::Database);
+                        }
+
+                    } else { // because let-else won't let me not return from this
                         // post
                         let msg = channel_id.send_message(&ctx, |f| {
-                            f.content(format!("{}",title))
+                            f.content(format!("Neue Nachricht im Planungsportal · {}",title))
                                 .embed(|e| {
                                     e.title(title)
                                         .url(link)

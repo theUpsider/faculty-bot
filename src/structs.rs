@@ -56,6 +56,6 @@ impl Default for UserXP {
 
 #[derive(Debug, FromRow)]
 pub struct Rss {
-    rss_title: String,
-    message_id: i64,
+    pub rss_title: String,
+    pub message_id: i64,
 }
