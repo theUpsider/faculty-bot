@@ -105,8 +105,6 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
         clean_regex: regex::Regex::new(r"\\n(if wk med|all)").unwrap(),
     };
     let db = data.db.clone();
-    /*     let feeds = fetch_feeds(conf.feeds).await.unwrap();
-     */
 
     loop {
         for (channel_id, feed_url) in conf.map.iter() {
@@ -174,21 +172,25 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
                             })
                         })
                         .await
-                        .map_err(Error::Serenity)
-                        .unwrap();
+                        .map_err(Error::Serenity);
 
-                    let sql_res =
-                        sqlx::query("UPDATE posted_rss SET message_id = $1 WHERE rss_title = $2")
-                            .bind(msg.id.0 as i64)
-                            .bind(&title)
-                            .execute(&db)
-                            .await
-                            .map_err(Error::Database);
+                    if let Ok(msg) = msg {
+                        if let Err(why) = sqlx::query(
+                            "UPDATE posted_rss SET message_id = $1 WHERE rss_title = $2",
+                            )
+                                .bind(msg.id.0 as i64)
+                                .bind(&title)
+                                .execute(&db)
+                                .await
+                                .map_err(Error::Database) {
+                                    tracing::error!("Failed to update rss message id: {:?}", why);
+                                }
+                    };
                 }
             } else {
                 // because let-else won't let me not return from this
                 // post
-                if let Ok(msg) = channel_id
+                let msg = channel_id
                     .send_message(&ctx, |f| {
                         f.content(format!("Neue Nachricht im Planungsportal · {}", title))
                             .embed(|e| {
@@ -209,22 +211,7 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
                             })
                     })
                     .await
-                    .map_err(Error::Serenity)
-                {
-                    if let Err(why) = sqlx::query(
-                        "INSERT INTO posted_rss (rss_title, message_id) VALUES ($1, $2)",
-                    )
-                    .bind(&title)
-                    .bind(msg.id.0 as i64)
-                    .execute(&db)
-                    .await
-                    .map_err(Error::Database)
-                    {
-                        tracing::error!("Failed to insert rss item into database: {:?}", why);
-                    };
-                } else {
-                    tracing::error!("Failed to post rss item");
-                }
+                    .map_err(Error::Serenity);
             };
         }
 
