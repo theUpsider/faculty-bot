@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS user_xp (
 -- create sweep task that goes through and deletes all channels that have been marked for deletion
 CREATE TABLE IF NOT EXISTS voice_channels (
     channel_id BIGINT PRIMARY KEY NOT NULL,
-    owner_id BIGINT NOT NULL
+    owner_id BIGINT NOT NULL,
+    deletion_marker BOOL NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS mensaplan (
