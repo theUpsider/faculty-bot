@@ -80,7 +80,7 @@ Here you may speficy other adjustable settings of the bot.
 	- mealplan : (url) place to download mealplan i.e. http://www.meal/one.pdf
     - mealplan-check": (u16) minutes between the mealplan update check
     - postOnDay": (String) weekday on which the check and post occurs "Monday - Sunday"
-	- postAtHour (String) Hour at which the plan will be posted ex. 18:00:00 and 18:30:00 will both post at 6PM
+	- postAtHour (String) Hour at which the plan will be posted ex. 18:00:00 and 18:30:00 will both post at 6PM for precision's sake
     - mealplansettings": (list) default settings for the converter. change if applicable
       - density": 400,
       - quality": 100,
