@@ -39,6 +39,8 @@ RUST_LOG=warn
 ## Launching
 - Fill the `.env` and the `config.json`
 
+- Easiest: Take a look at the `docker-compose.yml` file and edit accordingly
+  - then launch with ` docker-compose -f docker-compose.yml --env-file .env up`
 - Easy: Use either the `launch_bot.sh` or `launch_bot.ps1` scripts
 - Hard: 
   - Install `Postgres 13`
