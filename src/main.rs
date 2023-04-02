@@ -1,9 +1,9 @@
 mod commands;
 mod config;
 mod eventhandler;
+mod structs;
 mod tasks;
 mod utils;
-mod structs;
 
 use dotenv::dotenv;
 use poise::{
@@ -106,14 +106,14 @@ async fn main() -> Result<(), prelude::Error> {
 
     // run "faculty_manager.sql"
     /* sqlx::query_file!("migrations/faculty_manager.sql")
-        .execute(&conn)
-        .await
-        .map_err(prelude::Error::Database)?; */
+    .execute(&conn)
+    .await
+    .map_err(prelude::Error::Database)?; */
 
-  /*   sqlx::migrate!()
-        .run(&pool)
-        .await
-        .map_err(prelude::Error::Migration)?; */
+    /*   sqlx::migrate!()
+    .run(&pool)
+    .await
+    .map_err(prelude::Error::Migration)?; */
 
     poise::Framework::builder()
         .options(poise::FrameworkOptions {
@@ -145,12 +145,7 @@ async fn main() -> Result<(), prelude::Error> {
             ..Default::default()
         })
         .setup(move |_ctx, _ready, _framework| {
-            Box::pin(async move {
-                Ok(Data {
-                    db: pool,
-                    config,
-                })
-            })
+            Box::pin(async move { Ok(Data { db: pool, config }) })
         })
         .token(token)
         .intents(GatewayIntents::all())
@@ -164,10 +159,7 @@ async fn main() -> Result<(), prelude::Error> {
     Ok(())
 }
 
-#[poise::command(
-    prefix_command,
-    required_permissions = "MANAGE_GUILD",
-)]
+#[poise::command(prefix_command, required_permissions = "MANAGE_GUILD")]
 async fn register(ctx: Context<'_>) -> Result<(), prelude::Error> {
     poise::builtins::register_application_commands_buttons(ctx)
         .await

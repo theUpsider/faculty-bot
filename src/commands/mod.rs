@@ -1,31 +1,19 @@
-use poise::{
-    serenity_prelude::{self as serenity},
-};
+use poise::serenity_prelude::{self as serenity};
 
-use crate::{
-    prelude::Error,
-    Context, Data
-};
+use crate::{prelude::Error, Context, Data};
 
 pub mod administration;
-pub mod user;
 pub mod moderation;
-
+pub mod user;
 
 /// Shows a list of all commands
-#[poise::command(
-    slash_command, 
-    prefix_command,
-)]
+#[poise::command(slash_command, prefix_command)]
 pub async fn help(
     ctx: Context<'_>,
-    #[description = "The command to get help for"] 
+    #[description = "The command to get help for"]
     #[autocomplete = "help_autocomplete"]
     command: Option<String>,
-    
 ) -> Result<(), Error> {
-
-
     let config = HelpConfiguration::default();
 
     match command {
@@ -36,10 +24,7 @@ pub async fn help(
     Ok(())
 }
 
-async fn help_autocomplete<'a>(
-    ctx: Context<'_>,
-    partial: &'a str,
-) -> Vec<String> {
+async fn help_autocomplete<'a>(ctx: Context<'_>, partial: &'a str) -> Vec<String> {
     let cmds = &ctx.framework().options.commands;
     let locale = ctx.locale().unwrap_or("en-US");
 
@@ -54,7 +39,6 @@ async fn help_autocomplete<'a>(
         })
         .collect::<Vec<_>>()
 }
-
 
 /// Optional configuration for how the help message from [`help()`] looks
 pub struct HelpConfiguration<'a> {
@@ -116,8 +100,8 @@ async fn help_single_command(
             e
         })
     })
-        .await
-        .map_err(Error::Serenity)?;
+    .await
+    .map_err(Error::Serenity)?;
     Ok(())
 }
 
@@ -126,7 +110,8 @@ async fn help_all_commands(
     ctx: crate::Context<'_>,
     _config: HelpConfiguration<'_>,
 ) -> Result<(), Error> {
-    let mut categories = crate::utils::OrderedMap::<Option<&str>, Vec<&poise::Command<Data, Error>>>::new();
+    let mut categories =
+        crate::utils::OrderedMap::<Option<&str>, Vec<&poise::Command<Data, Error>>>::new();
     for cmd in &ctx.framework().options().commands {
         categories
             .get_or_insert_with(cmd.category, Vec::new)
@@ -174,49 +159,57 @@ async fn help_all_commands(
                     let required = param.required;
                     (name, desc, required)
                 })
-                .fold((String::new(), String::new(), true), |(mut arg_name, mut arg_desc, mut required), (name, desc, _req)| {
-                    if !required {
-                        required = false;
-                    }
-                    if !arg_name.is_empty() {
-                        arg_name.push_str(", ");
-                    }
-                    arg_name.push_str(&name);
-                    if !arg_desc.is_empty() {
-                        arg_desc.push_str(", ");
-                    }
-                    arg_desc.push_str(&desc);
-                    (arg_name, arg_desc, required)
-                });
-
+                .fold(
+                    (String::new(), String::new(), true),
+                    |(mut arg_name, mut arg_desc, mut required), (name, desc, _req)| {
+                        if !required {
+                            required = false;
+                        }
+                        if !arg_name.is_empty() {
+                            arg_name.push_str(", ");
+                        }
+                        arg_name.push_str(&name);
+                        if !arg_desc.is_empty() {
+                            arg_desc.push_str(", ");
+                        }
+                        arg_desc.push_str(&desc);
+                        (arg_name, arg_desc, required)
+                    },
+                );
 
             if required {
                 embed.field(
                     &format!("{}{} {}", prefix, command.name, arg_name),
-                    &format!("{}\n{}", command.description.as_deref().unwrap_or("No description"), arg_desc),
+                    &format!(
+                        "{}\n{}",
+                        command.description.as_deref().unwrap_or("No description"),
+                        arg_desc
+                    ),
                     false,
                 );
             } else {
                 embed.field(
                     &format!("{}{} [{}]", prefix, command.name, arg_name),
-                    &format!("{}\n{}", command.description.as_deref().unwrap_or("No description"), arg_desc),
+                    &format!(
+                        "{}\n{}",
+                        command.description.as_deref().unwrap_or("No description"),
+                        arg_desc
+                    ),
                     false,
                 );
             }
         }
     }
 
-
-        for command in &ctx.framework().options().commands {
-            let kind = match command.context_menu_action {
-                Some(poise::ContextMenuCommandAction::User(_)) => "user",
-                Some(poise::ContextMenuCommandAction::Message(_)) => "message",
-                None => continue,
-            };
-            let name = command.context_menu_name.unwrap_or(&command.name);
-            embed.field(name, format!("(Context menu command on {})", kind), false);
-        }
-
+    for command in &ctx.framework().options().commands {
+        let kind = match command.context_menu_action {
+            Some(poise::ContextMenuCommandAction::User(_)) => "user",
+            Some(poise::ContextMenuCommandAction::Message(_)) => "message",
+            None => continue,
+        };
+        let name = command.context_menu_name.unwrap_or(&command.name);
+        embed.field(name, format!("(Context menu command on {})", kind), false);
+    }
 
     ctx.send(|b| {
         b.embed(|e| {
@@ -224,7 +217,7 @@ async fn help_all_commands(
             e
         })
     })
-        .await
-        .map_err(Error::Serenity)?;
+    .await
+    .map_err(Error::Serenity)?;
     Ok(())
 }

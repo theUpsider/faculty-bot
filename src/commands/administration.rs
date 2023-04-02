@@ -1,4 +1,4 @@
-use crate::{prelude::Error, Context, structs};
+use crate::{prelude::Error, structs, Context};
 use poise::serenity_prelude as serenity;
 
 /// Get the e-mail address a user has verified with
@@ -21,11 +21,13 @@ pub async fn getmail(
 ) -> Result<(), Error> {
     let pool = &ctx.data().db;
     let uid = user.id.0 as i64;
-    let db_user = sqlx::query_as::<sqlx::Postgres, structs::VerifiedUsers>("SELECT * FROM verified_users WHERE user_id = $1")
-        .bind(uid)
-        .fetch_optional(pool)
-        .await
-        .map_err(Error::Database)?;
+    let db_user = sqlx::query_as::<sqlx::Postgres, structs::VerifiedUsers>(
+        "SELECT * FROM verified_users WHERE user_id = $1",
+    )
+    .bind(uid)
+    .fetch_optional(pool)
+    .await
+    .map_err(Error::Database)?;
 
     if let Some(db_usr) = db_user {
         ctx.say(&format!(
@@ -44,7 +46,6 @@ pub async fn getmail(
     Ok(())
 }
 
-
 /// Run a command on the local machine
 #[poise::command(
     rename = "run",
@@ -62,9 +63,7 @@ pub async fn run_command(
     ctx: Context<'_>,
     #[description = "Command to run"] command: String,
 ) -> Result<(), Error> {
-    ctx.defer_or_broadcast()
-        .await
-        .map_err(Error::Serenity)?;
+    ctx.defer_or_broadcast().await.map_err(Error::Serenity)?;
 
     let output = tokio::process::Command::new("sh")
         .arg("-c")
@@ -78,9 +77,10 @@ pub async fn run_command(
 
     ctx.send(|msg| {
         msg.embed(|embed| {
-            embed.title("Output")
-            .field("Stdout", format!("```\n{}\n```", stdout), false)
-            .field("Stderr", format!("```\n{}\n```", stderr), false)
+            embed
+                .title("Output")
+                .field("Stdout", format!("```\n{}\n```", stdout), false)
+                .field("Stderr", format!("```\n{}\n```", stderr), false)
         })
     })
     .await

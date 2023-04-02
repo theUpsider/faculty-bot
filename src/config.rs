@@ -92,7 +92,7 @@ pub struct FacultyManagerRssConfig {
     pub post_rss: bool,
     pub rss_check_interval_hours: u64,
     pub rss_check_after_time_hours: u64,
-    pub rss_feed_data: HashMap<serenity::ChannelId, String>
+    pub rss_feed_data: HashMap<serenity::ChannelId, String>,
 }
 
 pub fn read_config() -> Result<FacultyManagerConfig, prelude::Error> {

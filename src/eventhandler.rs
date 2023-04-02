@@ -1,8 +1,10 @@
-use crate::{prelude::Error, tasks, utils, Data, structs::{self}};
-use poise::serenity_prelude::{self as serenity, AttachmentType, Mentionable};
-use tracing::{
-    info,
+use crate::{
+    prelude::Error,
+    structs::{self},
+    tasks, utils, Data,
 };
+use poise::serenity_prelude::{self as serenity, AttachmentType, Mentionable};
+use tracing::info;
 
 pub async fn event_listener(
     ctx: &serenity::Context,
@@ -13,12 +15,9 @@ pub async fn event_listener(
     match event {
         poise::Event::Ready { data_about_bot } => {
             info!("Ready! Logged in as {}", data_about_bot.user.name);
-            info!(
-                "Prefix: {:?}",
-                fw.options.prefix_options.prefix.as_ref()
-            );
-            
-/* 
+            info!("Prefix: {:?}", fw.options.prefix_options.prefix.as_ref());
+
+            /*
             if data.config.rss_settings.post_rss {
                 info!("RSS task started");
                 tasks::post_rss(ctx.clone(), data.clone()).await?;
@@ -30,7 +29,7 @@ pub async fn event_listener(
             } */
 
             // start mensa task & rss task if enabled so they can run in parallel
-             if data.config.mealplan.post_mealplan {
+            if data.config.mealplan.post_mealplan {
                 info!("Mensaplan task started");
                 let context = ctx.clone();
                 let d = data.clone();
@@ -61,20 +60,19 @@ pub async fn event_listener(
             let msg = new_message.clone();
             let user_id = i64::from(new_message.author.id);
 
-
             // get xp from db
             let mut pool = data.db.acquire().await.map_err(Error::Database)?;
-            
 
-            let user_data = sqlx::query_as::<sqlx::Postgres, structs::UserXP>("SELECT * FROM user_xp WHERE user_id = $1")
-                .bind(user_id)
-                .fetch_optional(&mut pool)
-                .await
-                .map_err(Error::Database)?
-                .unwrap_or_default();
+            let user_data = sqlx::query_as::<sqlx::Postgres, structs::UserXP>(
+                "SELECT * FROM user_xp WHERE user_id = $1",
+            )
+            .bind(user_id)
+            .fetch_optional(&mut pool)
+            .await
+            .map_err(Error::Database)?
+            .unwrap_or_default();
 
             let mut xp = user_data.user_xp;
-                
 
             println!("{}: {}", new_message.author.name, xp);
 
@@ -91,15 +89,20 @@ pub async fn event_listener(
                 .await
                 .map_err(Error::Database)?;
 
-            
-            println!("{}: {} -> {} | Level: {}", new_message.author.name, xp - xp_to_add, xp, user_data.user_level);
+            println!(
+                "{}: {} -> {} | Level: {}",
+                new_message.author.name,
+                xp - xp_to_add,
+                xp,
+                user_data.user_level
+            );
 
             // check if lvl up and level is higher than previous
-            
+
             if (xp - xp_to_add) as f64 / 100. == (xp / 100.)  // check if lvl up
                 || user_data.user_level  // check that the new level is higher than the current
                     >= (xp / 100.) as i32
-                {
+            {
                 return Ok(());
             } else {
                 // get lvl from xp
@@ -135,14 +138,15 @@ pub async fn event_listener(
                     .await
                     .map_err(Error::Serenity)?;
             }
-        },
+        }
 
         poise::Event::VoiceStateUpdate { old, new } => {
-
-            let created_channels = sqlx::query_as::<sqlx::Postgres, structs::VoiceChannels>("SELECT * FROM voice_channels")
-                .fetch_all(&mut data.db.acquire().await.map_err(Error::Database)?)
-                .await
-                .map_err(Error::Database)?;
+            let created_channels = sqlx::query_as::<sqlx::Postgres, structs::VoiceChannels>(
+                "SELECT * FROM voice_channels",
+            )
+            .fetch_all(&mut data.db.acquire().await.map_err(Error::Database)?)
+            .await
+            .map_err(Error::Database)?;
 
             if let Some(old_chan) = old {
                 if old_chan.channel_id == new.channel_id {
@@ -151,18 +155,31 @@ pub async fn event_listener(
                 }
 
                 // if no one is in the channel anymore, delete it
-                let channel = old_chan.channel_id.unwrap_or_default().to_channel(&ctx).await.map_err(Error::Serenity)?;
+                let channel = old_chan
+                    .channel_id
+                    .unwrap_or_default()
+                    .to_channel(&ctx)
+                    .await
+                    .map_err(Error::Serenity)?;
                 if let serenity::Channel::Guild(channel) = channel {
                     if channel.name() == data.config.channels.create_channel {
                         return Ok(()); // don't delete the create channel
                     }
 
                     // also we dont want to delete any other non temp channel
-                    if !created_channels.iter().any(|c| c.channel_id == channel.id.0 as i64) {
+                    if !created_channels
+                        .iter()
+                        .any(|c| c.channel_id == channel.id.0 as i64)
+                    {
                         return Ok(());
                     }
 
-                    if channel.members(&ctx).await.map_err(Error::Serenity)?.is_empty() {
+                    if channel
+                        .members(&ctx)
+                        .await
+                        .map_err(Error::Serenity)?
+                        .is_empty()
+                    {
                         channel.delete(&ctx).await.map_err(Error::Serenity)?;
                         // remove channel from db
                         sqlx::query("DELETE FROM voice_channels WHERE channel_id = $1")
@@ -172,35 +189,48 @@ pub async fn event_listener(
                             .map_err(Error::Database)?;
                     }
                 }
-
             }
 
-            let new_channel = new.channel_id.unwrap_or_default().to_channel(&ctx).await.map_err(Error::Serenity)?;
+            let new_channel = new
+                .channel_id
+                .unwrap_or_default()
+                .to_channel(&ctx)
+                .await
+                .map_err(Error::Serenity)?;
             let new_channel = match new_channel {
                 serenity::Channel::Guild(channel) => channel,
                 _ => return Ok(()),
             };
 
             if &new_channel.name() == &data.config.channels.create_channel {
-
                 let category = new_channel.parent_id;
 
-                let cc = new.guild_id.unwrap().create_channel(&ctx, |f| {
-                    f.name(format!("🔊 {}'s Channel", new.member.as_ref().unwrap().display_name()))
+                let cc = new
+                    .guild_id
+                    .unwrap()
+                    .create_channel(&ctx, |f| {
+                        f.name(format!(
+                            "🔊 {}'s Channel",
+                            new.member.as_ref().unwrap().display_name()
+                        ))
                         .kind(serenity::ChannelType::Voice)
-                        .permissions(vec![serenity::PermissionOverwrite {
-                            allow: serenity::Permissions::MANAGE_CHANNELS,
-                            deny: serenity::Permissions::empty(),
-                            kind: serenity::PermissionOverwriteType::Member(new.member.as_ref().unwrap().user.id),
-                        }]);
+                        .permissions(vec![
+                            serenity::PermissionOverwrite {
+                                allow: serenity::Permissions::MANAGE_CHANNELS,
+                                deny: serenity::Permissions::empty(),
+                                kind: serenity::PermissionOverwriteType::Member(
+                                    new.member.as_ref().unwrap().user.id,
+                                ),
+                            },
+                        ]);
                         if category.is_some() {
                             f.category(category.unwrap())
                         } else {
                             f
                         }
-                })
-                .await
-                .map_err(Error::Serenity)?;
+                    })
+                    .await
+                    .map_err(Error::Serenity)?;
 
                 sqlx::query("INSERT INTO voice_channels (channel_id, owner_id) VALUES ($1, $2)")
                     .bind(cc.id.0 as i64)
