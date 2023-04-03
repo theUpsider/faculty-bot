@@ -148,7 +148,7 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
 
                 // compare dates and post update if newer
                 if this_date < item_date {
-                    let msg = channel_id
+                    let msg_result = channel_id
                         .send_message(&ctx, |f| {
                             f.content(format!(
                                 "Der letzte Post im Planungsportal wurde aktualisiert · {}",
@@ -170,11 +170,13 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
                                     })
                                 })
                             })
+                            .reference_message(&msg)
+                            
                         })
                         .await
                         .map_err(Error::Serenity);
 
-                    if let Ok(msg) = msg {
+                    if let Ok(msg) = msg_result {
                         if let Err(why) = sqlx::query(
                             "UPDATE posted_rss SET message_id = $1 WHERE rss_title = $2",
                             )
