@@ -88,3 +88,65 @@ pub async fn run_command(
 
     Ok(())
 }
+
+/// Set the XP of a user
+#[poise::command(
+    slash_command,
+    prefix_command,
+    track_edits,
+    rename = "set-xp",
+    name_localized("de", "set-xp"),
+    description_localized("de", "Setze die XP eines Nutzers"),
+    default_member_permissions = "MANAGE_GUILD",
+)]
+pub async fn set_xp(
+    ctx: Context<'_>,
+    #[description = "Selected user"] user: serenity::User,
+    #[description = "New XP"] xp: i64,
+) -> Result<(), Error> {
+    let pool = &ctx.data().db;
+    let uid = user.id.0 as i64;
+    let db_user = sqlx::query_as::<sqlx::Postgres, structs::UserXP>(
+        "SELECT * FROM user_xp WHERE user_id = $1",
+    )
+    .bind(uid)
+    .fetch_optional(pool)
+    .await
+    .map_err(Error::Database)?;
+
+    if let Some(mut db_usr) = db_user {
+        db_usr.user_xp = xp as f64;
+        db_usr.user_level = (db_usr.user_xp / 100.0).floor() as i32;
+
+        sqlx::query(
+            "UPDATE user_xp SET user_xp = $1, user_level = $2 WHERE user_id = $3",
+        )
+        .bind(db_usr.user_xp)
+        .bind(db_usr.user_level)
+        .bind(uid)
+        .execute(pool)
+        .await
+        .map_err(Error::Database)?;
+
+    } else {
+        let new_user = structs::UserXP {
+            user_id: uid,
+            user_xp: xp as f64,
+            user_level: (xp as f64 / 100.0).floor() as i32,
+        };
+
+        sqlx::query(
+            "INSERT INTO user_xp (user_id, user_xp, user_level) VALUES ($1, $2, $3)",
+        )
+        .bind(new_user.user_id)
+        .bind(new_user.user_xp)
+        .bind(new_user.user_level)
+        .execute(pool)
+        .await
+        .map_err(Error::Database)?;
+    }
+
+ 
+
+    Ok(())
+}

@@ -126,6 +126,7 @@ async fn main() -> Result<(), prelude::Error> {
                 commands::user::xp(),
                 commands::administration::getmail(),
                 commands::administration::run_command(),
+                commands::administration::set_xp(),
                 commands::moderation::pin(),
                 commands::moderation::delete_message(),
                 commands::moderation::promote_user(),
