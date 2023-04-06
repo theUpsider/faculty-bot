@@ -121,6 +121,8 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
             let date = latest.pub_date().unwrap();
             let date_ = chrono::DateTime::parse_from_rfc2822(date).unwrap();
 
+            tracing::debug!("Posting in channel: {}", channel_id.0);
+
             let sql_res = sqlx::query_as::<sqlx::Postgres, structs::Rss>(
                 "SELECT * FROM posted_rss WHERE rss_title = $1 AND channel_id = $2",
             )

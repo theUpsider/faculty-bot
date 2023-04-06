@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS semestermods (
 );
 
 CREATE TABLE IF NOT EXISTS posted_rss (
-    rss_title TEXT PRIMARY KEY NOT NULL,
-    message_id BIGINT NOT NULL
+    message_id BIGINT PRIMARY KEY NOT NULL,
+    rss_title TEXT NOT NULL,
     channel_id BIGINT NOT NULL
 );
