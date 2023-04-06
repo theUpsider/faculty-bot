@@ -1,15 +1,15 @@
 #  Faculty Manager Setup Guide
 
-<details>
-  <summary>Setup with Docker (Very Easy)</summary>
-  - Create a `.env` file in the project root & Fill it like the provided `.env.example`
-  - Create a `docker-compose.yml` file and fill it like the following
-  ```yml
-  version: "3"
+## Docker (Very Easy)
+
+- Create a `.env` file in the project root & Fill it like the provided `.env.example`
+- Create a `docker-compose.yml` file and fill it like the following
+```yml
+version: "3"
 services:
     bot:
         container_name: faculty_manager
-        build: .
+        image: ghcr.io/rndrmu/facultymanager:rust-rewrite
         volumes:
           - './config.json:/config.json:ro'
           - './images:/images'
@@ -41,4 +41,5 @@ services:
 networks: 
     bot: {}
   ```
-</details>
+
+  Where `migrations`, `images` and `config.json` should be copied over from the repo
