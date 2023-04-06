@@ -2,6 +2,7 @@ version: "3"
 services:
     bot:
         container_name: faculty_manager
+        #image: ghcr.io/rndrmu/facultymanager:latest
         build: .
         volumes:
           - './config.json:/config.json:ro'

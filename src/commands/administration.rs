@@ -53,7 +53,8 @@ pub async fn getmail(
     track_edits,
     name_localized("de", "run"),
     description_localized("de", "Führe einen Befehl auf dem Server aus"),
-    owners_only
+    owners_only,
+    guild_only,
 )]
 pub async fn run_command(
     ctx: Context<'_>,
@@ -94,6 +95,7 @@ pub async fn run_command(
     name_localized("de", "set-xp"),
     description_localized("de", "Setze die XP eines Nutzers"),
     default_member_permissions = "MANAGE_GUILD",
+    guild_only,
 )]
 pub async fn set_xp(
     ctx: Context<'_>,
@@ -142,6 +144,10 @@ pub async fn set_xp(
         .map_err(Error::Database)?;
     }
 
+    ctx.say(&format!("Set XP of {} to {}", user.tag(), xp))
+        .await
+        .map_err(Error::Serenity)?;
+
  
 
     Ok(())
@@ -156,6 +162,7 @@ pub async fn set_xp(
     name_localized("de", "force-post-mensaplan"),
     description_localized("de", "Erzwinge das Posten des Mensaplan"),
     default_member_permissions = "MANAGE_GUILD",
+    guild_only,
 )]
 pub async fn force_post_mensaplan(ctx: Context<'_>) -> Result<(), Error> {
     let pool = &ctx.data().db;
