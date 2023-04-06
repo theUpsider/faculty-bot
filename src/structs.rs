@@ -59,4 +59,5 @@ impl Default for UserXP {
 pub struct Rss {
     pub rss_title: String,
     pub message_id: i64,
+    pub channel_id: i64,
 }

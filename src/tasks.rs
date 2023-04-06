@@ -122,9 +122,10 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
             let date_ = chrono::DateTime::parse_from_rfc2822(date).unwrap();
 
             let sql_res = sqlx::query_as::<sqlx::Postgres, structs::Rss>(
-                "SELECT * FROM posted_rss WHERE rss_title = $1",
+                "SELECT * FROM posted_rss WHERE rss_title = $1 AND channel_id = $2",
             )
             .bind(&title)
+            .bind(channel_id.0 as i64)
             .fetch_optional(&db)
             .await
             .map_err(Error::Database)
@@ -180,15 +181,17 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
 
                     if let Ok(msg) = msg_result {
                         if let Err(why) = sqlx::query(
-                            "UPDATE posted_rss SET message_id = $1 WHERE rss_title = $2",
-                            )
-                                .bind(msg.id.0 as i64)
-                                .bind(&title)
-                                .execute(&db)
-                                .await
-                                .map_err(Error::Database) {
-                                    tracing::error!("Failed to update rss message id: {:?}", why);
-                                }
+                            "UPDATE posted_rss SET message_id = $1 WHERE rss_title = $2 AND channel_id = $3",
+                        )
+                        .bind(msg.id.0 as i64)
+                        .bind(&title)
+                        .bind(channel_id.0 as i64)
+                        .execute(&db)
+                        .await
+                        .map_err(Error::Database)
+                        {
+                            tracing::error!("Failed to update rss message id: {:?}", why);
+                        }
                     };
                 }
             } else {
@@ -220,9 +223,10 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
                 // explode 
                 if let Ok(msg) = msg {
                     if let Err(why) = sqlx::query(
-                        "INSERT INTO posted_rss (rss_title, message_id) VALUES ($1, $2)",
+                        "INSERT INTO posted_rss (rss_title, channel_id, message_id) VALUES ($1, $2, $3)",
                     )
                     .bind(&title)
+                    .bind(channel_id.0 as i64)
                     .bind(msg.id.0 as i64)
                     .execute(&db)
                     .await
