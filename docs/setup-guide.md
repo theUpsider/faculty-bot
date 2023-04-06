@@ -1,0 +1,44 @@
+#  Faculty Manager Setup Guide
+
+<details>
+  <summary>Setup with Docker (Very Easy)</summary>
+  - Create a `.env` file in the project root & Fill it like the provided `.env.example`
+  - Create a `docker-compose.yml` file and fill it like the following
+  ```yml
+  version: "3"
+services:
+    bot:
+        container_name: faculty_manager
+        build: .
+        volumes:
+          - './config.json:/config.json:ro'
+          - './images:/images'
+          - './migrations:/migrations'
+        environment:
+            DISCORD_TOKEN: "${DISCORD_TOKEN}"
+            DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}"
+            PREFIX: "${PREFIX}"
+            MAILUSER: "${MAILUSER}"
+            MAILPW: "${MAILPW}"
+            SMTP_SERVER: "${SMTP_SERVER}"
+            SMTP_PORT: "${SMTP_PORT}"
+            RUST_LOG: "${RUST_LOG}"
+        depends_on: [database]
+        networks:
+            - bot
+    database:
+        container_name: database
+        image: postgres:13
+        ports: [5432:5432]
+        environment: 
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        volumes:
+          - ./migrations/faculty_manager.sql:/docker-entrypoint-initdb.d/init.sql
+        networks:
+            - bot
+    
+networks: 
+    bot: {}
+  ```
+</details>
