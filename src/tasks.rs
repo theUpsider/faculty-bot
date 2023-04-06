@@ -23,6 +23,7 @@ struct TaskConfig {
 struct TaskConfigRss {
     pub map: std::collections::HashMap<serenity::ChannelId, String>,
     pub clean_regex: regex::Regex,
+    pub timeout_hrs: u64,
 }
 
 /// Posts the mensa plan for the current week
@@ -103,6 +104,7 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
     let conf = TaskConfigRss {
         map: data.config.rss_settings.rss_feed_data,
         clean_regex: regex::Regex::new(r"\\n(if wk med|all)").unwrap(),
+        timeout_hrs: data.config.rss_settings.rss_check_interval_hours,
     };
     let db = data.db.clone();
 
@@ -214,11 +216,26 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
                     })
                     .await
                     .map_err(Error::Serenity);
+
+                // explode 
+                if let Ok(msg) = msg {
+                    if let Err(why) = sqlx::query(
+                        "INSERT INTO posted_rss (rss_title, message_id) VALUES ($1, $2)",
+                    )
+                    .bind(&title)
+                    .bind(msg.id.0 as i64)
+                    .execute(&db)
+                    .await
+                    .map_err(Error::Database)
+                    {
+                        tracing::error!("Failed to insert rss message id: {:?}", why);
+                    }
+                }
             };
         }
 
-        info!("Sleeping for 5 minutes");
-        tokio::time::sleep(tokio::time::Duration::from_secs(5 * 60)).await;
+        info!("Sleeping for {} hours", conf.timeout_hrs);
+        tokio::time::sleep(tokio::time::Duration::from_secs(conf.timeout_hrs * 60 * 60)).await;
     }
 }
 
