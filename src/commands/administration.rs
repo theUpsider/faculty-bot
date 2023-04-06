@@ -12,7 +12,8 @@ use poise::serenity_prelude as serenity;
         "Zeige die E-Mail Adresse, mit der ein Nutzer sich verifiziert hat"
     ),
     default_member_permissions = "MANAGE_GUILD",
-    ephemeral
+    ephemeral,
+    guild_only,
 )]
 pub async fn getmail(
     ctx: Context<'_>,
