@@ -174,7 +174,7 @@ pub async fn force_post_mensaplan(ctx: Context<'_>) -> Result<(), Error> {
 
     let today = now.date_naive().format("%Y-%m-%d").to_string();
 
-    mensaplan_channel
+    let force_post = mensaplan_channel
         .send_message(&ctx, |msg| {
             msg.add_file(serenity::AttachmentType::Bytes {
                 data: std::borrow::Cow::Borrowed(&mp_bytestream),
@@ -184,13 +184,19 @@ pub async fn force_post_mensaplan(ctx: Context<'_>) -> Result<(), Error> {
         .await
         .map_err(Error::Serenity)?;
 
+    force_post.crosspost(&ctx).await.map_err(Error::Serenity)?;
+
     // Update last posted date
-sqlx::query("INSERT INTO mensaplan (date, posted) VALUES ($1, $2) ON CONFLICT DO NOTHING")
-        .bind(&today)
-        .bind(true)
-        .execute(&data.db)
+    sqlx::query("INSERT INTO mensaplan (date, posted) VALUES ($1, $2) ON CONFLICT DO NOTHING")
+            .bind(&today)
+            .bind(true)
+            .execute(&ctx.data().db)
+            .await
+            .map_err(Error::Database)?;
+
+    ctx.say(&format!("Mensaplan für {} gepostet", today))
         .await
-        .map_err(Error::Database);
+        .map_err(Error::Serenity)?;
 
     Ok(())
 }
