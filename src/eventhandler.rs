@@ -4,7 +4,7 @@ use crate::{
     tasks, utils, Data,
 };
 use poise::serenity_prelude::{self as serenity, AttachmentType, Mentionable};
-use tracing::info;
+use tracing::{info, debug};
 
 pub async fn event_listener(
     ctx: &serenity::Context,
@@ -74,7 +74,7 @@ pub async fn event_listener(
 
             let mut xp = user_data.user_xp;
 
-            println!("{}: {}", new_message.author.name, xp);
+            debug!("{}: {}", new_message.author.name, xp);
 
             // add xp
             let xp_to_add =
@@ -89,7 +89,7 @@ pub async fn event_listener(
                 .await
                 .map_err(Error::Database)?;
 
-            println!(
+            debug!(
                 "{}: {} -> {} | Level: {}",
                 new_message.author.name,
                 xp - xp_to_add,

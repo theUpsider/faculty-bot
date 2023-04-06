@@ -11,7 +11,6 @@ use poise::serenity_prelude as serenity;
         "de",
         "Zeige die E-Mail Adresse, mit der ein Nutzer sich verifiziert hat"
     ),
-    required_permissions = "MANAGE_GUILD",
     default_member_permissions = "MANAGE_GUILD",
     ephemeral
 )]
@@ -54,9 +53,6 @@ pub async fn getmail(
     track_edits,
     name_localized("de", "run"),
     description_localized("de", "Führe einen Befehl auf dem Server aus"),
-    required_permissions = "MANAGE_GUILD",
-    default_member_permissions = "MANAGE_GUILD",
-    ephemeral,
     owners_only
 )]
 pub async fn run_command(
