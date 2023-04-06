@@ -13,6 +13,7 @@ use poise::serenity_prelude as serenity;
     ),
     default_member_permissions = "MANAGE_GUILD",
     ephemeral,
+    required_permissions = "MANAGE_GUILD",
     guild_only,
 )]
 pub async fn getmail(
@@ -96,6 +97,7 @@ pub async fn run_command(
     name_localized("de", "set-xp"),
     description_localized("de", "Setze die XP eines Nutzers"),
     default_member_permissions = "MANAGE_GUILD",
+    required_permissions = "MANAGE_GUILD",
     guild_only,
 )]
 pub async fn set_xp(
@@ -163,6 +165,7 @@ pub async fn set_xp(
     name_localized("de", "force-post-mensaplan"),
     description_localized("de", "Erzwinge das Posten des Mensaplan"),
     default_member_permissions = "MANAGE_GUILD",
+    required_permissions = "MANAGE_GUILD",
     guild_only,
 )]
 pub async fn force_post_mensaplan(ctx: Context<'_>) -> Result<(), Error> {
