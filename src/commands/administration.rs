@@ -1,4 +1,4 @@
-use crate::{prelude::Error, structs, Context};
+use crate::{prelude::Error, structs, Context, utils};
 use poise::serenity_prelude as serenity;
 
 /// Get the e-mail address a user has verified with
@@ -147,6 +147,50 @@ pub async fn set_xp(
     }
 
  
+
+    Ok(())
+}
+
+
+/// Force-Post mensaplan
+#[poise::command(
+    slash_command,
+    prefix_command,
+    rename = "force-post-mensaplan",
+    name_localized("de", "force-post-mensaplan"),
+    description_localized("de", "Erzwinge das Posten des Mensaplan"),
+    default_member_permissions = "MANAGE_GUILD",
+)]
+pub async fn force_post_mensaplan(ctx: Context<'_>) -> Result<(), Error> {
+    let pool = &ctx.data().db;
+    let mensaplan_url = &ctx.data().config.mealplan.url;
+    let mensaplan_channel = &ctx.data().config.channels.mealplan;
+    let mention_role = &ctx.data().config.roles.mealplannotify;
+
+    let mp_bytestream = utils::fetch_mensaplan(mensaplan_url).await?;
+    
+    
+    let now = chrono::Local::now();
+
+    let today = now.date_naive().format("%Y-%m-%d").to_string();
+
+    mensaplan_channel
+        .send_message(&ctx, |msg| {
+            msg.add_file(serenity::AttachmentType::Bytes {
+                data: std::borrow::Cow::Borrowed(&mp_bytestream),
+                filename: "mensaplan.png".to_string(),
+            })
+        })
+        .await
+        .map_err(Error::Serenity)?;
+
+    // Update last posted date
+sqlx::query("INSERT INTO mensaplan (date, posted) VALUES ($1, $2) ON CONFLICT DO NOTHING")
+        .bind(&today)
+        .bind(true)
+        .execute(&data.db)
+        .await
+        .map_err(Error::Database);
 
     Ok(())
 }
