@@ -12,7 +12,7 @@ services:
     bot:
         container_name: faculty_manager
         # you can also use `build: .` here if you wish to build it yourself instead of using the GH Actions Version
-        image: ghcr.io/rndrmu/facultymanager:rust-rewrite
+        image: ghcr.io/rndrmu/facultymanager:latest
         volumes:
           - './config.json:/config.json:ro'
           - './images:/images'
