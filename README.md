@@ -2,41 +2,64 @@
 
 ## Introduction
 
-This project features a Discord bot, with the intend to reduce the administration overhead for faculty related tasks. The bot takes care of verifying new server members.
+This project features a Discord bot with the intent to reduce the administration overhead for faculty related tasks. The bot takes care of verifying new server members.
 
 ## Setting up the bot
 
-- To run the code itself, first you need [Node.js](https://nodejs.org/en/). Install this JavaScript runtime.
+- To run the code itself, first you need [The Rust Programming Language](https://rust-lang.org).
+  Install this using `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` and choose the `stable` toolchain
 - You need to download the project and execute  
-  `npm install` inside the primary folder using Powershell (on Windows). This will install the neccesary dependencies.
-- Then you need to create a json file inside the directiory named: `config.json`. Inside you need to fill in the values needed to launch the bot: the prefix used for every command:
+  `cargo build --release` inside the primary folder using Windows Terminal or any zsh/bash on *nix systems. This will compile a release optimized build of the bot
 
-```json
-{
-	"prefix": "..",
-}
-```
-- Additionally, you'll have to create a `.env` file with the following content: TOKEN -> Your Bots Token, MAILUSER -> the e-mail address used for the `verify` command and MAILPW -> the password associated with the mail account
 
+- Create a `.env` file with the following content:
 ```sh
-TOKEN=
+DISCORD_TOKEN=
+
+# PostgreSQL format e.g. postgres://dbuser:dbpass@localhost:5432/db_name
+DATABASE_URL=
+
+PREFIX=
+
 MAILUSER=
 MAILPW=
+SMTP_SERVER=
+SMTP_PORT=
+
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+POSTGRES_DB=
+
+# optional, but recommended if you want logs
+RUST_LOG=warn
 ```
 
-- To register the bot, a developer account at [Discord](https://discord.com/developers/) needs to be created. The key can be filled in the `.env` under `TOKEN`.
-- To finally launch the bot, use `npm run build`, then `cd dist` and finally `node src/index.js` in Powershell to launch the bot. Press CTRL + c to end the execution. The console will give useful log.
-- For quick updates, stop the bot and use `git pull`. Start the bot again.
+- To register the bot, you'll need to register an application at [Discord's Developer Portal](https://discord.dev) The Token should be filled in the `.env` file under `DISCORD_TOKEN` key.
+
+## Launching
+- Fill the `.env` and the `config.json`
+
+- Easiest: Take a look at the `docker-compose.yml` file and edit accordingly
+  - then launch with ` docker-compose -f docker-compose.yml --env-file .env up`
+- Easy: Use either the `launch_bot.sh` or `launch_bot.ps1` scripts
+- Hard: 
+  - Install `Postgres 13`
+  - The Rust Toolchain
+  - Run the `faculty_manager.sql` file to init the database
+  - Use your favourite Process Manager to keep the bot running
+    (Notable Mentions: [pm2](https://pm2.io), systemd, openrc)
+
 
 ## Bot Settings
 
-In order for the bot to communicate with channels, you need to edit the `general-settings.json` and paste in the names of the channels and roles. Those need to be created before launching the bot. Case sensitive!
+In order for the bot to communicate with channels, you need to edit the `config.json` and paste in the Id's of the channels and roles. 
+Those need to be created before launching the bot.
 
 ### Roles
 
 - staffrole: this is the management role, which may edit the bot via commands.  
-- verified: after a playeer verified with his account. Use this role as you please, maybe to show and hide some channels.
-- mealplannotify: role id which will get pinged if new mealplan has been posted
+- verified: after a user verified with his account. Use this role as you please, maybe to show and hide some channels.
+- mealplannotify: role id which will get pinged if a new mealplan has been posted
 
 ### Channels
 
@@ -46,47 +69,38 @@ In order for the bot to communicate with channels, you need to edit the `general
 - xp : where level ups get posted
 - rules : where your server rules are located
 - ads: where external members may post ads which automatically get deleted after a specified amout of time in the settings
-- createChannel: when creating a voice channel with this name, it will be a dynamic voice channel to prevent unnecessary voice channels
+- createChannel: Upon joining a channel with this name, a temporary voice channel will be created
 - mealPlan: channel to which the mealplan updates get posted
 
-### Colors
-
-Speficy the color codes which gets used by the bot when sending embedded mssages etc.
 
 ### Settings
 
 Here you may speficy other adjustable settings of the bot.
 - adstimeout: the time in milliseconds before an ad in the ads-channel gets deleted
-- CharsForLevel: how many characters in a message should equal to 1 Point of Experience
+- CharsForLevel: how many characters in a message should equal to 1 XP 
 - postMealplan: (bool) activates the mealplan posting functionality
 	- mealplan : (url) place to download mealplan i.e. http://www.meal/one.pdf
-    - mealplanpdfpath": (path) local path to save and load mealplan
-    - mealplan-check": (int) minutes between the mealplan update check
-    - mealplandaycheck": (int) weekday on which the check and post occurs (0 - 6) (Sun - Sat)
-	- mealplanhourscheck: (int) time at what the check occurs. i.e. 8 for 8am
+    - mealplan-check": (u16) minutes between the mealplan update check
+    - postOnDay": (String) weekday on which the check and post occurs "Monday - Sunday"
+	- postAtHour (String) Hour at which the plan will be posted ex. 18:00:00 and 18:30:00 will both post at 6PM for precision's sake
     - mealplansettings": (list) default settings for the converter. change if applicable
       - density": 400,
       - quality": 100,
-      - saveFilename": "mensaplan",
-      - savePath": "./",
-      - format": "png",
+      - flatten: true
       - width": 768,
       - height": 512
     }
 
-### Other
-
-In the config.js, the mail server and aithentication in verify.js needs to be filled in.
 
 ## Commands
 
-In general, a command can be used without any arguments to get additional information about it.
 
 - help: displays general information
 - rulesupdate <"new rules">: updates the server rules. Only usable by staffrole.
 - sendmessage <channel name> <"message">: useful to let the bot send the a the server rules to a channel intitally, which can later be updated with rulesupdate-command. only staffrole.
-- verify <student email>: The bot checks the mail inbox and assigns the student the verificated role
+- verify <student email>: The bot checks the mail inbox and assigns the student the `verified` role
 - xp: displays current xp and level
+- register: Registers Discord Slash Commands, only usable by members with the [MANAGE_GUILD](https://discord.com/developers/docs/topics/permissions#permissions#MANAGE_GUILD) permission
 
 ## Thanks
 
