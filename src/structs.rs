@@ -24,7 +24,7 @@ pub struct VoiceChannels {
 pub struct Mensaplan {
     pub date: String,
     pub posted: bool,
-    pub plan_hash: String,
+    pub plan_hash: Option<String>,
 }
 
 #[derive(Debug, FromRow)]
@@ -61,3 +61,4 @@ pub struct Rss {
     pub message_id: i64,
     pub channel_id: i64,
 }
+
