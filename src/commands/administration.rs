@@ -11,9 +11,9 @@ use poise::serenity_prelude as serenity;
         "de",
         "Zeige die E-Mail Adresse, mit der ein Nutzer sich verifiziert hat"
     ),
-    default_member_permissions = "MANAGE_GUILD",
     ephemeral,
     required_permissions = "MANAGE_GUILD",
+    default_member_permissions = "MANAGE_GUILD",
     guild_only,
 )]
 pub async fn getmail(
@@ -96,8 +96,8 @@ pub async fn run_command(
     rename = "set-xp",
     name_localized("de", "set-xp"),
     description_localized("de", "Setze die XP eines Nutzers"),
-    default_member_permissions = "MANAGE_GUILD",
     required_permissions = "MANAGE_GUILD",
+    default_member_permissions = "MANAGE_GUILD",
     guild_only,
 )]
 pub async fn set_xp(
@@ -164,7 +164,6 @@ pub async fn set_xp(
     rename = "force-post-mensaplan",
     name_localized("de", "force-post-mensaplan"),
     description_localized("de", "Erzwinge das Posten des Mensaplan"),
-    default_member_permissions = "MANAGE_GUILD",
     required_permissions = "MANAGE_GUILD",
     guild_only,
 )]
