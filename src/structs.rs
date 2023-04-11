@@ -23,8 +23,7 @@ pub struct VoiceChannels {
 #[derive(Debug, FromRow)]
 pub struct Mensaplan {
     pub date: String,
-    pub posted: bool,
-    pub plan_hash: Option<String>,
+    pub posted: bool
 }
 
 #[derive(Debug, FromRow)]
