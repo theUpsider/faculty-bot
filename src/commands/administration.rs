@@ -1,5 +1,26 @@
 use crate::{prelude::Error, structs, Context, utils};
-use poise::serenity_prelude as serenity;
+use poise::serenity_prelude::{self as serenity, Permissions};
+
+
+async fn executor_is_dev_or_admin(ctx: Context<'_>) -> Result<bool, Error> {
+    let db = &ctx.data().db;
+    let member = ctx.author_member().await.unwrap();
+
+    let has_perms = member.roles.contains(&ctx.data().config.roles.semestermodrole)
+        || member.roles.contains(&ctx.data().config.roles.staffrole);
+
+    if has_perms {
+        return Ok(true);
+    } else if member
+        .permissions(&ctx)
+        .map_err(Error::Serenity)?
+        .contains(Permissions::ADMINISTRATOR)
+    {
+        return Ok(true);
+    } else {
+        return Ok(false);
+    }
+}
 
 /// Get the e-mail address a user has verified with
 #[poise::command(
@@ -96,8 +117,7 @@ pub async fn run_command(
     rename = "set-xp",
     name_localized("de", "set-xp"),
     description_localized("de", "Setze die XP eines Nutzers"),
-    required_permissions = "MANAGE_GUILD",
-    default_member_permissions = "MANAGE_GUILD",
+    check = "executor_is_dev_or_admin",
     guild_only,
 )]
 pub async fn set_xp(
