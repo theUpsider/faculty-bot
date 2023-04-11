@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS voice_channels (
 
 CREATE TABLE IF NOT EXISTS mensaplan (
     date TEXT PRIMARY KEY NOT NULL,
-    posted BOOL NOT NULL DEFAULT FALSE
+    posted BOOL NOT NULL DEFAULT FALSE,
+    plan_hash TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS ads (
@@ -44,4 +45,3 @@ CREATE TABLE IF NOT EXISTS posted_rss (
     rss_title TEXT NOT NULL,
     channel_id BIGINT NOT NULL
 );
-
