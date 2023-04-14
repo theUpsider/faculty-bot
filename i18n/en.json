@@ -8,8 +8,8 @@
     "message_pinned": "Message pinned",
     "message_unpinned": "Message unpinned",
     "message_deleted": "Message deleted",
-    "user_promoted": "User has been promoted to Semestermoderator",
-    "user_demoted": "User has been demoted to Student",
+    "user_promoted": "{user} has been promoted to Semestermoderator",
+    "user_demoted": "{user} has been demoted to Student",
 
     "leaderboard": "Leaderboard",
     "xp_msg": "You have {xp} XP, that equals to Level {level}.",
