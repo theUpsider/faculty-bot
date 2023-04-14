@@ -226,3 +226,248 @@ pub async fn force_post_mensaplan(ctx: Context<'_>) -> Result<(), Error> {
 
     Ok(())
 }
+
+
+
+/// Base command for rule specific commands
+#[poise::command(
+    slash_command,
+    prefix_command,
+    track_edits,
+    rename = "rule",
+    name_localized("de", "rule"),
+    description_localized("de", "Regel spezifische Befehle"),
+    guild_only,
+    check = "executor_is_dev_or_admin",
+    subcommands("add", "remove", "list", "get", "edit", "post"),
+)]
+pub async fn rule_command(
+    ctx: Context<'_>,
+) -> Result<(), Error> {
+    // root command can only be called in a prefix context as discord does not allow root commands to be called directly
+    ctx.say("Nett hier, aber waren sie schon mal in Baden-Württemberg?").await.map_err(Error::Serenity)?;
+    Ok(())
+}
+
+
+/// Add a new rule
+#[poise::command(
+    slash_command,
+    prefix_command,
+    track_edits,
+    rename = "add",
+    name_localized("de", "add"),
+    description_localized("de", "Füge eine neue Regel hinzu"),
+    guild_only,
+    check = "executor_is_dev_or_admin",
+)]
+pub async fn add(
+    ctx: Context<'_>,
+    #[description = "Rule number"] number: i64,
+    #[description = "Rule text"] text: String,
+) -> Result<(), Error> {
+    let pool = &ctx.data().db;
+
+    let rule = structs::Rules {
+        rule_number: number,
+        rule_text: text,
+    };
+
+    sqlx::query(
+        "INSERT INTO rules (rule_number, rule_text) VALUES ($1, $2)",
+    )
+    .bind(rule.rule_number)
+    .bind(rule.rule_text)
+    .execute(pool)
+    .await
+    .map_err(Error::Database)?;
+
+    ctx.send(|m| {
+        m.embed(|e| {
+            e.title("Regel hinzugefügt");
+            e.description(format!("Regel {} hinzugefügt", rule.rule_number));
+            e
+        })
+    }).await.map_err(Error::Serenity)?;
+
+    Ok(())
+}
+
+/// Remove a rule
+#[poise::command(
+    slash_command,
+    prefix_command,
+    track_edits,
+    rename = "remove",
+    name_localized("de", "remove"),
+    description_localized("de", "Entferne eine Regel"),
+    guild_only,
+    check = "executor_is_dev_or_admin",
+)]
+pub async fn remove(
+    ctx: Context<'_>,
+    #[description = "Rule number"] number: i64,
+) -> Result<(), Error> {
+    let pool = &ctx.data().db;
+
+    sqlx::query("DELETE FROM rules WHERE rule_number = $1")
+        .bind(number)
+        .execute(pool)
+        .await
+        .map_err(Error::Database)?;
+
+    ctx.send(|m| {
+        m.embed(|e| {
+            e.title("Regel entfernt");
+            e.description(format!("Regel {} entfernt", number));
+            e
+        })
+    }).await.map_err(Error::Serenity)?;
+
+    Ok(())
+}
+
+/// List all rules
+#[poise::command(
+    slash_command,
+    prefix_command,
+    track_edits,
+    rename = "list",
+    name_localized("de", "list"),
+    description_localized("de", "Zeige alle Regeln"),
+    guild_only,
+)]
+pub async fn list(ctx: Context<'_>) -> Result<(), Error> {
+    let pool = &ctx.data().db;
+
+    let rules = sqlx::query_as::<sqlx::Postgres, structs::Rules>("SELECT * FROM rules")
+        .fetch_all(pool)
+        .await
+        .map_err(Error::Database)?;
+
+    let mut rule_list = String::new();
+
+    for rule in rules {
+        rule_list.push_str(&format!("{}: {}\n", rule.rule_number, rule.rule_text));
+    }
+
+    ctx.send(|m| {
+        m.embed(|e| {
+            e.title("Regeln");
+            e.description(rule_list);
+            e
+        })
+    }).await.map_err(Error::Serenity)?;
+
+    Ok(())
+}
+
+/// Get a specific rule
+#[poise::command(
+    slash_command,
+    prefix_command,
+    track_edits,
+    rename = "get",
+    name_localized("de", "get"),
+    description_localized("de", "Zeige eine bestimmte Regel"),
+    guild_only,
+)]
+pub async fn get(
+    ctx: Context<'_>,
+    #[description = "Rule number"] number: i64,
+) -> Result<(), Error> {
+    let pool = &ctx.data().db;
+
+    let rule = sqlx::query_as::<sqlx::Postgres, structs::Rules>("SELECT * FROM rules WHERE rule_number = $1")
+        .bind(number)
+        .fetch_one(pool)
+        .await
+        .map_err(Error::Database)?;
+
+    ctx.send(|m| {
+        m.embed(|e| {
+            e.title("Regel");
+            e.description(format!("{}: {}", rule.rule_number, rule.rule_text));
+            e
+        })
+    }).await.map_err(Error::Serenity)?;
+
+    Ok(())
+}
+
+/// Edit a rule
+#[poise::command(
+    slash_command,
+    prefix_command,
+    track_edits,
+    rename = "edit",
+    name_localized("de", "edit"),
+    description_localized("de", "Bearbeite eine Regel"),
+    guild_only,
+    check = "executor_is_dev_or_admin",
+)]
+pub async fn edit(
+    ctx: Context<'_>,
+    #[description = "Rule number"] number: i64,
+    #[description = "Rule text"] text: String,
+) -> Result<(), Error> {
+    let pool = &ctx.data().db;
+
+    sqlx::query("UPDATE rules SET rule_text = $1 WHERE rule_number = $2")
+        .bind(text)
+        .bind(number)
+        .execute(pool)
+        .await
+        .map_err(Error::Database)?;
+
+    ctx.send(|m| {
+        m.embed(|e| {
+            e.title("Regel bearbeitet");
+            e.description(format!("Regel {} bearbeitet", number));
+            e
+        })
+    }).await.map_err(Error::Serenity)?;
+
+    Ok(())
+}
+
+/// Post a rules embed in the rules channel
+#[poise::command(
+    slash_command,
+    prefix_command,
+    track_edits,
+    rename = "post",
+    name_localized("de", "post"),
+    description_localized("de", "Poste die Regeln"),
+    guild_only,
+    check = "executor_is_dev_or_admin",
+)]
+pub async fn post(ctx: Context<'_>) -> Result<(), Error> {
+    let pool = &ctx.data().db;
+
+    let rules = sqlx::query_as::<sqlx::Postgres, structs::Rules>("SELECT * FROM rules")
+        .fetch_all(pool)
+        .await
+        .map_err(Error::Database)?;
+
+    let mut rule_list = String::new();
+
+    for rule in rules {
+        rule_list.push_str(&format!("{}: {}\n", rule.rule_number, rule.rule_text));
+    }
+
+
+
+    let rules_channel = ctx.data().config.channels.rules;
+
+    rules_channel.send_message(&ctx, |m| {
+        m.embed(|e| {
+            e.title("Regeln");
+            e.description(rule_list);
+            e
+        })
+    }).await.map_err(Error::Serenity)?;
+
+    Ok(())
+
+}
