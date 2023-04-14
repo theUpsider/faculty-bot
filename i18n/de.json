@@ -1,0 +1,17 @@
+{
+    "invalid_email": "Ungültige E-Mail-Adresse",
+    "email_not_found": "E-Mail-Adresse nicht gefunden",
+    "imap_error": "Es gab ein Problem beim finden deiner E-Mail. Bitte versuche es später erneut. Wenn das Problem weiterhin besteht, wende dich bitte an die Mods.",
+    "err_already_verified": "Dein Account ist bereits verifiziert.",
+    "verification_successful": "Dein Account wurde erfolgreich verifiziert.",
+
+    "message_pinned": "Nachricht angepinnt",
+    "message_unpinned": "Nachricht gelöst",
+    "message_deleted": "Nachricht gelöscht",
+    "user_promoted": "{user} wurde zum Semestermod befördert",
+    "user_demoted": "{user} wurde vom Semestermod degradiert",
+
+    "leaderboard": "Leaderboard",
+    "xp_msg": "Du hast {xp} XP, das ist äquivalent zu Level {level}.",
+    "xp_msg_none": "Du hast noch keine XP."
+}

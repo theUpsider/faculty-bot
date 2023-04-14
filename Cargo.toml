@@ -6,7 +6,8 @@ authors = ["Jan H <hi@rndrmu.moe>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-
+[build-dependencies]
+rosetta-build = "0.1"
 
 [dependencies]
 poise = { version = "0.5.1", features = ["cache"]}
@@ -27,8 +28,8 @@ sqlx = { version = "0.6", features = [
     "postgres"
 ] }
 md5 = "0.7.0"
-base64 = "0.20.0"
 native-tls = "0.2.11"
 imap = "2.4.1"
 rss = "2.0.3"
 regex = "1.5.4"
+rosetta-i18n = "0.1"
