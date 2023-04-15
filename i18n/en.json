@@ -1,7 +1,7 @@
 {
     "invalid_email": "Invalid E-Mail Address",
     "email_not_found": "E-Mail Address not found",
-    "imap_error": "An error occured whilst trying to retrieve your E-Mail. Please try again later. Contact the mods if this error persists.",
+    "mail_retrieve_error": "An error occured whilst trying to retrieve your E-Mail. Please try again later. Contact the mods if this error persists.",
     "err_already_verified": "You have already verified your E-Mail Address.",
     "verification_successful": "Your E-Mail Address has been verified successfully.",
 
