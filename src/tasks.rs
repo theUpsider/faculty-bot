@@ -2,10 +2,9 @@
 
 use crate::{config::FacultyManagerMealplanConfig, prelude::Error, structs, Data};
 
-use poise::serenity_prelude::{self as serenity, ChannelId, Mentionable, MessageId};
+use poise::serenity_prelude::{self as serenity, Mentionable};
 
 use rss::Channel;
-use tokio::sync::mpsc;
 
 use chrono::{Datelike, Timelike};
 
@@ -76,12 +75,12 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
                                     r.create_button(|b| {
                                         b.style(serenity::ButtonStyle::Primary)
                                             .label("Get Notified!")
-                                            .emoji(serenity::ReactionType::Custom { 
+                                            .emoji(serenity::ReactionType::Custom {
                                                 animated: false,
                                                 id: serenity::EmojiId(960491878048993300),
-                                                name: Some("gulasch".to_string())
-                                             })
-                                             .custom_id("mensaplan_notify_button")
+                                                name: Some("gulasch".to_string()),
+                                            })
+                                            .custom_id("mensaplan_notify_button")
                                     })
                                 })
                             })
@@ -190,7 +189,6 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
                                 })
                             })
                             .reference_message(&msg)
-                            
                         })
                         .await
                         .map_err(Error::Serenity);
@@ -236,7 +234,7 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
                     .await
                     .map_err(Error::Serenity);
 
-                // explode 
+                // explode
                 if let Ok(msg) = msg {
                     if let Err(why) = sqlx::query(
                         "INSERT INTO posted_rss (rss_title, channel_id, message_id) VALUES ($1, $2, $3)",

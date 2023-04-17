@@ -1,12 +1,10 @@
-use std::sync::Arc;
-
 use crate::{
     prelude::Error,
     structs::{self},
     tasks, utils, Data,
 };
 use poise::serenity_prelude::{self as serenity, AttachmentType, Mentionable};
-use tracing::{info, debug};
+use tracing::{debug, info};
 
 pub async fn event_listener(
     ctx: &serenity::Context,
@@ -237,12 +235,14 @@ pub async fn event_listener(
                     .await
                     .map_err(Error::Serenity)?;
             }
-        },
+        }
         poise::Event::InteractionCreate { interaction } => {
             // filter out button interactions
             if let serenity::Interaction::MessageComponent(button) = interaction {
                 match button.data.custom_id.as_str() {
-                    "mensaplan_notify_button" => give_user_mensaplan_role(&ctx, &button, data).await?,
+                    "mensaplan_notify_button" => {
+                        give_user_mensaplan_role(&ctx, &button, data).await?
+                    }
                     _ => not_implemented(&ctx, &button).await?,
                 }
             }
@@ -253,16 +253,14 @@ pub async fn event_listener(
     Ok(())
 }
 
-
 async fn give_user_mensaplan_role(
     ctx: &serenity::Context,
     button: &serenity::model::application::interaction::message_component::MessageComponentInteraction,
-    bot_data: &Data
+    bot_data: &Data,
 ) -> Result<(), Error> {
-
     let role = bot_data.config.roles.mealplannotify;
     let member = match button.member.as_ref() {
-        Some(mut m) => m,
+        Some(m) => m,
         None => {
             button
                 .create_interaction_response(&ctx, |f| {
@@ -277,8 +275,8 @@ async fn give_user_mensaplan_role(
         }
     };
 
-
-    member.clone() // literally why, go explod rustc 
+    member
+        .clone() // literally why, go explod rustc
         .add_role(&ctx, role)
         .await
         .map_err(Error::Serenity)?;
@@ -293,8 +291,6 @@ async fn give_user_mensaplan_role(
         .await
         .map_err(Error::Serenity)?;
 
-
-
     Ok(())
 }
 
@@ -308,8 +304,7 @@ async fn not_implemented(
             f.kind(serenity::InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|f| {
                     f.flags(serenity::model::application::interaction::MessageFlags::EPHEMERAL)
-                    .content("This button is not implemented yet, sorry :(")
-                    
+                        .content("This button is not implemented yet, sorry :(")
                 })
         })
         .await

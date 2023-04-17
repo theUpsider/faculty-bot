@@ -1,12 +1,13 @@
-use crate::{prelude::Error, structs, Context, utils};
+use crate::{prelude::Error, structs, utils, Context};
 use poise::serenity_prelude::{self as serenity, Permissions};
 
-
 async fn executor_is_dev_or_admin(ctx: Context<'_>) -> Result<bool, Error> {
-    let db = &ctx.data().db;
+    let _db = &ctx.data().db;
     let member = ctx.author_member().await.unwrap();
 
-    let has_perms = member.roles.contains(&ctx.data().config.roles.semestermodrole)
+    let has_perms = member
+        .roles
+        .contains(&ctx.data().config.roles.semestermodrole)
         || member.roles.contains(&ctx.data().config.roles.staffrole);
 
     if has_perms {
@@ -35,7 +36,7 @@ async fn executor_is_dev_or_admin(ctx: Context<'_>) -> Result<bool, Error> {
     ephemeral,
     required_permissions = "MANAGE_GUILD",
     default_member_permissions = "MANAGE_GUILD",
-    guild_only,
+    guild_only
 )]
 pub async fn getmail(
     ctx: Context<'_>,
@@ -77,7 +78,7 @@ pub async fn getmail(
     name_localized("de", "run"),
     description_localized("de", "Führe einen Befehl auf dem Server aus"),
     owners_only,
-    guild_only,
+    guild_only
 )]
 pub async fn run_command(
     ctx: Context<'_>,
@@ -118,7 +119,7 @@ pub async fn run_command(
     name_localized("de", "set-xp"),
     description_localized("de", "Setze die XP eines Nutzers"),
     check = "executor_is_dev_or_admin",
-    guild_only,
+    guild_only
 )]
 pub async fn set_xp(
     ctx: Context<'_>,
@@ -139,16 +140,13 @@ pub async fn set_xp(
         db_usr.user_xp = xp as f64;
         db_usr.user_level = (db_usr.user_xp / 100.0).floor() as i32;
 
-        sqlx::query(
-            "UPDATE user_xp SET user_xp = $1, user_level = $2 WHERE user_id = $3",
-        )
-        .bind(db_usr.user_xp)
-        .bind(db_usr.user_level)
-        .bind(uid)
-        .execute(pool)
-        .await
-        .map_err(Error::Database)?;
-
+        sqlx::query("UPDATE user_xp SET user_xp = $1, user_level = $2 WHERE user_id = $3")
+            .bind(db_usr.user_xp)
+            .bind(db_usr.user_level)
+            .bind(uid)
+            .execute(pool)
+            .await
+            .map_err(Error::Database)?;
     } else {
         let new_user = structs::UserXP {
             user_id: uid,
@@ -156,26 +154,21 @@ pub async fn set_xp(
             user_level: (xp as f64 / 100.0).floor() as i32,
         };
 
-        sqlx::query(
-            "INSERT INTO user_xp (user_id, user_xp, user_level) VALUES ($1, $2, $3)",
-        )
-        .bind(new_user.user_id)
-        .bind(new_user.user_xp)
-        .bind(new_user.user_level)
-        .execute(pool)
-        .await
-        .map_err(Error::Database)?;
+        sqlx::query("INSERT INTO user_xp (user_id, user_xp, user_level) VALUES ($1, $2, $3)")
+            .bind(new_user.user_id)
+            .bind(new_user.user_xp)
+            .bind(new_user.user_level)
+            .execute(pool)
+            .await
+            .map_err(Error::Database)?;
     }
 
     ctx.say(&format!("Set XP of {} to {}", user.tag(), xp))
         .await
         .map_err(Error::Serenity)?;
 
- 
-
     Ok(())
 }
-
 
 /// Force-Post mensaplan
 #[poise::command(
@@ -185,17 +178,16 @@ pub async fn set_xp(
     name_localized("de", "force-post-mensaplan"),
     description_localized("de", "Erzwinge das Posten des Mensaplan"),
     required_permissions = "MANAGE_GUILD",
-    guild_only,
+    guild_only
 )]
 pub async fn force_post_mensaplan(ctx: Context<'_>) -> Result<(), Error> {
-    let pool = &ctx.data().db;
+    let _pool = &ctx.data().db;
     let mensaplan_url = &ctx.data().config.mealplan.url;
     let mensaplan_channel = &ctx.data().config.channels.mealplan;
-    let mention_role = &ctx.data().config.roles.mealplannotify;
+    let _mention_role = &ctx.data().config.roles.mealplannotify;
 
     let mp_bytestream = utils::fetch_mensaplan(mensaplan_url).await?;
-    
-    
+
     let now = chrono::Local::now();
 
     let today = now.date_naive().format("%Y-%m-%d").to_string();
@@ -214,11 +206,11 @@ pub async fn force_post_mensaplan(ctx: Context<'_>) -> Result<(), Error> {
 
     // Update last posted date
     sqlx::query("INSERT INTO mensaplan (date, posted) VALUES ($1, $2) ON CONFLICT DO NOTHING")
-            .bind(&today)
-            .bind(true)
-            .execute(&ctx.data().db)
-            .await
-            .map_err(Error::Database)?;
+        .bind(&today)
+        .bind(true)
+        .execute(&ctx.data().db)
+        .await
+        .map_err(Error::Database)?;
 
     ctx.say(&format!("Mensaplan für {} gepostet", today))
         .await
@@ -226,8 +218,6 @@ pub async fn force_post_mensaplan(ctx: Context<'_>) -> Result<(), Error> {
 
     Ok(())
 }
-
-
 
 /// Base command for rule specific commands
 #[poise::command(
@@ -239,16 +229,15 @@ pub async fn force_post_mensaplan(ctx: Context<'_>) -> Result<(), Error> {
     description_localized("de", "Regel spezifische Befehle"),
     guild_only,
     check = "executor_is_dev_or_admin",
-    subcommands("add", "remove", "list", "get", "edit", "post"),
+    subcommands("add", "remove", "list", "get", "edit", "post")
 )]
-pub async fn rule_command(
-    ctx: Context<'_>,
-) -> Result<(), Error> {
+pub async fn rule_command(ctx: Context<'_>) -> Result<(), Error> {
     // root command can only be called in a prefix context as discord does not allow root commands to be called directly
-    ctx.say("Nett hier, aber waren sie schon mal in Baden-Württemberg?").await.map_err(Error::Serenity)?;
+    ctx.say("Nett hier, aber waren sie schon mal in Baden-Württemberg?")
+        .await
+        .map_err(Error::Serenity)?;
     Ok(())
 }
-
 
 /// Add a new rule
 #[poise::command(
@@ -259,7 +248,7 @@ pub async fn rule_command(
     name_localized("de", "add"),
     description_localized("de", "Füge eine neue Regel hinzu"),
     guild_only,
-    check = "executor_is_dev_or_admin",
+    check = "executor_is_dev_or_admin"
 )]
 pub async fn add(
     ctx: Context<'_>,
@@ -273,14 +262,12 @@ pub async fn add(
         rule_text: text,
     };
 
-    sqlx::query(
-        "INSERT INTO rules (rule_number, rule_text) VALUES ($1, $2)",
-    )
-    .bind(rule.rule_number)
-    .bind(rule.rule_text)
-    .execute(pool)
-    .await
-    .map_err(Error::Database)?;
+    sqlx::query("INSERT INTO rules (rule_number, rule_text) VALUES ($1, $2)")
+        .bind(rule.rule_number)
+        .bind(rule.rule_text)
+        .execute(pool)
+        .await
+        .map_err(Error::Database)?;
 
     ctx.send(|m| {
         m.embed(|e| {
@@ -288,7 +275,9 @@ pub async fn add(
             e.description(format!("Regel {} hinzugefügt", rule.rule_number));
             e
         })
-    }).await.map_err(Error::Serenity)?;
+    })
+    .await
+    .map_err(Error::Serenity)?;
 
     Ok(())
 }
@@ -302,7 +291,7 @@ pub async fn add(
     name_localized("de", "remove"),
     description_localized("de", "Entferne eine Regel"),
     guild_only,
-    check = "executor_is_dev_or_admin",
+    check = "executor_is_dev_or_admin"
 )]
 pub async fn remove(
     ctx: Context<'_>,
@@ -322,7 +311,9 @@ pub async fn remove(
             e.description(format!("Regel {} entfernt", number));
             e
         })
-    }).await.map_err(Error::Serenity)?;
+    })
+    .await
+    .map_err(Error::Serenity)?;
 
     Ok(())
 }
@@ -335,7 +326,7 @@ pub async fn remove(
     rename = "list",
     name_localized("de", "list"),
     description_localized("de", "Zeige alle Regeln"),
-    guild_only,
+    guild_only
 )]
 pub async fn list(ctx: Context<'_>) -> Result<(), Error> {
     let pool = &ctx.data().db;
@@ -357,7 +348,9 @@ pub async fn list(ctx: Context<'_>) -> Result<(), Error> {
             e.description(rule_list);
             e
         })
-    }).await.map_err(Error::Serenity)?;
+    })
+    .await
+    .map_err(Error::Serenity)?;
 
     Ok(())
 }
@@ -370,7 +363,7 @@ pub async fn list(ctx: Context<'_>) -> Result<(), Error> {
     rename = "get",
     name_localized("de", "get"),
     description_localized("de", "Zeige eine bestimmte Regel"),
-    guild_only,
+    guild_only
 )]
 pub async fn get(
     ctx: Context<'_>,
@@ -378,11 +371,13 @@ pub async fn get(
 ) -> Result<(), Error> {
     let pool = &ctx.data().db;
 
-    let rule = sqlx::query_as::<sqlx::Postgres, structs::Rules>("SELECT * FROM rules WHERE rule_number = $1")
-        .bind(number)
-        .fetch_one(pool)
-        .await
-        .map_err(Error::Database)?;
+    let rule = sqlx::query_as::<sqlx::Postgres, structs::Rules>(
+        "SELECT * FROM rules WHERE rule_number = $1",
+    )
+    .bind(number)
+    .fetch_one(pool)
+    .await
+    .map_err(Error::Database)?;
 
     ctx.send(|m| {
         m.embed(|e| {
@@ -390,7 +385,9 @@ pub async fn get(
             e.description(format!("{}: {}", rule.rule_number, rule.rule_text));
             e
         })
-    }).await.map_err(Error::Serenity)?;
+    })
+    .await
+    .map_err(Error::Serenity)?;
 
     Ok(())
 }
@@ -404,7 +401,7 @@ pub async fn get(
     name_localized("de", "edit"),
     description_localized("de", "Bearbeite eine Regel"),
     guild_only,
-    check = "executor_is_dev_or_admin",
+    check = "executor_is_dev_or_admin"
 )]
 pub async fn edit(
     ctx: Context<'_>,
@@ -426,7 +423,9 @@ pub async fn edit(
             e.description(format!("Regel {} bearbeitet", number));
             e
         })
-    }).await.map_err(Error::Serenity)?;
+    })
+    .await
+    .map_err(Error::Serenity)?;
 
     Ok(())
 }
@@ -440,7 +439,7 @@ pub async fn edit(
     name_localized("de", "post"),
     description_localized("de", "Poste die Regeln"),
     guild_only,
-    check = "executor_is_dev_or_admin",
+    check = "executor_is_dev_or_admin"
 )]
 pub async fn post(ctx: Context<'_>) -> Result<(), Error> {
     let pool = &ctx.data().db;
@@ -456,18 +455,18 @@ pub async fn post(ctx: Context<'_>) -> Result<(), Error> {
         rule_list.push_str(&format!("{}: {}\n", rule.rule_number, rule.rule_text));
     }
 
-
-
     let rules_channel = ctx.data().config.channels.rules;
 
-    rules_channel.send_message(&ctx, |m| {
-        m.embed(|e| {
-            e.title("Regeln");
-            e.description(rule_list);
-            e
+    rules_channel
+        .send_message(&ctx, |m| {
+            m.embed(|e| {
+                e.title("Regeln");
+                e.description(rule_list);
+                e
+            })
         })
-    }).await.map_err(Error::Serenity)?;
+        .await
+        .map_err(Error::Serenity)?;
 
     Ok(())
-
 }
