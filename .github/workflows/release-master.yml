@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
@@ -24,12 +24,23 @@ jobs:
       - name: Build Binary
         run: cargo build --release
 
+      - name: Get Commit Hash
+        id: commit_hash
+        run: echo "::set-output name=hash::$(git rev-parse --short HEAD)"
+
       - name: Create Release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
+          tag_name: ${{ steps.commit_hash.outputs.hash }}-$(date +%s)
+          release_name: ${{ steps.commit_hash.outputs.hash }}
+          draft: true
           prerelease: false
+          files: |
+            target/release/my_binary
+            migrations/**
+            images/**
+          body: |
+            ### Changelog
+            ${GITHUB_REF#refs/tags/}
