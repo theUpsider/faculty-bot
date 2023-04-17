@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::{
     prelude::Error,
     structs::{self},
@@ -16,17 +18,6 @@ pub async fn event_listener(
         poise::Event::Ready { data_about_bot } => {
             info!("Ready! Logged in as {}", data_about_bot.user.name);
             info!("Prefix: {:?}", fw.options.prefix_options.prefix.as_ref());
-
-            /*
-            if data.config.rss_settings.post_rss {
-                info!("RSS task started");
-                tasks::post_rss(ctx.clone(), data.clone()).await?;
-            }
-
-            if data.config.mealplan.post_mealplan {
-                info!("Mensaplan task started");
-                tasks::post_mensaplan(ctx.clone(), data.clone()).await?;
-            } */
 
             // start mensa task & rss task if enabled so they can run in parallel
             if data.config.mealplan.post_mealplan {
@@ -246,9 +237,83 @@ pub async fn event_listener(
                     .await
                     .map_err(Error::Serenity)?;
             }
+        },
+        poise::Event::InteractionCreate { interaction } => {
+            // filter out button interactions
+            if let serenity::Interaction::MessageComponent(button) = interaction {
+                match button.data.custom_id.as_str() {
+                    "mensaplan_notify_button" => give_user_mensaplan_role(&ctx, &button, data).await?,
+                    _ => not_implemented(&ctx, &button).await?,
+                }
+            }
         }
         _ => {}
     }
+
+    Ok(())
+}
+
+
+async fn give_user_mensaplan_role(
+    ctx: &serenity::Context,
+    button: &serenity::model::application::interaction::message_component::MessageComponentInteraction,
+    bot_data: &Data
+) -> Result<(), Error> {
+
+    let role = bot_data.config.roles.mealplannotify;
+    let member = match button.member.as_ref() {
+        Some(mut m) => m,
+        None => {
+            button
+                .create_interaction_response(&ctx, |f| {
+                    f.kind(serenity::InteractionResponseType::ChannelMessageWithSource)
+                        .interaction_response_data(|f| {
+                            f.content("You need to be in a server to use this command")
+                        })
+                })
+                .await
+                .map_err(Error::Serenity)?;
+            return Ok(());
+        }
+    };
+
+
+    member.clone() // literally why, go explod rustc 
+        .add_role(&ctx, role)
+        .await
+        .map_err(Error::Serenity)?;
+
+    button
+        .create_interaction_response(&ctx, |f| {
+            f.kind(serenity::InteractionResponseType::ChannelMessageWithSource)
+                .interaction_response_data(|f| {
+                    f.content("You will now be notified when the mensaplan is updated, feel free to also follow this channel in your own server !!")
+                })
+        })
+        .await
+        .map_err(Error::Serenity)?;
+
+
+
+    Ok(())
+}
+
+/// Generic function to handle not implemented buttons
+async fn not_implemented(
+    ctx: &serenity::Context,
+    button: &serenity::model::application::interaction::message_component::MessageComponentInteraction,
+) -> Result<(), Error> {
+    button
+        .create_interaction_response(&ctx, |f: &mut serenity::CreateInteractionResponse| {
+            f.kind(serenity::InteractionResponseType::ChannelMessageWithSource)
+                .interaction_response_data(|f| {
+                    f.flags(serenity::model::application::interaction::MessageFlags::EPHEMERAL)
+                    .content("This button is not implemented yet, sorry :(")
+                    
+                })
+        })
+        .await
+        .map_err(Error::Serenity)?;
 
     Ok(())
 }

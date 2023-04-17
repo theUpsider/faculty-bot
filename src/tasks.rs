@@ -71,6 +71,20 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
                                 data: std::borrow::Cow::Borrowed(&mensa_plan),
                                 filename: "mensaplan.png".to_string(),
                             })
+                            .components(|c| {
+                                c.create_action_row(|r| {
+                                    r.create_button(|b| {
+                                        b.style(serenity::ButtonStyle::Primary)
+                                            .label("Get Notified!")
+                                            .emoji(serenity::ReactionType::Custom { 
+                                                animated: false,
+                                                id: serenity::EmojiId(960491878048993300),
+                                                name: Some("gulasch".to_string())
+                                             })
+                                             .custom_id("mensaplan_notify_button")
+                                    })
+                                })
+                            })
                     })
                     .await
                     .map_err(Error::Serenity);
