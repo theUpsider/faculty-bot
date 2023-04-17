@@ -441,7 +441,12 @@ pub async fn edit(
     guild_only,
     check = "executor_is_dev_or_admin"
 )]
-pub async fn post(ctx: Context<'_>) -> Result<(), Error> {
+pub async fn post(
+    ctx: Context<'_>,
+    #[description = "Channel to post in"] 
+    #[channel_types("Text")]
+    channel: Option<serenity::GuildChannel>
+) -> Result<(), Error> {
     let pool = &ctx.data().db;
 
     let rules = sqlx::query_as::<sqlx::Postgres, structs::Rules>("SELECT * FROM rules")
@@ -455,7 +460,10 @@ pub async fn post(ctx: Context<'_>) -> Result<(), Error> {
         rule_list.push_str(&format!("{}: {}\n", rule.rule_number, rule.rule_text));
     }
 
-    let rules_channel = ctx.data().config.channels.rules;
+    let rules_channel = match channel {
+        Some(channel) => channel.id,
+        None => ctx.data().config.channels.rules
+    };
 
     rules_channel
         .send_message(&ctx, |m| {
