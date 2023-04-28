@@ -52,5 +52,10 @@
     "rssCheckIntervalHours": 1,
     "rssCheckAfterTimeHours": 8
   },
-  "podcastRssUrl": "https://youtube.com/feeds/videos.xml?channel_id=UCjbhFF_P9Dn774YShrFdSLA"
+  "podcastSettings": {
+    "postPodcast": true,
+    "rssCheckInterval": 1,
+    "podcastUrl": "https://www.youtube.com/feeds/videos.xml?channel_id=UCjbhFF_P9Dn774YShrFdSLA",
+    "podcastChannel": "899606239804268545"
+  }
 }

@@ -18,7 +18,7 @@ pub struct FacultyManagerConfig {
     pub mealplan: FacultyManagerMealplanConfig,
     pub rss_settings: FacultyManagerRssConfig,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub podcast_url: Option<String>,
+    pub podcast_settings: Option<FacultyManagerPodcastConfig>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -95,6 +95,16 @@ pub struct FacultyManagerRssConfig {
     pub rss_check_interval_hours: u64,
     pub rss_check_after_time_hours: u64,
     pub rss_feed_data: HashMap<serenity::ChannelId, String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct FacultyManagerPodcastConfig {
+    pub post_podcast: bool,
+    pub podcast_check_interval: u64,
+    pub author_image: String,
+    pub podcast_url: String,
+    pub podcast_channel: serenity::ChannelId,
 }
 
 pub fn read_config() -> Result<FacultyManagerConfig, prelude::Error> {
