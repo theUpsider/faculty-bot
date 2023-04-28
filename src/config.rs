@@ -17,6 +17,8 @@ pub struct FacultyManagerConfig {
     pub general: FacultyManagerGeneralConfig,
     pub mealplan: FacultyManagerMealplanConfig,
     pub rss_settings: FacultyManagerRssConfig,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub podcast_url: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
