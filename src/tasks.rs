@@ -62,7 +62,6 @@ pub async fn post_mensaplan(ctx: serenity::Context, data: Data) -> Result<(), Er
                 info!("Mensaplan already posted today");
             } else {
                 let mut channel = task_conf.post_channel;
-
                 let mut msg = channel
                     .send_message(&ctx, |f| {
                         f.content(format!("{}", task_conf.notify_role.mention()))
@@ -110,8 +109,17 @@ pub async fn post_rss(ctx: serenity::Context, data: Data) -> Result<(), Error> {
         for (channel_id, feed_url) in conf.map.iter() {
             let channel = fetch_feed(feed_url).await.unwrap();
             let items = channel.items();
-            // get latest item
-            let latest = items.first().unwrap();
+            // get all items that haven't been posted yet
+            let alr_posted = sqlx::query_as::<sqlx::Postgres, structs::Rss>(
+                "SELECT * FROM posted_rss WHERE channel_id = $1",
+            )
+            .bind(channel_id.0 as i64)
+            .fetch_all(&db)
+            .await
+            .map_err(Error::Database)
+            .unwrap();
+
+
 
             let title = latest.title().unwrap();
             let link = latest.link().unwrap();
