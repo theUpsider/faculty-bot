@@ -1,0 +1,46 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        rust-version: [stable]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Rust ${{ matrix.rust-version }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust-version }}
+
+      - name: Build Binary
+        run: cargo build --release
+
+      - name: Get Commit Hash
+        id: commit_hash
+        run: echo "::set-output name=hash::$(git rev-parse --short HEAD)"
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.commit_hash.outputs.hash }}${{ matrix.os }}
+          release_name: ${{ steps.commit_hash.outputs.hash }}
+          draft: true
+          prerelease: false
+          files: |
+            target/release/my_binary
+            migrations/**
+            images/**
+          body: |
+            ### Changelog
+            ${GITHUB_REF#refs/tags/}

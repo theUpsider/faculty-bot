@@ -1,0 +1,6 @@
+{
+    "rust-analyzer.cargo.loadOutDirsFromCheck": true,
+    "i18n-ally.localesPaths": [
+        "i18n"
+    ]
+}

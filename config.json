@@ -1,0 +1,61 @@
+{
+  "prefix": "..",
+  "channels": {
+    "xp": "763684496767451164",
+    "rules": "996332160590028830",
+    "news": "1025699834717552660",
+    "logs": "1001395505256996944",
+    "ads": "1001395505256996944",
+    "createChannel": "🔊 New VoiceChannel",
+    "mealplan": "899606239804268545"
+  },
+  "colors": {
+    "blue": "#4200ff",
+    "lightblue": "#FFFFF",
+    "green": "#28823d",
+    "red": "#cf0a0a"
+  },
+  "roles": {
+    "staffrole": "497787064906153984",
+    "semestermodrole": "788058862208155768",
+    "verified": "710860408147148820",
+    "mealplannotify": "899619452897882142"
+  },
+  "general": {
+    "adstimeout": 2147483647,
+    "charsForLevel": 25
+  },
+  "mealplan": {
+    "postMealplan": true,
+    "url": "http://www.max-manager.de/daten-extern/augsburg/pdf/wochenplaene/hs-kempten/aktuell.pdf",
+    "check": 30,
+    "postOnDay": "Tuesday",
+    "postAtHour": "14:00:00",
+    "imgsettings": {
+      "density": 400,
+      "quality": 100,
+      "flatten": false,
+      "width": 768,
+      "height": 512
+    }
+  },
+  "rssSettings": {
+    "postRss": true,
+    "rssFeedData": {
+      "1087740850395693096": "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=IF+BA+ALL&title=Thema",
+      "1087742021684449320": "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=GE+BA+ALL&title=Thema",
+      "1087742288706404454": "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=WK+BA+ALL&title=Thema",
+      "1087742576213368852": "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=GP+MED+BA+ALL&title=Thema",
+      "1087743074500878346": "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=MI+MA+ALL&title=Thema",
+      "1087743506010873856": "https://infotresen.if.hs-kempten.de/dokuwiki/lib/plugins/feed/feed.php?plugin=tag&fn=getTopic&ns=announcements&tag=GEVC+MA+MG+ALL&title=Thema"
+    },
+    "rssCheckIntervalHours": 1,
+    "rssCheckAfterTimeHours": 8
+  },
+  "podcastSettings": {
+    "postPodcast": true,
+    "rssCheckInterval": 1,
+    "podcastUrl": "https://www.youtube.com/feeds/videos.xml?channel_id=UCjbhFF_P9Dn774YShrFdSLA",
+    "podcastChannel": "899606239804268545"
+  }
+}
